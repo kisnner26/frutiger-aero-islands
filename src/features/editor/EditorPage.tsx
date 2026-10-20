@@ -14,6 +14,7 @@ import { phoneBus } from '../phone/phoneBus';
 import { AeroWindow } from '../../ui/AeroWindow';
 import { Balloon } from '../../ui/Balloon';
 import { Taskbar } from '../../ui/Taskbar';
+import { ExploreMode } from '../explore/ExploreMode';
 import { minePosition } from '../../world/archipelago';
 import { CountryGate } from '../../world/CountryPicker';
 import { countryStore, useCountry } from '../../world/country';
@@ -59,6 +60,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
   if (boot.current === null) boot.current = init(initialDoc);
   const [state, dispatch] = useReducer(editorReducer, boot.current.state);
   const [placing, setPlacing] = useState<string | null>(null);
+  const [exploring, setExploring] = useState(false);
   const [floats, setFloats] = useState<Float[]>([]);
   const [combo, setCombo] = useState(0);
   const [win, setWin] = useState({ catalog: { open: true, min: false }, objects: { open: false, min: false }, workshop: { open: false, min: false }, daily: { open: false, min: false } });
@@ -372,9 +374,11 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
           },
           { id: 'workshop', label: 'laboratorio', icon: <span className="mini-orb mini-orb--green" />, active: win.workshop.open && !win.workshop.min, onClick: () => toggleWin('workshop') },
           { id: 'daily', label: 'marea diaria', icon: <span className="mini-orb mini-orb--globe" />, active: win.daily.open && !win.daily.min, onClick: () => toggleWin('daily') },
+          { id: 'explore', label: 'caminar', icon: <span className="mini-orb mini-orb--green" />, active: exploring, onClick: () => setExploring(true) },
           { id: 'objects', label: 'objetos', icon: <span className="mini-orb mini-orb--green" />, active: win.objects.open && !win.objects.min, onClick: () => toggleWin('objects') },
         ]}
       />
+      {exploring && <ExploreMode objects={doc.objects} level={doc.maxLevel} avatar={avatar} onExit={() => setExploring(false)} />}
       <CameraOverlay />
       {editable && <CountryGate />}
       <span className="sr-only" aria-live="polite">
