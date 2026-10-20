@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { CATALOG } from '../../catalog/catalog';
+import type { CatalogItem } from '../../domain/island';
 
 interface Props {
   placing: string | null;
@@ -7,11 +9,30 @@ interface Props {
   onChoose: (id: string | null) => void;
 }
 
+type Group = 'todo' | 'naturaleza' | 'hogar' | 'mar' | 'cielo';
+const GROUPS: Array<{ id: Group; label: string; has: (i: CatalogItem) => boolean }> = [
+  { id: 'todo', label: 'todo', has: () => true },
+  { id: 'naturaleza', label: 'naturaleza', has: (i) => ['vegetacion', 'roca', 'cristal'].includes(i.category) },
+  { id: 'hogar', label: 'hogar y ocio', has: (i) => ['arquitectura', 'mobiliario', 'ocio'].includes(i.category) || i.id === 'fuente' },
+  { id: 'mar', label: 'mar', has: (i) => i.placementZone === 'water' },
+  { id: 'cielo', label: 'cielo y magia', has: (i) => i.category === 'cielo' },
+];
+
 /** fichas al estilo del menú de la wii u: cuadrados brillantes con etiqueta. */
 export function DecorationCatalog({ placing, level, brillos, onChoose }: Props) {
+  const [group, setGroup] = useState<Group>('todo');
+  const shown = CATALOG.filter(GROUPS.find((g) => g.id === group)!.has).sort((a, b) => a.unlockLevel - b.unlockLevel || a.cost - b.cost);
   return (
+    <>
+    <div className="tile-tabs" role="tablist" aria-label="categorías">
+      {GROUPS.map((g) => (
+        <button key={g.id} type="button" role="tab" aria-selected={group === g.id} className={group === g.id ? 'is-active' : ''} onClick={() => setGroup(g.id)}>
+          {g.label}
+        </button>
+      ))}
+    </div>
     <ul className="tiles" aria-label="decoraciones">
-      {CATALOG.map((item) => {
+      {shown.map((item) => {
         const locked = item.unlockLevel > level;
         const poor = !locked && item.cost > brillos;
         const active = placing === item.id;
@@ -41,5 +62,6 @@ export function DecorationCatalog({ placing, level, brillos, onChoose }: Props) 
         );
       })}
     </ul>
+    </>
   );
 }

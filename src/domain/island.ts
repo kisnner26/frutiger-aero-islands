@@ -17,7 +17,7 @@ export interface PlacedObject {
 export interface CatalogItem {
   id: string;
   name: string;
-  category: 'vegetacion' | 'roca' | 'cristal' | 'agua' | 'arquitectura' | 'fauna';
+  category: 'vegetacion' | 'roca' | 'cristal' | 'agua' | 'arquitectura' | 'fauna' | 'mobiliario' | 'ocio' | 'cielo';
   assetPath: string;
   /** radio de apoyo en unidades de mundo (a escala 1). */
   footprintRadius: number;
