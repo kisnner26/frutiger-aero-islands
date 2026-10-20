@@ -438,13 +438,13 @@ export class WorldScene {
     this.cells = cells;
     this.myName = myName;
     this.drawTerritory();
-    const done = [...cells.values()].reduce((a, c) => a + c.progress, 0);
-    this.globe?.setRestoration(done / (ALL_CELLS.length * 100));
+    const bad = [...cells.values()].filter((c) => c.blight);
+    const done = bad.reduce((a, c) => a + c.progress, 0);
+    this.globe?.setRestoration(bad.length ? done / (bad.length * 100) : 1);
     this.globe?.setDamage(
-      ALL_CELLS.map(({ cx, cy }) => {
-        const c = cellCenter(cx, cy);
-        const ll = unprojectXY(c.x, c.y);
-        return { ...ll, damage: 1 - (cells.get(cellKey(cx, cy))?.progress ?? 0) / 100 };
+      bad.map((c) => {
+        const p = cellCenter(c.cx, c.cy);
+        return { ...unprojectXY(p.x, p.y), damage: 1 - c.progress / 100 };
       }),
     );
   }
@@ -472,20 +472,20 @@ export class WorldScene {
       const { x, y } = cellCenter(cx, cy);
       const h = CELL / 2;
       const progress = info?.progress ?? 0;
-      // zona fea: bruma gris y tejado de grietas; se desvanece al restaurarla
-      const damage = 1 - progress / 100;
-      if (damage > 0) {
+      // solo hay zonas dañadas en unos pocos rincones; el resto del mundo está sano
+      const damage = info?.blight ? 1 - progress / 100 : 0;
+      if (info?.blight && damage > 0) {
         g.rect(x - h, y - h, CELL, CELL).fill({ color: 0x7d858c, alpha: 0.46 * damage });
         if (damage > 0.5) {
           g.moveTo(x - h * 0.7, y - h * 0.2).lineTo(x - h * 0.1, y + h * 0.1).lineTo(x + h * 0.2, y - h * 0.35).lineTo(x + h * 0.7, y + h * 0.15).stroke({ width: 1.6, color: 0x4a4f55, alpha: 0.35 * damage });
           g.moveTo(x - h * 0.3, y + h * 0.6).lineTo(x + h * 0.1, y + h * 0.25).stroke({ width: 1.4, color: 0x4a4f55, alpha: 0.3 * damage });
         }
-      } else {
+      } else if (info?.blight) {
         g.circle(x - h * 0.45, y - h * 0.4, 2.4).fill({ color: 0xffffff, alpha: 0.9 });
         g.circle(x + h * 0.5, y + h * 0.3, 1.8).fill({ color: 0xd8fbff, alpha: 0.9 });
       }
       const hsh = (Math.imul(cx + 11, 73856093) ^ Math.imul(cy + 7, 19349663)) >>> 0;
-      drawBlight(this.blight, x + ((hsh >>> 3) % 31) - 15, y + ((hsh >>> 9) % 23) - 11, hsh >>> 5, damage);
+      if (info?.blight) drawBlight(this.blight, x + ((hsh >>> 3) % 31) - 15, y + ((hsh >>> 9) % 23) - 11, hsh >>> 5, damage);
       if (info?.owner) {
         const mine = info.owner === this.myName;
         const color = ownerColor(info.owner);

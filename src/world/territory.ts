@@ -16,8 +16,11 @@ export interface CellInfo {
   owner: string | null;
   country: string | null;
   shieldUntil: number;
-  /** 0 = dañada, 100 = restaurada. */
+  /** 0 = dañada, 100 = restaurada. las celdas sanas no tienen avance. */
   progress: number;
+  /** celda dentro de una zona dañada del planeta. */
+  blight?: boolean;
+  zone?: string;
 }
 
 export const cellKey = (cx: number, cy: number) => `${cx},${cy}`;

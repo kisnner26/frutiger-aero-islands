@@ -1,6 +1,6 @@
 # conquista y restauración del mundo
 
-el mundo es una cuadrícula de 24×24 parcelas (432 dentro del círculo de la cuenca). todo el planeta **empieza dañado** (zonas grises y abandonadas) y la comunidad lo devuelve al estilo frutiger aero. no hay datos simulados: lo que se ve sale de la base de datos.
+el mundo es una cuadrícula de 24×24 parcelas (432 dentro del círculo de la cuenca). hay unos pocos **rincones dañados** (zonas grises y abandonadas, lejos de los países y de las islas) y la comunidad los devuelve al estilo frutiger aero. no hay datos simulados: lo que se ve sale de la base de datos.
 
 ## reglas (todas se validan en el servidor, `supabase/migrations/202610200013_territory.sql`)
 - **energía**: máximo 5, se recupera 1 cada 20 minutos. es compartida por todas las acciones.

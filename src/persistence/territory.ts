@@ -44,14 +44,14 @@ export async function loadWorldCells(): Promise<Map<string, CellInfo>> {
   for (const r of (rest.data ?? []) as Row[]) {
     const cx = Number(r.cx);
     const cy = Number(r.cy);
-    map.set(cellKey(cx, cy), { cx, cy, owner: null, country: null, shieldUntil: 0, progress: Number(r.progress) });
+    map.set(cellKey(cx, cy), { cx, cy, owner: null, country: null, shieldUntil: 0, progress: Number(r.progress), blight: true, zone: String(r.zone ?? '') });
   }
   for (const r of (parcels.data ?? []) as Row[]) {
     const cx = Number(r.cx);
     const cy = Number(r.cy);
     if (cx < 0 || cy < 0 || cx >= GRID || cy >= GRID) continue;
     const prev = map.get(cellKey(cx, cy));
-    map.set(cellKey(cx, cy), { cx, cy, owner: String(r.owner), country: (r.country as string | null) ?? null, shieldUntil: Date.parse(String(r.shield_until)) || 0, progress: prev?.progress ?? 0 });
+    map.set(cellKey(cx, cy), { cx, cy, owner: String(r.owner), country: (r.country as string | null) ?? null, shieldUntil: Date.parse(String(r.shield_until)) || 0, progress: prev?.progress ?? 0, blight: prev?.blight, zone: prev?.zone });
   }
   return map;
 }

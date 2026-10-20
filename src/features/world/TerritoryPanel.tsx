@@ -102,7 +102,7 @@ export function TerritoryPanel({ sceneRef, data, picked }: Props) {
   const energy = me ? Math.floor(me.energy) : 0;
   const hint = cell ? claimHint(cell, { name: myName, owned: me?.owned ?? 0, adjacentOwned, energy }) : null;
   const zone = picked ? findCountry(nearestCountry(picked.cx, picked.cy)) : undefined;
-  const canRestore = Boolean(cell && myName && cell.progress < 100 && energy >= 1);
+  const canRestore = Boolean(cell && cell.blight && myName && cell.progress < 100 && energy >= 1);
 
   const act = async (kind: 'restaurar' | 'reclamar' | 'capturar') => {
     if (!picked) return;
@@ -166,8 +166,10 @@ export function TerritoryPanel({ sceneRef, data, picked }: Props) {
               </small>
             </div>
           </div>
-          <p className="territory__state">{cell.progress >= 100 ? 'zona restaurada y brillante' : cell.progress > 0 ? `zona dañada · restaurada al ${cell.progress}%` : 'zona dañada, gris y abandonada'}</p>
-          <i className="territory__bar" aria-hidden="true"><b style={{ width: `${cell.progress}%` }} /></i>
+          <p className="territory__state">
+            {!cell.blight ? 'zona sana: aquí el mundo ya brilla' : cell.progress >= 100 ? `${cell.zone}: restaurada y brillante` : cell.progress > 0 ? `${cell.zone} · restaurada al ${cell.progress}%` : `${cell.zone}: gris y abandonada`}
+          </p>
+          {cell.blight && <i className="territory__bar" aria-hidden="true"><b style={{ width: `${cell.progress}%` }} /></i>}
           <div className="territory__actions">
             <button type="button" className="vista-button" disabled={busy || !canRestore} onClick={() => void act('restaurar')}>
               restaurar (1)
@@ -179,11 +181,11 @@ export function TerritoryPanel({ sceneRef, data, picked }: Props) {
             )}
           </div>
           <small className="territory__why">
-            {hint && !hint.action ? hint.reason : `restaurar es trabajo de equipo: cada persona aporta hasta ${RESTORE_CAP_PER_PERSON}%, así que hacen falta al menos 3.`}
+            {cell.blight ? `restaurar es trabajo de equipo: cada persona aporta hasta ${RESTORE_CAP_PER_PERSON}%, así que hacen falta al menos 3.` : hint && !hint.action ? hint.reason : 'las zonas grises están en rincones apartados del mapa: explora para encontrarlas.'}
           </small>
         </section>
       ) : (
-        <p className="territory__empty">toca una parcela del mapa para restaurarla o conquistarla.</p>
+        <p className="territory__empty">toca una parcela para conquistarla. las zonas grises son escasas y están lejos de los países: encuéntralas y restáuralas en equipo.</p>
       )}
       {msg && (
         <p className={`territory__msg${msg.error ? ' is-error' : ''}`} role={msg.error ? 'alert' : 'status'}>

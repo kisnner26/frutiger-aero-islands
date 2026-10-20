@@ -223,13 +223,9 @@ export class Globe3D {
     this.damageTex.needsUpdate = true;
   }
 
-  /** 0 = planeta dañado y grisáceo, 1 = totalmente restaurado y brillante. */
-  setRestoration(fraction: number) {
-    const f = Math.max(0, Math.min(1, fraction));
-    (this.planet.material as MeshLambertMaterial).color.setScalar(0.7 + 0.3 * Math.min(1, f * 3));
-    const cm = this.clouds.material as MeshBasicMaterial;
-    cm.color.setRGB(0.62 + 0.38 * Math.min(1, f * 2), 0.64 + 0.36 * Math.min(1, f * 2), 0.66 + 0.34 * Math.min(1, f * 2));
-    cm.opacity = 0.42 + 0.3 * (1 - Math.min(1, f * 2));
+  /** el planeta ya no se tiñe entero: solo se marcan las zonas dañadas (ver setDamage). */
+  setRestoration(_fraction: number) {
+    void _fraction;
   }
 
   mark(code: string | null) {

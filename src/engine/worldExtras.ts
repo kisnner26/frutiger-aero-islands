@@ -86,6 +86,7 @@ export class SeaTraffic {
       this.items.push({ sprite, kind, r, speed, a, size });
       this.root.addChild(sprite);
     }
+    this.update(0); // posición y tamaño correctos desde el primer fotograma
   }
 
   update(time: number) {
