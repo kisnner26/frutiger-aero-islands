@@ -28,6 +28,7 @@ import { DecorationCatalog } from './DecorationCatalog';
 import { EditorToolbar } from './EditorToolbar';
 import { ObjectInspector } from './ObjectInspector';
 import { AeroWorkshop } from '../community/AeroWorkshop';
+import { DailyTide } from '../community/DailyTide';
 
 interface Float {
   id: number;
@@ -60,7 +61,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
   const [placing, setPlacing] = useState<string | null>(null);
   const [floats, setFloats] = useState<Float[]>([]);
   const [combo, setCombo] = useState(0);
-  const [win, setWin] = useState({ catalog: { open: true, min: false }, objects: { open: false, min: false }, workshop: { open: false, min: false } });
+  const [win, setWin] = useState({ catalog: { open: true, min: false }, objects: { open: false, min: false }, workshop: { open: false, min: false }, daily: { open: false, min: false } });
   const [toast, setToast] = useState<{ id: number; text: string; tone: 'error' | 'info' } | null>(
     boot.current.corrupt ? { id: -1, text: 'el borrador guardado estaba dañado; se empezó una isla nueva', tone: 'error' } : null,
   );
@@ -255,13 +256,13 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
   const saveText = saveStatus === 'cuota' ? 'sin espacio en este dispositivo' : saveStatus === 'error' || saveStatus === 'remoto-error' ? 'no se pudo guardar en la nube' : saveStatus === 'pendiente' ? 'guardando...' : saveRemote ? 'guardado en la nube' : 'guardado en este dispositivo';
   const placingItem = placing ? CATALOG_MAP.get(placing) : null;
 
-  const toggleWin = (key: 'catalog' | 'objects' | 'workshop') =>
+  const toggleWin = (key: 'catalog' | 'objects' | 'workshop' | 'daily') =>
     setWin((w) => {
       const cur = w[key];
       const next = !cur.open ? { open: true, min: false } : cur.min ? { open: true, min: false } : { open: true, min: true };
       return { ...w, [key]: next };
     });
-  const patchWin = (key: 'catalog' | 'objects' | 'workshop', v: Partial<{ open: boolean; min: boolean }>) => setWin((w) => ({ ...w, [key]: { ...w[key], ...v } }));
+  const patchWin = (key: 'catalog' | 'objects' | 'workshop' | 'daily', v: Partial<{ open: boolean; min: boolean }>) => setWin((w) => ({ ...w, [key]: { ...w[key], ...v } }));
 
   const orbIcon = <span className="mini-orb" />;
   const hasSel = !!selected;
@@ -345,6 +346,12 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
         </AeroWindow>
       )}
 
+      {editable && win.daily.open && (
+        <AeroWindow className="win-daily" title="marea diaria" icon={<span className="mini-orb mini-orb--globe" />} collapsed={win.daily.min} onMinimize={() => patchWin('daily', { min: !win.daily.min })} onClose={() => patchWin('daily', { open: false })}>
+          <DailyTide />
+        </AeroWindow>
+      )}
+
       <div className="balloon-region" aria-live="polite">
         {toast && <Balloon key={toast.id} tone={toast.tone} text={toast.text} title={toast.tone === 'info' && state.levelUp && toast.id === state.levelUp.id ? `nivel ${state.levelUp.level}` : undefined} />}
       </div>
@@ -363,6 +370,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
             },
           },
           { id: 'workshop', label: 'laboratorio', icon: <span className="mini-orb mini-orb--green" />, active: win.workshop.open && !win.workshop.min, onClick: () => toggleWin('workshop') },
+          { id: 'daily', label: 'marea diaria', icon: <span className="mini-orb mini-orb--globe" />, active: win.daily.open && !win.daily.min, onClick: () => toggleWin('daily') },
           { id: 'objects', label: 'objetos', icon: <span className="mini-orb mini-orb--green" />, active: win.objects.open && !win.objects.min, onClick: () => toggleWin('objects') },
         ]}
       />

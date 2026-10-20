@@ -252,6 +252,14 @@
   max-height: 58svh;
 }
 
+.win-daily {
+  position: absolute;
+  z-index: 23;
+  left: 18px;
+  top: 128px;
+  width: min(455px, calc(100vw - 36px));
+}
+
 .win-objects {
   position: absolute;
   z-index: 22;
