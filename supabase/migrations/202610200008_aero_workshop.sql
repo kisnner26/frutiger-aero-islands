@@ -99,4 +99,7 @@ begin
 end;
 $$;
 
+revoke all on function public.my_aero_resources() from public;
+revoke all on function public.claim_aero_cycle() from public;
+revoke all on function public.craft_aero_recipe(text) from public;
 grant execute on function public.my_aero_resources(), public.claim_aero_cycle(), public.craft_aero_recipe(text) to authenticated;
