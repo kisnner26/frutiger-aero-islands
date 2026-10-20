@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef, type ReactNode } from 'react';
 import { music } from '../audio/music';
 import { sfx } from '../audio/sfx';
 import { Backdrop } from '../scene/Backdrop';
@@ -6,12 +6,9 @@ import { AeroWindow } from '../ui/AeroWindow';
 import { Taskbar } from '../ui/Taskbar';
 import { routeHref, useHashRoute, type Route } from './useHashRoute';
 import { AuthPage } from '../features/community/AuthPage';
-import { ExplorePage } from '../features/community/ExplorePage';
-import { MyIslandPage, VisitIslandPage } from '../features/community/IslandPages';
 import { AccountPanel } from '../features/community/AccountPanel';
 import { useSession } from '../persistence/session';
 import { sceneBridge } from '../engine/sceneBridge';
-import { AvatarEditor } from '../features/avatar/AvatarEditor';
 import { Veil } from '../ui/Veil';
 import { veil } from '../ui/veilStore';
 
@@ -36,52 +33,39 @@ function Cuenta() {
 
 const WorldPage = lazy(() => import('../features/world/WorldPage').then((m) => ({ default: m.WorldPage })));
 const ArcadePage = lazy(() => import('../features/arcade/ArcadePage').then((m) => ({ default: m.ArcadePage })));
-
-function Channel({ href, label, hint, tone, onClick }: { href: string; label: string; hint: string; tone: 'isla' | 'info' | 'inicio' | 'mundo' | 'explorar' | 'cuenta' | 'personaje'; onClick?: () => void }) {
-  return (
-    <a className={`channel channel--${tone}`} href={href} onClick={onClick}>
-      <span className="channel__art" aria-hidden="true">
-        <span className="channel__glyph" />
-      </span>
-      <span className="channel__label">{label}</span>
-      <span className="channel__hint">{hint}</span>
-    </a>
-  );
-}
+const AvatarEditor = lazy(() => import('../features/avatar/AvatarEditor').then((m) => ({ default: m.AvatarEditor })));
+const ExplorePage = lazy(() => import('../features/community/ExplorePage').then((m) => ({ default: m.ExplorePage })));
+const MyIslandPage = lazy(() => import('../features/community/IslandPages').then((m) => ({ default: m.MyIslandPage })));
+const VisitIslandPage = lazy(() => import('../features/community/IslandPages').then((m) => ({ default: m.VisitIslandPage })));
+const LoadingRoute = ({ text }: { text: string }) => <p className="scene-view__msg" role="status">{text}</p>;
 
 function Inicio() {
   const session = useSession();
-  const play = () => {
-    sfx.click();
-    if (music.wantsMusic()) void music.play();
-  };
+  if (session.status === 'cargando') return <div className="app"><Backdrop /><main className="main"><p className="scene-view__msg" role="status">preparando tu archipiélago...</p></main></div>;
+  const signed = session.status === 'con-sesion';
   return (
-    <AeroWindow className="win-welcome" title="bienvenido a frutiger aero islands" icon={<span className="mini-orb" />}>
-      <div className="welcome">
-        <p className="eyebrow">una isla de vidrio y agua</p>
-        <h1 id="titulo-vista" className="welcome__title" tabIndex={-1} data-vista-titulo>
-          frutiger aero islands
-        </h1>
-        <p className="lead">decora tu propia isla con palmeras, cristales y pabellones sobre un lago luminoso. revienta burbujas, atrapa peces saltarines y sube de nivel.</p>
-        <nav className="channels" aria-label="canales">
-          <Channel href={routeHref('isla')} label="mi isla" hint="jugar ahora" tone="isla" onClick={play} />
-          <Channel href={routeHref('mundo')} label="mundo" hint="ver el planeta" tone="mundo" />
-          <Channel href={routeHref('personaje')} label="personaje" hint="cara, pelo y ropa" tone="personaje" />
-          <Channel href={routeHref('explorar')} label="explorar" hint="ver islas" tone="explorar" />
-          <Channel href={routeHref('auth')} label={session.status === 'con-sesion' ? 'mi cuenta' : 'cuenta'} hint={session.status === 'con-sesion' ? (session.username ? `@${session.username}` : 'sesión iniciada') : 'entrar o crear'} tone="cuenta" />
-          <Channel href={routeHref('introduccion')} label="cómo se juega" hint="introducción" tone="info" />
+    <div className={`landing${signed ? ' landing--member' : ''}`}>
+      <div className="landing__sky" aria-hidden="true"><i /><i /><i /></div>
+      <section className="landing__copy" aria-labelledby="titulo-vista">
+        <p className="landing__eyebrow">frutiger aero islands · online</p>
+        <h1 id="titulo-vista" tabIndex={-1} data-vista-titulo>{signed ? 'tu isla está lista.' : 'un mundo de islas, hecho por personas.'}</h1>
+        <p>{signed ? `vuelve a ${session.username ? `@${session.username}` : 'tu isla'} y continúa donde lo dejaste.` : 'crea una cuenta para diseñar tu isla, guardar cada objeto y visitar a otros jugadores.'}</p>
+        <nav className="landing__actions" aria-label={signed ? 'continuar jugando' : 'empezar'}>
+          {signed ? <><a className="vista-button vista-button--primary" href={routeHref('isla')} onClick={() => { sfx.click(); if (music.wantsMusic()) void music.play(); }}>continuar en mi isla</a><a className="landing__text-link" href={routeHref('mundo')}>ir al mundo</a></> : <><a className="vista-button vista-button--primary" href={routeHref('auth')}>crear cuenta o entrar</a><a className="landing__text-link" href={routeHref('introduccion')}>cómo funciona</a></>}
         </nav>
-        <p className="welcome__note">modo local: tu isla se guarda en este dispositivo.</p>
-      </div>
-    </AeroWindow>
+        <p className="landing__trust">guardado en tu cuenta · visitas públicas · progreso sincronizado</p>
+      </section>
+      <aside className="landing__signal" aria-label="estado de la comunidad">
+        <span className="mini-orb" aria-hidden="true" />
+        <strong>{signed ? 'conectado' : 'acceso protegido'}</strong>
+        <small>{signed ? 'tu progreso se guarda en la nube' : 'inicia sesión para entrar al archipiélago'}</small>
+      </aside>
+    </div>
   );
 }
 
 function Introduccion() {
-  const play = () => {
-    sfx.click();
-    if (music.wantsMusic()) void music.play();
-  };
+  const session = useSession();
   return (
     <AeroWindow className="win-welcome" title="cómo se juega" icon={<span className="mini-orb mini-orb--green" />}>
       <div className="welcome">
@@ -99,28 +83,24 @@ function Introduccion() {
             <strong>sube de nivel.</strong> la variedad y la armonía entre objetos cercanos suben el encanto; cada nivel desbloquea decoraciones nuevas.
           </li>
         </ol>
-        <ul className="status-list">
-          <li>
-            <span className="status-list__tag">listo</span>
-            <span>isla jugable, editor y guardado en este dispositivo</span>
-          </li>
-          <li>
-            <span className="status-list__tag status-list__tag--pendiente">pendiente</span>
-            <span>cuentas, guardado en la nube y visitas entre islas</span>
-          </li>
-        </ul>
-        <nav className="channels" aria-label="canales">
-          <Channel href={routeHref('isla')} label="mi isla" hint="jugar ahora" tone="isla" onClick={play} />
-          <Channel href={routeHref('inicio')} label="bienvenida" hint="volver" tone="inicio" />
-        </nav>
+        <p className="welcome__note">tu isla, avatar y decoraciones pertenecen a tu cuenta. cada modificación se guarda en la nube.</p>
+        <nav className="intro-actions" aria-label="siguientes pasos"><a className="vista-button vista-button--primary" href={routeHref(session.status === 'con-sesion' ? 'isla' : 'auth')}>{session.status === 'con-sesion' ? 'ir a mi isla' : 'crear cuenta o entrar'}</a><a className="landing__text-link" href={routeHref('inicio')}>volver</a></nav>
       </div>
     </AeroWindow>
   );
 }
 
+function AccessGate({ children }: { children: ReactNode }) {
+  const session = useSession();
+  if (session.status === 'con-sesion') return <>{children}</>;
+  if (session.status === 'cargando') return <p className="scene-view__msg" role="status">comprobando tu cuenta...</p>;
+  return <div className="app"><Backdrop /><main className="main"><section className="access-gate" aria-labelledby="access-title"><span className="mini-orb" aria-hidden="true" /><p>archipiélago online</p><h1 id="access-title">entra para jugar</h1><span>tu isla, personaje y progreso están ligados a una cuenta.</span><a className="vista-button vista-button--primary" href={routeHref('auth')}>crear cuenta o entrar</a><a className="landing__text-link" href={routeHref('inicio')}>volver a la bienvenida</a></section></main></div>;
+}
+
 function Routes() {
   const routeState = useHashRoute();
   const route = routeState.route;
+  const session = useSession();
   const primera = useRef(true);
 
   useEffect(() => music.armFirstGesture(), []);
@@ -128,6 +108,10 @@ function Routes() {
   /* transición: velo de cristal al abrir la isla o el mundo; la escena lo retira cuando está lista */
   const prevRoute = useRef<Route | null>(null);
   useEffect(() => {
+    if (session.status !== 'con-sesion') {
+      veil.hide();
+      return;
+    }
     const before = prevRoute.current;
     prevRoute.current = route;
     if (before === route) return;
@@ -145,7 +129,7 @@ function Routes() {
       timer = window.setTimeout(() => veil.hide(), 200);
     }
     return () => window.clearTimeout(timer);
-  }, [route]);
+  }, [route, session.status]);
 
   useEffect(() => {
     document.title = TITULOS[route];
@@ -156,24 +140,20 @@ function Routes() {
     document.querySelector<HTMLElement>('[data-vista-titulo]')?.focus();
   }, [route]);
 
-  if (route === 'auth') return <div className="app"><Backdrop /><main className="main"><Cuenta /></main><Taskbar /></div>;
-  if (route === 'personaje') return <div className="app"><Backdrop /><main className="main"><AvatarEditor /></main><Taskbar /></div>;
-  if (route === 'arcade') return <Suspense fallback={<p className="scene-view__msg" role="status">abriendo el arcade...</p>}><ArcadePage onExit={() => { window.location.hash = routeHref('mundo'); }} /></Suspense>;
-  if (route === 'explorar') return <div className="app"><Backdrop /><main className="main"><ExplorePage /></main><Taskbar /></div>;
-  if (route === 'visita' && routeState.username) return <VisitIslandPage username={routeState.username} />;
+  if (route === 'auth') return <div className="app"><Backdrop /><main className="main"><Cuenta /></main>{session.status === 'con-sesion' && <Taskbar />}</div>;
+  if (route === 'personaje') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text="abriendo el personaje..." />}><AvatarEditor /></Suspense></main><Taskbar /></div></AccessGate>;
+  if (route === 'arcade') return <AccessGate><Suspense fallback={<p className="scene-view__msg" role="status">abriendo el arcade...</p>}><ArcadePage onExit={() => { window.location.hash = routeHref('mundo'); }} /></Suspense></AccessGate>;
+  if (route === 'explorar') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text="buscando islas..." />}><ExplorePage /></Suspense></main><Taskbar /></div></AccessGate>;
+  if (route === 'visita' && routeState.username) return <AccessGate><Suspense fallback={<LoadingRoute text="visitando isla..." />}><VisitIslandPage username={routeState.username} /></Suspense></AccessGate>;
   if (route === 'mundo') {
     return (
-      <Suspense fallback={<p className="scene-view__msg" role="status">preparando el mundo...</p>}>
-        <WorldPage />
-      </Suspense>
+      <AccessGate><Suspense fallback={<p className="scene-view__msg" role="status">preparando el mundo...</p>}><WorldPage /></Suspense></AccessGate>
     );
   }
 
   if (route === 'isla') {
     return (
-      <Suspense fallback={<p className="scene-view__msg" role="status">cargando la isla...</p>}>
-        <MyIslandPage />
-      </Suspense>
+      <AccessGate><Suspense fallback={<LoadingRoute text="cargando la isla..." />}><MyIslandPage /></Suspense></AccessGate>
     );
   }
 
@@ -181,7 +161,7 @@ function Routes() {
     <div className="app">
       <Backdrop />
       <main className="main">{route === 'inicio' ? <Inicio /> : <Introduccion />}</main>
-      <Taskbar />
+      {session.status === 'con-sesion' && <Taskbar />}
     </div>
   );
 }
