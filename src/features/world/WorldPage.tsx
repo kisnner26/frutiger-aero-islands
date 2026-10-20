@@ -319,7 +319,15 @@ export function WorldPage() {
               <small>nadie ha construido aquí todavía. elige este país en tu perfil y sé el primero de la zona.</small>
             )}
             <div className="world-country__actions">
-              <button type="button" className="vista-button vista-button--primary" onClick={() => exploreCountry(focusedCountry.code)}>{mode === 'dentro' ? 'ir a la zona' : 'explorar la zona'}</button>
+              {mode === 'lejos' ? (
+                <button type="button" className="vista-button vista-button--primary" onClick={() => exploreCountry(focusedCountry.code)}>explorar la zona</button>
+              ) : focusedCountryPlayers.length > 0 ? (
+                <button type="button" className="vista-button vista-button--primary" onClick={() => { const first = focusedCountryPlayers[0]; setCountryFocus(null); sceneRef.current?.select(first.id); setSelectedId(first.id); sceneRef.current?.focus(first.id, 2.4); }}>
+                  ver {focusedCountryPlayers.length === 1 ? 'la isla' : 'las islas'}
+                </button>
+              ) : (
+                <button type="button" className="vista-button vista-button--primary" onClick={() => sceneRef.current?.zoomBy(1.7)}>acercar más</button>
+              )}
               {focusedCountry.code !== country && <button type="button" className="vista-button" onClick={() => { countryStore.set(focusedCountry.code); void syncCountry(); }}>vivo aquí</button>}
             </div>
           </div>
