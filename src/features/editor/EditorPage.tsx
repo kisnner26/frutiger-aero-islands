@@ -15,6 +15,8 @@ import { AeroWindow } from '../../ui/AeroWindow';
 import { Balloon } from '../../ui/Balloon';
 import { Taskbar } from '../../ui/Taskbar';
 import { ExploreMode } from '../explore/ExploreMode';
+import { VistaSidebar } from './VistaSidebar';
+import { LeaderboardPanel } from '../world/LeaderboardPanel';
 import { useExclusiveWindows } from '../../ui/useExclusiveWindows';
 import { Prologue, prologueSeen } from '../../story/Prologue';
 import { MissionsPanel } from '../../story/MissionsPanel';
@@ -67,6 +69,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
   const [placing, setPlacing] = useState<string | null>(null);
   const [exploring, setExploring] = useState(false);
   const [missionsOpen, setMissionsOpen] = useState(false);
+  const [rankOpen, setRankOpen] = useState(false);
   const [prologue, setPrologue] = useState(() => editable && !prologueSeen());
   useEffect(() => void restorationStore.refresh(), []);
   const [floats, setFloats] = useState<Float[]>([]);
@@ -277,13 +280,14 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
   const patchWin = (key: 'catalog' | 'objects' | 'workshop' | 'daily', v: Partial<{ open: boolean; min: boolean }>) => setWin((w) => ({ ...w, [key]: { ...w[key], ...v } }));
 
   useExclusiveWindows(
-    { catalogo: win.catalog.open && !win.catalog.min, objetos: win.objects.open && !win.objects.min, laboratorio: win.workshop.open && !win.workshop.min, marea: win.daily.open && !win.daily.min, misiones: missionsOpen },
+    { catalogo: win.catalog.open && !win.catalog.min, objetos: win.objects.open && !win.objects.min, laboratorio: win.workshop.open && !win.workshop.min, marea: win.daily.open && !win.daily.min, misiones: missionsOpen, ranking: rankOpen },
     {
       catalogo: () => setWin((w) => ({ ...w, catalog: { ...w.catalog, min: true } })),
       objetos: () => setWin((w) => ({ ...w, objects: { ...w.objects, min: true } })),
       laboratorio: () => setWin((w) => ({ ...w, workshop: { ...w.workshop, min: true } })),
       marea: () => setWin((w) => ({ ...w, daily: { ...w.daily, min: true } })),
       misiones: () => setMissionsOpen(false),
+      ranking: () => setRankOpen(false),
     },
   );
 
@@ -383,6 +387,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
         tasks={[
           { id: 'catalog', label: 'decoraciones', icon: <span className="mini-orb" />, active: win.catalog.open && !win.catalog.min, onClick: () => toggleWin('catalog') },
           { id: 'missions', label: 'misiones', icon: <span className="mini-orb" />, active: missionsOpen, onClick: () => setMissionsOpen((v) => !v) },
+          { id: 'ranking', label: 'ranking', icon: <span className="mini-orb" />, active: rankOpen, onClick: () => setRankOpen((v) => !v) },
           { id: 'explore', label: 'caminar', icon: <span className="mini-orb mini-orb--green" />, active: exploring, onClick: () => setExploring(true) },
           {
             id: 'mundo',
@@ -405,6 +410,12 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
           <MissionsPanel ctx={{ objects: doc.objects, level: doc.maxLevel, country, visitedWorld: worldVisit.get() }} />
         </AeroWindow>
       )}
+      {rankOpen && (
+        <AeroWindow className="win-leader" title="ranking · top 100" icon={orbIcon} onClose={() => setRankOpen(false)}>
+          <LeaderboardPanel />
+        </AeroWindow>
+      )}
+      {editable && !exploring && <VistaSidebar mission={mission ? `${mission.mission.text} (${mission.value}/${mission.mission.goal})` : null} />}
       {exploring && <ExploreMode objects={doc.objects} level={doc.maxLevel} avatar={avatar} onExit={() => setExploring(false)} />}
       <CameraOverlay />
       {editable && <CountryGate />}

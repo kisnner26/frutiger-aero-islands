@@ -44,7 +44,7 @@ function StartMenu({ onClose }: { onClose: () => void }) {
   const current = parseHash(window.location.hash).route;
   const loggedIn = session.status === 'con-sesion';
   const who = loggedIn ? (session.username ? `@${session.username}` : session.email ?? 'sesión iniciada') : 'invitado';
-  const link = (route: 'isla' | 'mundo' | 'explorar' | 'inicio' | 'introduccion' | 'personaje', ico: string, title: string, hint: string, onClick?: () => void) => (
+  const link = (route: 'isla' | 'mundo' | 'explorar' | 'inicio' | 'introduccion' | 'personaje' | 'ranking', ico: string, title: string, hint: string, onClick?: () => void) => (
     <a role="menuitem" className="start-menu__item" href={routeHref(route)} aria-current={current === route ? 'page' : undefined} onClick={() => { onClick?.(); onClose(); }}>
       <span className={`start-menu__ico start-menu__ico--${ico}`} aria-hidden="true" />
       <span>
@@ -73,6 +73,7 @@ function StartMenu({ onClose }: { onClose: () => void }) {
           })}
           {link('personaje', 'personaje', 'mi personaje', 'cara, pelo y ropa')}
           {link('explorar', 'explorar', 'explorar', 'islas de la comunidad')}
+          {link('ranking', 'info', 'ranking', 'top 100 de jugadores')}
           {link('inicio', 'inicio', 'bienvenida', 'pantalla de inicio')}
           {link('introduccion', 'info', 'cómo se juega', 'introducción')}
         </div>

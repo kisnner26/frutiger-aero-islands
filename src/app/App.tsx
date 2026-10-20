@@ -22,6 +22,7 @@ const TITULOS: Record<Route, string> = {
   personaje: 'mi personaje | frutiger aero islands',
   arcade: 'arcade | frutiger aero islands',
   reglas: 'reglas y privacidad | frutiger aero islands',
+  ranking: 'ranking | frutiger aero islands',
   isla: 'tu isla | frutiger aero islands',
   auth: 'cuenta | frutiger aero islands',
   explorar: 'explorar | frutiger aero islands',
@@ -36,6 +37,7 @@ function Cuenta() {
 }
 
 const WorldPage = lazy(() => import('../features/world/WorldPage').then((m) => ({ default: m.WorldPage })));
+const RankingPage = lazy(() => import('../features/world/RankingPage').then((m) => ({ default: m.RankingPage })));
 const RulesPage = lazy(() => import('../features/legal/RulesPage').then((m) => ({ default: m.RulesPage })));
 const ArcadePage = lazy(() => import('../features/arcade/ArcadePage').then((m) => ({ default: m.ArcadePage })));
 const AvatarEditor = lazy(() => import('../features/avatar/AvatarEditor').then((m) => ({ default: m.AvatarEditor })));
@@ -157,6 +159,7 @@ function Routes() {
     document.querySelector<HTMLElement>('[data-vista-titulo]')?.focus();
   }, [route]);
 
+  if (route === 'ranking') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text="abriendo el ranking..." />}><RankingPage /></Suspense></main><Taskbar /></div></AccessGate>;
   if (route === 'reglas') return <div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text="abriendo las reglas..." />}><RulesPage /></Suspense></main></div>;
   if (route === 'auth') return <div className="app"><Backdrop /><main className="main"><Cuenta /></main>{session.status === 'con-sesion' && <Taskbar />}</div>;
   if (route === 'personaje') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text="abriendo el personaje..." />}><AvatarEditor /></Suspense></main><Taskbar /></div></AccessGate>;

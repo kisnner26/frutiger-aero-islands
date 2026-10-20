@@ -15,6 +15,8 @@ export function LeaderboardPanel() {
   const [rows, setRows] = useState<LeaderRow[] | null>(null);
   const [mine, setMine] = useState<MyRank | null>(null);
   const [failed, setFailed] = useState(false);
+  const [query, setQuery] = useState('');
+  const [sort, setSort] = useState<'puesto' | 'jugador' | 'puntos'>('puesto');
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -27,11 +29,27 @@ export function LeaderboardPanel() {
     };
   }, [period, session.status]);
 
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const list = (rows ?? []).filter((r) => !q || r.username.includes(q) || (findCountry(r.country)?.name ?? '').includes(q));
+    if (sort === 'jugador') return [...list].sort((a, b) => a.username.localeCompare(b.username));
+    if (sort === 'puntos') return [...list].sort((a, b) => b.score - a.score || a.rank - b.rank);
+    return list;
+  }, [rows, query, sort]);
+
   const myRow = useMemo(() => rows?.find((r) => r.username === session.username) ?? null, [rows, session.username]);
 
   if (!isSupabaseConfigured) return <p className="leader__empty">el ranking aparece cuando hay comunidad conectada.</p>;
   return (
     <div className="leader">
+      <div className="vista-addr" aria-label="ubicación">
+        <span className="vista-addr__back" aria-hidden="true">‹</span>
+        <span className="vista-addr__path"><span>mundo</span><i aria-hidden="true">›</i><span>ranking</span><i aria-hidden="true">›</i><strong>{period === 'semana' ? 'esta semana' : 'de siempre'}</strong></span>
+        <label className="vista-search">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5.2" /><path d="M12 12 L17 17" /></svg>
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="buscar" aria-label="buscar jugador o país" />
+        </label>
+      </div>
       <nav className="leader__tabs" role="tablist" aria-label="periodo del ranking">
         {(['semana', 'siempre'] as Period[]).map((p) => (
           <button key={p} type="button" role="tab" aria-selected={period === p} className={period === p ? 'is-active' : ''} onClick={() => setPeriod(p)}>
@@ -44,8 +62,16 @@ export function LeaderboardPanel() {
       {failed && <p className="leader__empty" role="alert">no se pudo cargar el ranking. vuelve a intentarlo en un momento.</p>}
       {rows && rows.length === 0 && !failed && <p className="leader__empty">todavía nadie suma puntos. restaura una zona o reclama una parcela y serás el primero.</p>}
       {rows && rows.length > 0 && (
+        <div className="leader__cols" role="row">
+          <button type="button" className={sort === 'puesto' ? 'is-sorted' : ''} onClick={() => setSort('puesto')}>puesto</button>
+          <button type="button" className={sort === 'jugador' ? 'is-sorted' : ''} onClick={() => setSort('jugador')}>jugador</button>
+          <button type="button" className={sort === 'puntos' ? 'is-sorted' : ''} onClick={() => setSort('puntos')}>puntos</button>
+        </div>
+      )}
+      {rows && rows.length > 0 && shown.length === 0 && <p className="leader__empty">no hay resultados para "{query}".</p>}
+      {rows && rows.length > 0 && (
         <ol className="leader__list">
-          {rows.map((r) => {
+          {shown.map((r) => {
             const me = r.username === session.username;
             const country = findCountry(r.country);
             return (

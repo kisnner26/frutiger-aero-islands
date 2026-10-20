@@ -3,6 +3,7 @@ import { routeHref } from '../../app/useHashRoute';
 import { deleteMyAccount } from '../../persistence/safety';
 import { signOut, type SessionInfo } from '../../persistence/session';
 import { AeroWindow } from '../../ui/AeroWindow';
+import { UacDialog } from '../../ui/UacDialog';
 import '../legal/legal.css';
 import { findCountry } from '../../world/countries';
 import { useCountry } from '../../world/country';
@@ -64,10 +65,14 @@ export function AccountPanel({ session }: { session: SessionInfo }) {
           )}
         </p>
         {deleting && session.username && (
-          <form
-            className="account__delete"
-            onSubmit={async (e) => {
-              e.preventDefault();
+          <UacDialog
+            title="control de cuentas de usuario"
+            action="¿quieres permitir que este programa borre tu cuenta?"
+            allowLabel="borrar para siempre"
+            allowDisabled={confirmText !== session.username}
+            busy={busy}
+            onCancel={() => { setDeleting(false); setConfirmText(''); setDeleteError(''); }}
+            onAllow={async () => {
               setBusy(true);
               setDeleteError('');
               try {
@@ -80,11 +85,10 @@ export function AccountPanel({ session }: { session: SessionInfo }) {
               }
             }}
           >
-            <p>esto borra tu isla, tu personaje y tus puntos para siempre. para confirmar escribe <strong>{session.username}</strong>.</p>
+            <p>programa: frutiger aero islands · editor: tú. esto borra tu isla, tu personaje y tus puntos para siempre. para continuar escribe <strong>{session.username}</strong>.</p>
             <input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} autoComplete="off" aria-label="escribe tu usuario para confirmar" />
             {deleteError && <p role="alert">{deleteError}</p>}
-            <button className="vista-button" disabled={busy || confirmText !== session.username}>borrar para siempre</button>
-          </form>
+          </UacDialog>
         )}
       </section>
       <CountryGate forceOpen={changeCountry} onClose={() => setChangeCountry(false)} />

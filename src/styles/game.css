@@ -811,3 +811,32 @@
 .leader__me { margin: 0; padding: 8px 12px; border-radius: 10px; background: #e4f7ff; font-size: 12px; font-weight: 800; }
 @media (max-width: 680px) { .win-leader { top: auto; bottom: 64px; } .leader__list li { grid-template-columns: 26px 22px 1fr 44px; } .leader__list small { display: none; } }
 @media (max-width: 680px) { .world-controls[data-card="1"] { display: none; } }
+
+/* ranking al estilo explorador de windows vista: barra de ubicación, búsqueda y columnas */
+.vista-addr { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border: 1px solid #9ec2d6; border-radius: 6px; background: linear-gradient(180deg, #fff, #eaf5fb); }
+.vista-addr__back { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #7fc8ec 60%, #2a8ac8); color: #fff; font-weight: 900; box-shadow: 0 1px 3px rgba(0,60,110,.4); }
+.vista-addr__path { flex: 1; display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: #0a5a90; overflow: hidden; white-space: nowrap; }
+.vista-addr__path i { font-style: normal; color: #7aa5be; } .vista-addr__path strong { color: #073d67; }
+.vista-search { display: flex; align-items: center; gap: 4px; width: 118px; padding: 2px 8px; border: 1px solid #9ec2d6; border-radius: 4px; background: #fff; }
+.vista-search svg { width: 14px; height: 14px; flex: none; fill: none; stroke: #5a8fb0; stroke-width: 2; stroke-linecap: round; }
+.vista-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: none; color: #073d67; font: 700 12px var(--fuente, inherit); }
+.leader__cols { display: grid; grid-template-columns: 62px 1fr 56px; border: 1px solid #b8d4e4; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, #fbfeff, #dcecf5); }
+.leader__cols button { padding: 5px 8px; border: 0; border-right: 1px solid #c4d9e5; background: none; color: #335d78; font: 800 11px var(--fuente, inherit); text-align: left; cursor: pointer; }
+.leader__cols button.is-sorted { background: linear-gradient(180deg, #e6f4fc, #c4e2f2); color: #073d67; }
+.win-ranking-page { width: min(560px, calc(100vw - 24px)); margin: 24px auto 90px; }
+.win-ranking-page .leader { max-height: calc(100svh - 190px); }
+@media (max-width: 680px) { .vista-search { width: 84px; } }
+
+/* barra lateral de windows vista */
+.vsb { position: fixed; z-index: 14; right: 0; top: 150px; display: none; align-items: flex-start; }
+@media (min-width: 1180px) { .vsb { display: flex; } }
+.vsb__tab { width: 22px; height: 56px; margin-top: 8px; border: 1px solid rgba(255,255,255,.8); border-right: 0; border-radius: 10px 0 0 10px; background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(150,210,240,.7)); color: #0a5a90; font: 900 16px var(--fuente, inherit); cursor: pointer; }
+.vsb__body { display: grid; gap: 8px; width: 188px; padding: 8px; border-radius: 0 0 0 14px; background: linear-gradient(180deg, rgba(20,80,140,.5), rgba(10,50,100,.55)); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.45); border-right: 0; }
+.vsb__gadget { display: grid; gap: 4px; padding: 8px 10px; border-radius: 10px; background: linear-gradient(180deg, rgba(255,255,255,.88), rgba(205,232,246,.8)); color: #073d67; box-shadow: inset 0 1px #fff; }
+.vsb__gadget h3 { margin: 0; font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: #2a7ba8; }
+.vsb__gadget strong { font-size: 13px; } .vsb__gadget small { font-size: 11px; font-weight: 700; color: #52758d; line-height: 1.35; }
+.vsb__gadget a { color: #0a6aa6; font-size: 11px; font-weight: 800; }
+.vsb__gadget ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; } .vsb__gadget li { display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; }
+.vsb__clock { width: 112px; margin: 0 auto; filter: drop-shadow(0 3px 5px rgba(0,60,100,.3)); }
+.vsb__bar { display: block; height: 7px; overflow: hidden; border-radius: 999px; background: #c9dde6; } .vsb__bar b { display: block; height: 100%; background: linear-gradient(90deg, #6a9aa8, #8adf58 60%, #3ab9dc); }
+.vsb.is-closed .vsb__tab { border-radius: 10px 0 0 10px; }
