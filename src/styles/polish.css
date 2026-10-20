@@ -584,3 +584,11 @@
 .landing__copy { padding-block: clamp(26px, 4vw, 44px); }
 .landing h1 { font-size: clamp(46px, 6.5vw, 76px); }
 @media (min-width: 651px) { .landing__copy { padding-left: clamp(40px, 7vw, 84px); } }
+/* portada: mismo diseño, solo equilibrado (contenido centrado en la tarjeta, estado abajo al centro). */
+.landing { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+.landing__copy { justify-items: center; padding-inline: clamp(24px, 6vw, 64px); }
+.landing h1 { max-width: none; }
+.landing__actions { justify-content: center; }
+.landing__signal { justify-self: center; align-self: end; margin: 0 0 20px; }
+.landing::before { right: 50%; transform: translateX(50%); }
+@media (max-width: 650px) { .landing__signal { position: static; margin: 0 0 18px; } }
