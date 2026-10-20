@@ -78,7 +78,7 @@ export class SeaTraffic {
 
   constructor(tex: { velero: Texture; delfin: Texture }) {
     const specs: Array<[Boat['kind'], number, number, number, number]> = [
-      ['velero', 560, 0.045, 0.4, 82], ['velero', 700, -0.032, 3.1, 66], ['delfin', 640, 0.11, 4.2, 56], ['delfin', 470, -0.09, 5.5, 46],
+      ['velero', 560, 0.045, 0.4, 56], ['velero', 700, -0.032, 3.1, 46], ['delfin', 640, 0.11, 4.2, 42], ['delfin', 470, -0.09, 5.5, 34],
     ];
     for (const [kind, r, speed, a, size] of specs) {
       const sprite = new Sprite(tex[kind]);

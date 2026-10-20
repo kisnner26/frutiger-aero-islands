@@ -11,6 +11,7 @@ import { BASIN_RADIUS, DEFAULT_WORLD_CAMERA, clampWorldCamera, screenToWorld, wo
 import type { WorldIsland } from '../world/archipelago';
 import type { WorldView } from '../world/worldState';
 import { COUNTRIES } from '../world/countries';
+import { ALL_CELLS, CELL, cellAt, cellCenter, cellKey, ownerColor, type CellInfo } from '../world/territory';
 import { countryAnchor } from '../world/geoProjection';
 import type { Globe3D } from './Globe3D';
 import { OrbitalAccents, SeaTraffic } from './worldExtras';
@@ -22,6 +23,7 @@ export interface WorldCallbacks {
   onView(view: WorldView): void;
   onMode(mode: 'lejos' | 'dentro'): void;
   onCountry(code: string): void;
+  onCell?(cx: number, cy: number): void;
 }
 
 const MINI = 0.3;
@@ -69,6 +71,11 @@ export class WorldScene {
   private accents = new OrbitalAccents();
   private traffic: SeaTraffic | null = null;
   private globe: Globe3D | null = null;
+  private territory = new Graphics();
+  private cells = new Map<string, CellInfo>();
+  private myName: string | null = null;
+  private mapMode = false;
+  private pickedCell: { cx: number; cy: number } | null = null;
   private pinCode: string | null = null;
   private interior = new Container();
   private inner = new Container();
@@ -179,7 +186,7 @@ export class WorldScene {
     this.caustics.alpha = 0.13;
     this.caustics.tileScale.set(1.8);
     this.islandLayer.sortableChildren = true;
-    this.inner.addChild(this.basin, this.caustics, this.under, this.routes, this.countryMarkers, this.islandLayer, this.overlay);
+    this.inner.addChild(this.basin, this.caustics, this.under, this.routes, this.territory, this.countryMarkers, this.islandLayer, this.overlay);
     this.frame.anchor.set(0.5);
     this.interior.addChild(this.inner, this.frame);
     this.interior.mask = this.mask;
@@ -390,6 +397,65 @@ export class WorldScene {
     if (this.app) {
       this.app.ticker.stop();
       this.app.destroy(true, { children: true });
+    }
+  }
+
+  /* ---------- territorio ---------- */
+
+  setTerritory(cells: Map<string, CellInfo>, myName: string | null) {
+    this.cells = cells;
+    this.myName = myName;
+    this.drawTerritory();
+    const done = [...cells.values()].reduce((a, c) => a + c.progress, 0);
+    this.globe?.setRestoration(done / (ALL_CELLS.length * 100));
+  }
+
+  setMapMode(on: boolean) {
+    this.mapMode = on;
+    if (!on) this.pickedCell = null;
+    this.drawTerritory();
+    this.renderNow();
+  }
+
+  selectCell(cell: { cx: number; cy: number } | null) {
+    this.pickedCell = cell;
+    this.drawTerritory();
+    this.renderNow();
+  }
+
+  private drawTerritory() {
+    const g = this.territory;
+    g.clear();
+    const now = Date.now();
+    for (const { cx, cy } of ALL_CELLS) {
+      const info = this.cells.get(cellKey(cx, cy));
+      const { x, y } = cellCenter(cx, cy);
+      const h = CELL / 2;
+      const progress = info?.progress ?? 0;
+      // zona fea: bruma gris y tejado de grietas; se desvanece al restaurarla
+      const damage = 1 - progress / 100;
+      if (damage > 0) {
+        g.rect(x - h, y - h, CELL, CELL).fill({ color: 0x7d858c, alpha: 0.46 * damage });
+        if (damage > 0.5) {
+          g.moveTo(x - h * 0.7, y - h * 0.2).lineTo(x - h * 0.1, y + h * 0.1).lineTo(x + h * 0.2, y - h * 0.35).lineTo(x + h * 0.7, y + h * 0.15).stroke({ width: 1.6, color: 0x4a4f55, alpha: 0.35 * damage });
+          g.moveTo(x - h * 0.3, y + h * 0.6).lineTo(x + h * 0.1, y + h * 0.25).stroke({ width: 1.4, color: 0x4a4f55, alpha: 0.3 * damage });
+        }
+      } else {
+        g.circle(x - h * 0.45, y - h * 0.4, 2.4).fill({ color: 0xffffff, alpha: 0.9 });
+        g.circle(x + h * 0.5, y + h * 0.3, 1.8).fill({ color: 0xd8fbff, alpha: 0.9 });
+      }
+      if (info?.owner) {
+        const mine = info.owner === this.myName;
+        const color = ownerColor(info.owner);
+        g.rect(x - h + 2, y - h + 2, CELL - 4, CELL - 4).fill({ color, alpha: 0.28 }).stroke({ width: mine ? 4 : 2.5, color: mine ? 0xffffff : color, alpha: mine ? 0.95 : 0.85 });
+        if (info.shieldUntil > now) g.rect(x - h + 7, y - h + 7, CELL - 14, CELL - 14).stroke({ width: 2, color: 0xffffff, alpha: 0.7 });
+      } else if (this.mapMode) {
+        g.rect(x - h, y - h, CELL, CELL).stroke({ width: 1, color: 0xffffff, alpha: 0.22 });
+      }
+    }
+    if (this.pickedCell) {
+      const { x, y } = cellCenter(this.pickedCell.cx, this.pickedCell.cy);
+      g.rect(x - CELL / 2, y - CELL / 2, CELL, CELL).stroke({ width: 5, color: 0xffd23a, alpha: 1 });
     }
   }
 
@@ -687,6 +753,17 @@ export class WorldScene {
     const d = this.drag;
     this.drag = null;
     if (this.target === 0) return;
+    if (d && !d.moved && this.t >= 0.95 && this.mapMode) {
+      const w = screenToWorld(p, this.cam, this.vp());
+      const cell = cellAt(w.x, w.y);
+      if (cell) {
+        this.pickedCell = cell;
+        this.drawTerritory();
+        this.cb.onCell?.(cell.cx, cell.cy);
+        this.renderNow();
+      }
+      return;
+    }
     if (d && !d.moved && this.t >= 0.95) {
       const id = this.islandAt(p);
       if (id) {

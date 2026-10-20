@@ -32,7 +32,7 @@ export function WorldView({ islands, initial, callbacks, controlRef }: Props) {
     setStatus('cargando');
     WorldScene.create(
       host,
-      { onSelect: (id) => cbRef.current.onSelect(id), onView: (v) => cbRef.current.onView(v), onMode: (m) => cbRef.current.onMode(m), onCountry: (code) => cbRef.current.onCountry(code) },
+      { onSelect: (id) => cbRef.current.onSelect(id), onView: (v) => cbRef.current.onView(v), onMode: (m) => cbRef.current.onMode(m), onCountry: (code) => cbRef.current.onCountry(code), onCell: (cx, cy) => cbRef.current.onCell?.(cx, cy) },
       mq.matches,
       islands,
       initialRef.current,

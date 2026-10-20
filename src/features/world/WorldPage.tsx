@@ -15,6 +15,8 @@ import { listWorldIslands, type RealIsland } from '../../persistence/world';
 import { buildArchipelago, loadMine } from '../../world/archipelago';
 import { findCountry, searchCountries } from '../../world/countries';
 import { countryAnchor } from '../../world/geoProjection';
+import { TerritoryPanel, useTerritory } from './TerritoryPanel';
+import type { CellRef } from '../../world/territory';
 import { COUNTRY_FACTS } from '../../world/countryFacts';
 import { countryStore, useCountry } from '../../world/country';
 import { CountryGate } from '../../world/CountryPicker';
@@ -92,6 +94,10 @@ export function WorldPage() {
   const [expOpen, setExpOpen] = useState(false);
   const [gadgetsOpen, setGadgetsOpen] = useState(false);
   const [atlasOpen, setAtlasOpen] = useState(false);
+  const [conquestOpen, setConquestOpen] = useState(false);
+  const [pickedCell, setPickedCell] = useState<CellRef | null>(null);
+  const territory = useTerritory(sceneRef, conquestOpen);
+  if (import.meta.env.DEV) (window as unknown as { __world?: unknown }).__world = sceneRef; // solo para pruebas en desarrollo
   const [atlasQuery, setAtlasQuery] = useState('');
   const [countryFocus, setCountryFocus] = useState<string | null>(null);
   const selected = islands.find((i) => i.id === selectedId) ?? null;
@@ -138,6 +144,7 @@ export function WorldPage() {
       onView: (v: ViewState) => saveWorldView(v),
       onMode: (m: 'lejos' | 'dentro') => setMode(m),
       onCountry: (code: string) => setCountryFocus(code),
+      onCell: (cx: number, cy: number) => setPickedCell({ cx, cy }),
     }),
     [],
   );
@@ -225,6 +232,7 @@ export function WorldPage() {
         {loaded && (
           <p className="world-hud__note">
             {others.length === 0 ? 'aún no hay otros exploradores. comparte el enlace y sé de los primeros.' : `${others.length + 1} islas de jugadores reales`}
+            {territory.restoration ? ` · planeta restaurado ${territory.restoration.percent.toFixed(territory.restoration.percent < 10 ? 1 : 0)}%` : ''}
           </p>
         )}
       </header>
@@ -270,6 +278,11 @@ export function WorldPage() {
       {gadgetsOpen && (
         <AeroWindow className="win-world-list" title="gadgets" icon={<span className="mini-orb mini-orb--green" />} onClose={() => setGadgetsOpen(false)}>
           <GadgetsPanel level={mine.current.level} onUse={useGadget} />
+        </AeroWindow>
+      )}
+      {conquestOpen && (
+        <AeroWindow className="win-territory" title="conquista y restauración" icon={<span className="mini-orb mini-orb--green" />} onClose={() => { setConquestOpen(false); setPickedCell(null); sceneRef.current?.selectCell(null); }}>
+          <TerritoryPanel sceneRef={sceneRef} data={territory} picked={pickedCell} />
         </AeroWindow>
       )}
       {atlasOpen && (
@@ -379,7 +392,7 @@ export function WorldPage() {
         )}
       </nav>
 
-      <Taskbar tasks={[{ id: 'islas', label: 'islas', icon: <span className="mini-orb mini-orb--green" />, active: listOpen, onClick: () => setListOpen((v) => !v) }, { id: 'atlas', label: 'atlas', icon: <span className="mini-orb mini-orb--globe" />, active: atlasOpen, onClick: () => setAtlasOpen((v) => !v) },
+      <Taskbar tasks={[{ id: 'islas', label: 'islas', icon: <span className="mini-orb mini-orb--green" />, active: listOpen, onClick: () => setListOpen((v) => !v) }, { id: 'conquista', label: 'conquista', icon: <span className="mini-orb mini-orb--green" />, active: conquestOpen, onClick: () => { if (!conquestOpen && sceneRef.current?.mode === 'lejos') sceneRef.current.enter(); setConquestOpen((v) => !v); } }, { id: 'atlas', label: 'atlas', icon: <span className="mini-orb mini-orb--globe" />, active: atlasOpen, onClick: () => setAtlasOpen((v) => !v) },
         ...(isSupabaseConfigured ? [{ id: 'exp', label: 'expediciones', icon: <span className="mini-orb" />, active: expOpen, onClick: () => setExpOpen((v) => !v) }, { id: 'gadgets', label: 'gadgets', icon: <span className="mini-orb mini-orb--green" />, active: gadgetsOpen, onClick: () => setGadgetsOpen((v) => !v) }] : [])]} />
     </div>
   );

@@ -761,3 +761,34 @@
 .world-controls__wide { min-height: 36px; padding: 0 16px; border: 1px solid rgba(255,255,255,.9); border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(150,215,240,.75)); color: #0a5a90; font: 900 12px var(--fuente, inherit); cursor: pointer; box-shadow: inset 0 1px #fff, 0 4px 10px rgba(0,80,140,.25); }
 .world-controls__wide:disabled { opacity: .5; cursor: default; }
 @media (max-width: 680px) { .world-controls { bottom: 62px; left: 8px; transform: scale(.88); transform-origin: bottom left; } }
+
+/* conquista y restauración del mundo */
+.win-territory { position: absolute; z-index: 26; right: 14px; top: 96px; width: min(380px, calc(100vw - 28px)); max-height: calc(100svh - 170px); }
+.territory { display: grid; gap: 10px; padding: 12px; color: #073d67; overflow: auto; max-height: calc(100svh - 230px); }
+.territory__sum { display: grid; gap: 6px; padding: 10px 12px; border-radius: 12px; background: linear-gradient(135deg, #f4ffff, #cfeefa); border: 1px solid rgba(104,174,207,.45); }
+.territory__sum strong, .territory__cellhead strong { font-size: 13px; display: block; }
+.territory__sum small, .territory__cellhead small, .territory__why, .territory__me small { color: #52758d; font-size: 11px; font-weight: 700; }
+.territory__sum i, .territory__bar { display: block; height: 8px; overflow: hidden; border-radius: 999px; background: #c9dde6; }
+.territory__sum i b, .territory__bar b { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #6a7a84, #8adf58 60%, #3ab9dc); }
+.territory__me { display: flex; align-items: center; gap: 10px; }
+.territory__dots { display: flex; gap: 5px; }
+.territory__dots i { width: 16px; height: 16px; border-radius: 50%; background: #c4d6de; border: 1px solid #fff; box-shadow: inset 0 1px 2px rgba(0,60,100,.25); }
+.territory__dots i.is-on { background: radial-gradient(circle at 35% 30%, #fff, #ffe27a 45%, #f2a418); box-shadow: 0 0 8px rgba(255,200,60,.7); }
+.territory__cell { display: grid; gap: 7px; padding: 10px 12px; border-radius: 12px; background: linear-gradient(135deg, #ffffff, #dff3fb); border: 1px solid rgba(104,174,207,.5); }
+.territory__cellhead { display: flex; align-items: center; gap: 10px; }
+.territory__state { margin: 0; font-size: 12px; font-weight: 800; }
+.territory__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.territory__empty { margin: 0; color: #52758d; font-size: 12px; font-weight: 700; }
+.territory__msg { margin: 0; padding: 7px 10px; border-radius: 9px; background: #e4fbe0; color: #1f6a28; font-size: 12px; font-weight: 800; }
+.territory__msg.is-error { background: #fde6e3; color: #9a3326; }
+.territory__tabs { display: flex; gap: 5px; overflow-x: auto; }
+.territory__tabs button { flex: none; min-height: 28px; padding: 0 12px; border: 1px solid #87bdd9; border-radius: 999px; background: #fff; color: #0a5a90; font: 800 11px var(--fuente, inherit); cursor: pointer; text-transform: capitalize; }
+.territory__tabs button.is-active { background: linear-gradient(180deg, #7fdcff, #1d9ad8); color: #fff; border-color: #fff; }
+.territory__list { list-style: none; display: grid; gap: 6px; margin: 0; padding: 0; }
+.territory__list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.72); border: 1px solid rgba(104,174,207,.35); }
+.territory__list li > div { flex: 1; display: grid; gap: 4px; }
+.territory__list strong { font-size: 12px; } .territory__list small { color: #52758d; font-size: 11px; font-weight: 700; }
+.territory__list em { font-style: normal; font-weight: 900; font-size: 13px; color: #0a6aa6; }
+.territory__list--rank li { justify-content: flex-start; } .territory__list--rank li strong { flex: 1; }
+.territory__list--rank li span { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: #dff3fb; font-size: 11px; font-weight: 900; }
+@media (max-width: 680px) { .win-territory { top: auto; bottom: 64px; right: 10px; max-height: 62svh; } .territory { max-height: calc(62svh - 60px); } }
