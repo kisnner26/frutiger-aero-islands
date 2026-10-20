@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { completeProfile, isSupabaseConfigured, readableSupabaseError, supabase } from '../../persistence/supabase';
-import { AeroWindow } from '../../ui/AeroWindow';
 import { routeHref } from '../../app/useHashRoute';
 import './auth.css';
+import './login.css';
 
 type AuthMode = 'entrar' | 'registro' | 'recuperar';
 
 const usernameOk = (value: string) => /^[a-z][a-z0-9_]{2,23}$/.test(value);
 const copy: Record<AuthMode, { title: string; description: string; action: string }> = {
-  entrar: { title: 'abre tu isla', description: 'tu mundo, tus recuerdos y tus visitas te estaban esperando.', action: 'conectar' },
-  registro: { title: 'registra tu isla', description: 'elige un usuario para que otros exploradores puedan encontrarte.', action: 'crear cuenta' },
-  recuperar: { title: 'recupera tu señal', description: 'mandaremos una llave de acceso a tu buzón.', action: 'enviar llave' },
+  entrar: { title: 'bienvenido de vuelta', description: 'tu isla, tus recuerdos y tus visitas te esperan.', action: 'conectar' },
+  registro: { title: 'empieza tu isla', description: 'elige un nombre público para que otros exploradores te encuentren.', action: 'crear mi cuenta' },
+  recuperar: { title: 'recupera tu acceso', description: 'te enviaremos una llave segura a tu correo.', action: 'enviar llave' },
 };
 
 export function AuthPage() {
@@ -36,30 +36,93 @@ export function AuthPage() {
     } catch (error) { setStatus({ text: readableSupabaseError(error), error: true }); } finally { setBusy(false); }
   };
 
-  return <AeroWindow className="win-auth auth-window" title="centro de conexión" icon={<span className="mini-orb" />}>
-    <section className="auth-vista" aria-labelledby="titulo-vista">
-      <aside className="auth-vista__rail">
-        <div className="auth-vista__brand"><span className="auth-vista__orb" aria-hidden="true" /><span>frutiger aero<br /><b>islands</b></span></div>
-        <p className="auth-vista__caption">centro personal</p>
-        <nav className="auth-vista__nav" aria-label="cuenta">
-          <button type="button" className={mode === 'entrar' ? 'is-active' : ''} onClick={() => chooseMode('entrar')}><i aria-hidden="true">⌁</i><span>conectar<br /><small>abrir mi isla</small></span></button>
-          <button type="button" className={mode === 'registro' ? 'is-active' : ''} onClick={() => chooseMode('registro')}><i aria-hidden="true">+</i><span>nueva isla<br /><small>crear cuenta</small></span></button>
-          <button type="button" className={mode === 'recuperar' ? 'is-active' : ''} onClick={() => chooseMode('recuperar')}><i aria-hidden="true">?</i><span>ayuda de acceso<br /><small>recuperar señal</small></span></button>
-        </nav>
-        <div className="auth-vista__signal"><i /><i /><i /><span>red de islas<br />en línea</span></div>
-      </aside>
+  const icon = (d: string) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d={d} />
+    </svg>
+  );
+  const modes: Array<{ id: AuthMode; label: string }> = [
+    { id: 'entrar', label: 'conectar' },
+    { id: 'registro', label: 'crear cuenta' },
+    { id: 'recuperar', label: 'ayuda' },
+  ];
 
-      <form className="auth-vista__main" onSubmit={submit}>
-        <header className="auth-vista__header"><div><p>island id</p><h1 id="titulo-vista" tabIndex={-1}>{text.title}</h1><span>{text.description}</span></div><div className="auth-vista__device" aria-hidden="true"><b>islandberry</b><i /><em>● ● ●</em></div></header>
-        <div className="auth-vista__divider" />
-        {!isSupabaseConfigured && <p className="auth-vista__status auth-vista__status--error" role="alert">la red de cuentas no está configurada.</p>}
-        {mode === 'registro' && <label><span>nombre público de tu isla</span><input required minLength={3} maxLength={24} value={username} onChange={(event) => setUsername(event.target.value.toLowerCase())} placeholder="ejemplo_isla" autoCapitalize="none" autoComplete="username" /><small>otros jugadores te verán como @{username || 'tu_isla'}</small></label>}
-        <label><span>dirección de correo</span><input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@correo.com" autoComplete="email" /></label>
-        {mode !== 'recuperar' && <label><span>clave privada</span><input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="••••••••" autoComplete={mode === 'registro' ? 'new-password' : 'current-password'} /></label>}
-        {status && <p className={`auth-vista__status${status.error ? ' auth-vista__status--error' : ''}`} role={status.error ? 'alert' : 'status'}>{status.text}</p>}
-        <div className="auth-vista__actions"><button className="auth-vista__submit" disabled={!isSupabaseConfigured || busy}><span>{busy ? 'sincronizando...' : text.action}</span><i aria-hidden="true">›</i></button>{mode === 'entrar' && <button type="button" className="auth-vista__link" onClick={() => chooseMode('recuperar')}>olvidé mi clave</button>}</div>
-        <footer className="auth-vista__footer"><span>conexión segura · mundo compartido</span><a href={routeHref('inicio')}>volver a la bienvenida</a></footer>
-      </form>
-    </section>
-  </AeroWindow>;
+  return (
+    <div className="logon">
+      <section className="logon__card" aria-labelledby="titulo-vista">
+        <div className="logon__avatar" aria-hidden="true">
+          <span className="logon__ring" />
+          <svg viewBox="0 0 64 64">
+            <circle cx="32" cy="23" r="11" />
+            <path d="M10 56 Q10 38 32 38 Q54 38 54 56Z" />
+          </svg>
+        </div>
+        <p className="logon__brand">frutiger aero islands</p>
+        <h1 id="titulo-vista" tabIndex={-1}>
+          {text.title}
+        </h1>
+        <p className="logon__lead">{text.description}</p>
+
+        <div className="logon__tabs" role="tablist" aria-label="opciones de cuenta">
+          {modes.map((m) => (
+            <button key={m.id} type="button" role="tab" aria-selected={mode === m.id} className={mode === m.id ? 'is-active' : ''} onClick={() => chooseMode(m.id)}>
+              {m.label}
+            </button>
+          ))}
+        </div>
+
+        <form className="logon__form" onSubmit={submit}>
+          {!isSupabaseConfigured && (
+            <p className="logon__status logon__status--error" role="alert">
+              la red de cuentas no está configurada.
+            </p>
+          )}
+          {mode === 'registro' && (
+            <label className="logon__field">
+              <span>nombre público de tu isla</span>
+              <div>
+                {icon('M12 12a4 4 0 100-8 4 4 0 000 8zM4 21q0-7 8-7t8 7')}
+                <input required minLength={3} maxLength={24} value={username} onChange={(event) => setUsername(event.target.value.toLowerCase())} placeholder="ejemplo_isla" autoCapitalize="none" autoComplete="username" />
+              </div>
+              <small>otros jugadores te verán como @{username || 'tu_isla'}</small>
+            </label>
+          )}
+          <label className="logon__field">
+            <span>correo</span>
+            <div>
+              {icon('M3 6h18v12H3zM3 7l9 7 9-7')}
+              <input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@correo.com" autoComplete="email" />
+            </div>
+          </label>
+          {mode !== 'recuperar' && (
+            <label className="logon__field">
+              <span>{mode === 'registro' ? 'crea una clave' : 'clave'}</span>
+              <div>
+                {icon('M6 11h12v9H6zM8.5 11V8a3.500 3.500 0 017 0v3')}
+                <input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="mínimo 8 caracteres" autoComplete={mode === 'registro' ? 'new-password' : 'current-password'} />
+              </div>
+            </label>
+          )}
+          {status && (
+            <p className={`logon__status${status.error ? ' logon__status--error' : ''}`} role={status.error ? 'alert' : 'status'}>
+              {status.text}
+            </p>
+          )}
+          <button className="logon__submit" disabled={!isSupabaseConfigured || busy}>
+            <span>{busy ? 'conectando...' : text.action}</span>
+            <i aria-hidden="true">›</i>
+          </button>
+        </form>
+
+        <p className="logon__foot">
+          {mode === 'entrar' && (
+            <button type="button" onClick={() => chooseMode('recuperar')}>
+              olvidé mi clave
+            </button>
+          )}
+          <a href={routeHref('inicio')}>volver a la bienvenida</a>
+        </p>
+      </section>
+    </div>
+  );
 }
