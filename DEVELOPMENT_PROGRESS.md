@@ -65,7 +65,7 @@ solicitud del usuario: seguir creando el juego, que sea entretenido y fácil de 
 - rendimiento medido: 150 objetos, 60 fps de rAF y ticker de pixi en ~63 fps, 1100 × 712 css px con dpr 2, apple m1, navegador chromium del app. es un portátil, no un móvil; no se afirma rendimiento móvil real. la generación del dibujo inicial (suelo ~440 ms, fondo ~120 ms, 8 texturas ~30 ms cada una) bloquea el hilo principal unos 0,8 s al abrir el juego por primera vez; el suelo se cachea después.
 
 **no verificado / limitaciones**
-- la pista suena en el navegador del app, pero no se evaluó volumen ni transiciones; su licencia es desconocida y no debe publicarse (véase docs/ASSETS.md).
+- la pista suena en el navegador del app, pero no se evaluó volumen ni transiciones; su licencia es desconocida; el autor decidió publicarla y quedó en el repositorio (véase docs/ASSETS.md).
 - no se probó tacto real ni gestos de dos dedos en dispositivo (solo código y emulación); no se recorrió todo con tab; contraste solo a ojo.
 - el estilo lápiz es procedural (no ilustración a mano): se acerca al boceto de referencia pero no iguala su realismo; las decoraciones son pequeñas para el tamaño de la isla en móvil.
 - no existen todavía: pruebas e2e, cuentas, guardado remoto, comunidad ni despliegue (paquetes 04 a 08). la nota "listo/pendiente" de la página de introducción lo refleja.
@@ -94,7 +94,7 @@ solicitud del usuario: llevar el juego "lo más frutiger aero posible" con las a
 - sin pruebas en dispositivo táctil real, ni lectores de pantalla, ni recorrido completo con tab; contraste a ojo.
 - el pez saltarín, la mariposa y los efectos de sonido se programaron pero no se capturaron en acción (son aleatorios); sonido no comprobado de oído.
 - las decoraciones siguen siendo ilustración procedural con grano de lápiz; la palmera se ve algo densa.
-- la pista mp3 sigue sin licencia verificada y no debe publicarse (véase docs/ASSETS.md). **antes de compartir el enlace en facebook hay que quitarla del despliegue o sustituirla.**
+- la pista mp3 no tiene licencia verificada por este proyecto; el autor decidió publicarla (commit de codex). si hay una reclamación, `VITE_EXCLUIR_AUDIO_PERSONAL=1` la retira del artefacto.
 
 **para el lanzamiento en el grupo de facebook (decisiones del usuario necesarias)**
 - hoy cada persona solo tiene su isla en su propio dispositivo: no hay cuentas, guardado en la nube, galería ni visitas. el usuario espera usuarios desde el primer día, así que los paquetes 04 a 08 (supabase, cuentas, comunidad, calidad, despliegue) son el camino crítico. hace falta que el usuario cree el proyecto de supabase (url y clave pública) y decida el nombre del repositorio de pages.
@@ -123,6 +123,47 @@ alcance: solo navegación visual; **no hay comunidad conectada** ni otros jugado
 - la lista de islas, la selección y la tarjeta funcionan por teclado, pero no se probó con lector de pantalla ni en dispositivo táctil real.
 - "mi isla" se lee del borrador local; cuando exista la isla remota habrá que alimentar el mundo desde el repositorio de la comunidad.
 - coordinación: otra sesión está añadiendo comunidad (auth, explorar, visitas) en este mismo directorio. su `MyIslandPage` redirigía a `#/auth` sin supabase configurado; se restauró el modo local (una línea en src/features/community/IslandPages.tsx) porque el contrato del paquete 05 exige mantener el juego local sin variables. conviene que esa sesión lo confirme.
+
+## radio y teléfono aero (primera entrega de los cinco sistemas)
+
+alcance de esta entrega: **solo la radio** (con el teléfono mínimo que la aloja). recuerdos, concursos pequeños, rutas de mascotas y visitas con huella **no están implementados**: dependen de piezas que no existen (cámara, mascotas, expansiones, backend desplegado). la auditoría, dependencias, contratos y orden están en docs/INTEGRATION_PLAN.md.
+
+**qué funciona**
+- motor único de radio con web audio (src/audio/radio): 3 emisoras (acuático, jardín, noche) × 3 piezas generativas originales con título y autor, 4 ambientes (lluvia, olas, aves, burbujas), volumen, nivel de ambiente, fundido cruzado al cambiar, estado de interrupción y de error, preferencias recordadas.
+- sin reproducción automática: la primera vez solo suena tras pulsar reproducir; con consentimiento previo se reanuda con el primer gesto; al pausar se retira el consentimiento. cambia de vista sin cortarse.
+- `music.ts` ahora es una fachada del motor: el menú de inicio y el altavoz de la bandeja controlan el mismo reproductor (sin versiones paralelas). la pista personal mp3 sigue disponible como emisora opcional por el mismo motor y se elimina del artefacto de compilación.
+- teléfono aero (botón en la bandeja): cuerpo retro propio, pantalla grande, controles de 44 px o más; hoy aloja solo la radio.
+
+**verificado**
+- typecheck, build y 39 pruebas correctas; `dist/` no contiene audio.
+- chrome real, 1440 × 900, 390 × 844 y movimiento reducido: sin contexto de audio antes del gesto; reproducir deja el contexto en running y el analizador mide señal; ambientes, cambio de emisora y de pieza; recarga sin sonido; reanudación con consentimiento previo; pausa borra el consentimiento; sin scroll horizontal ni errores; ningún control del teléfono menor de 44 px (salvo deslizadores, cuya pista mide 44 px de alto).
+- no se escuchó con altavoces reales; solo se midió señal. sin pruebas en safari/ios ni dispositivos táctiles.
+
+**pendiente de esta línea**: aplicación cámara y álbum; el personaje que saca el teléfono (no existe).
+
+## cámara y álbum local (siguiente entrega de los cinco sistemas)
+
+**qué funciona**
+- cámara (teléfono → cámara → abrir cámara): oculta la interfaz, permite encuadrar (arrastre) y acercar (0,5–2,5), muestra la fotografía antes de guardarla y solo la conserva si la persona lo decide. la captura es real: fondo del lago más capas de pixi, sin controles html ni marcas de edición (src/engine/IslandScene.ts `capture()`).
+- álbum: línea de tiempo por día, tipo, hora, descripción y origen "solo en este dispositivo"; abrir, descargar, compartir (hoja del navegador con alternativa) y eliminar con confirmación. estado vacío útil. límites: 40 recuerdos, 14 mb, 900 kb por foto (jpeg 1280 px, calidad 0,82). indexeddb.
+- recuerdo de creación de la isla: se registra al instante con la fecha real y, cuando la escena está lista, se le añade la captura; una sola vez (atómico, sin duplicados ni siquiera con el doble montaje de desarrollo). los recuerdos de expansión, mascota y concurso, y la comparación antes/después, **no existen** porque esos sistemas no existen.
+- documentación: docs/CAMARA_ALBUM.md.
+
+**verificado en chrome (escritorio y móvil, flujo completo)**: abrir cámara, interfaz oculta, zoom, vista previa 1280 × 800 (escritorio) y 390 × 844 (móvil), conservar, descartar (no guarda), salir, álbum con 2 recuerdos, recarga (persisten), confirmación, cancelar (no borra), eliminar; controles de la cámara de al menos 44 px; sin errores de consola. 8 pruebas del almacén y sus límites (fake-indexeddb). fallo encontrado y corregido: el recuerdo de creación se duplicaba y no recibía su foto con el doble montaje.
+
+## país, zona en el mundo y banderas
+
+véase docs/WORLD_COUNTRIES.md. selector de país con búsqueda y banderas (137 países), la isla se ubica en la zona de su país dentro del mundo (mapa interior con continentes), bandera ondeante plantada en la isla del juego, en cada isla del mundo y en el HUD. migración sql de país escrita **sin aplicar**; sincronización remota **sin verificar con backend real**. capacidad de la cuenca: decenas de islas (no escala a miles sin vista jerárquica).
+
+## pulido de transiciones, menús y flujos
+
+- velo de cristal al abrir la isla/mundo y al volver (burbuja de cristal, ondas y peces; mínimo 0,75 s, se retira cuando la escena está lista, máximo 9 s) y acercamiento suave de la cámara al entrar; entradas escalonadas de la interfaz; con movimiento reducido solo hay fundidos.
+- menús: botones de cristal unificados (primarios azules), menú de inicio con cabecera (usuario, bandera), dos columnas, pie simétrico y página actual marcada; portada centrada con canales 3 + 2 simétricos y glifos con sentido (cuenta = persona, explorar = lupa); catálogo, barras y cabeceras centrados.
+- flujos con lógica (docs/FLUJOS.md): con sesión, "cuenta" muestra la cuenta (usuario, país, ir a mi isla, ver el mundo, cerrar sesión) en vez de pedir entrar otra vez; portada y menú de inicio reflejan la sesión; con cuenta el mundo muestra la isla guardada en la nube; el país del perfil manda tras iniciar sesión.
+- **no verificado con una cuenta real** (no hay credenciales de prueba): la comprobación se hizo con una sesión ficticia que solo existe en desarrollo (`localStorage dev-sesion`, excluida de las compilaciones de producción).
+
+## coordinación con la otra sesión
+el directorio lo comparte otra sesión que mantiene comunidad y cuentas (AuthPage, IslandPages, supabase). cambios míos en archivos suyos: IslandPages.tsx (modo local sin supabase), App.tsx (rutas, velo, canales) y un envoltorio `Cuenta` que decide entre el formulario y el panel; no toqué AuthPage.tsx ni supabase.ts.
 
 ## pendiente
 
