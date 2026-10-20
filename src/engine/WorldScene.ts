@@ -9,11 +9,14 @@ import { K, TILT, project } from './projection';
 import { BASIN_RADIUS, DEFAULT_WORLD_CAMERA, clampWorldCamera, screenToWorld, worldFit, zoomWorldAt, type WorldCamera } from '../world/worldCamera';
 import type { WorldIsland } from '../world/archipelago';
 import type { WorldView } from '../world/worldState';
+import { COUNTRIES } from '../world/countries';
+import { countryAnchor } from '../world/geoProjection';
 
 export interface WorldCallbacks {
   onSelect(id: string | null): void;
   onView(view: WorldView): void;
   onMode(mode: 'lejos' | 'dentro'): void;
+  onCountry(code: string): void;
 }
 
 const MINI = 0.3;
@@ -65,6 +68,7 @@ export class WorldScene {
   private caustics!: TilingSprite;
   private under = new Container();
   private routes = new Graphics();
+  private countryMarkers = new Graphics();
   private islandLayer = new Container();
   private overlay = new Container();
   private frame = new Sprite();
@@ -146,13 +150,14 @@ export class WorldScene {
     this.caustics.alpha = 0.13;
     this.caustics.tileScale.set(1.8);
     this.islandLayer.sortableChildren = true;
-    this.inner.addChild(this.basin, this.caustics, this.under, this.routes, this.islandLayer, this.overlay);
+    this.inner.addChild(this.basin, this.caustics, this.under, this.routes, this.countryMarkers, this.islandLayer, this.overlay);
     this.frame.anchor.set(0.5);
     this.interior.addChild(this.inner, this.frame);
     this.interior.mask = this.mask;
     app.stage.addChild(this.sky, this.far, this.interior, this.mask);
     this.sky.anchor.set(0);
 
+    this.buildCountryMarkers();
     this.buildIslands(islands);
     this.buildRoutes();
     this.buildLife();
@@ -182,6 +187,15 @@ export class WorldScene {
   }
 
   /* ---------- construcción ---------- */
+
+  /** puntos de entrada del atlas: se dibujan en una sola capa para no crear cientos de nodos DOM o sprites. */
+  private buildCountryMarkers() {
+    for (const country of COUNTRIES) {
+      const point = countryAnchor(country.code);
+      this.countryMarkers.circle(point.x, point.y, 7).fill({ color: 0xd8fbff, alpha: 0.8 });
+      this.countryMarkers.circle(point.x, point.y, 11).stroke({ width: 2, color: 0x319ed0, alpha: 0.68 });
+    }
+  }
 
   private buildIslands(islands: WorldIsland[]) {
     for (const data of islands) {
@@ -376,6 +390,10 @@ export class WorldScene {
     this.moveCamera({ cx: n.data.x, cy: n.data.y, zoom });
   }
 
+  focusPoint(x: number, y: number, zoom = 1.65) {
+    this.moveCamera({ cx: x, cy: y, zoom });
+  }
+
   zoomBy(factor: number) {
     const vp = this.vp();
     this.cam = zoomWorldAt(this.cam, vp, { x: vp.width / 2, y: vp.height / 2 }, this.cam.zoom * factor);
@@ -541,6 +559,18 @@ export class WorldScene {
     return Math.hypot(p.x - w / 2, p.y - h / 2) <= r;
   }
 
+  private countryAt(p: { x: number; y: number }): string | null {
+    const world = screenToWorld(p, this.cam, this.vp());
+    const hitRadius = Math.max(34, 28 / (worldFit(this.vp()) * this.cam.zoom));
+    let nearest: { code: string; distance: number } | null = null;
+    for (const country of COUNTRIES) {
+      const point = countryAnchor(country.code);
+      const distance = Math.hypot(world.x - point.x, world.y - point.y);
+      if (distance <= hitRadius && (!nearest || distance < nearest.distance)) nearest = { code: country.code, distance };
+    }
+    return nearest?.code ?? null;
+  }
+
   private islandAt(p: { x: number; y: number }): string | null {
     const wp = screenToWorld(p, this.cam, this.vp());
     let best: { id: string; y: number } | null = null;
@@ -570,7 +600,7 @@ export class WorldScene {
   private onMove(e: PointerEvent) {
     const p = this.local(e);
     if (!this.pointers.has(e.pointerId)) {
-      this.app.canvas.style.cursor = this.target === 0 ? (this.planetHit(p) ? 'pointer' : 'default') : this.islandAt(p) ? 'pointer' : 'grab';
+      this.app.canvas.style.cursor = this.target === 0 ? (this.planetHit(p) ? 'pointer' : 'default') : this.islandAt(p) || this.countryAt(p) ? 'pointer' : 'grab';
       return;
     }
     this.pointers.set(e.pointerId, p);
@@ -610,11 +640,23 @@ export class WorldScene {
     }
     if (d && !d.moved && this.t >= 0.95) {
       const id = this.islandAt(p);
-      this.selectedId = id;
-      this.cb.onSelect(id);
-      this.updateRings();
-      this.emitView();
-      this.renderNow();
+      if (id) {
+        this.selectedId = id;
+        this.cb.onSelect(id);
+        this.updateRings();
+        this.emitView();
+        this.renderNow();
+        return;
+      }
+      const country = this.countryAt(p);
+      if (country) this.cb.onCountry(country);
+      else {
+        this.selectedId = null;
+        this.cb.onSelect(null);
+        this.updateRings();
+        this.emitView();
+        this.renderNow();
+      }
     }
   }
 }

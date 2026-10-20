@@ -20,7 +20,7 @@ interface Row {
 }
 
 /** islas de jugadores reales (cuentas con perfil e isla), de la más antigua a la más reciente. no se inventa ninguna. */
-export async function listWorldIslands(limit = 80): Promise<RealIsland[]> {
+export async function listWorldIslands(limit = 32): Promise<RealIsland[]> {
   if (!supabase) return [];
   const query = (cols: string) => supabase!.from('profiles').select(cols).limit(limit);
   let res = await query('username,display_name,country_code,islands!inner(id,layout,created_at)');

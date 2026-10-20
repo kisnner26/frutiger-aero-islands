@@ -13,7 +13,8 @@ import { syncCountry } from '../../persistence/country';
 import { isSupabaseConfigured, myIsland } from '../../persistence/supabase';
 import { listWorldIslands, type RealIsland } from '../../persistence/world';
 import { buildArchipelago, loadMine } from '../../world/archipelago';
-import { findCountry } from '../../world/countries';
+import { findCountry, searchCountries } from '../../world/countries';
+import { countryAnchor } from '../../world/geoProjection';
 import { countryStore, useCountry } from '../../world/country';
 import { CountryGate } from '../../world/CountryPicker';
 import { FlagBadge } from '../../world/FlagBadge';
@@ -46,29 +47,25 @@ export function WorldPage() {
   if (initial.current === null) {
     const saved = loadWorldView();
     const me = buildArchipelago(mine.current, [], countryStore.get()).find((i) => i.id === 'mia');
-    initial.current = saved ?? { mode: 'lejos', cx: me?.x ?? 0, cy: me?.y ?? 0, zoom: 1, selectedId: null };
+    initial.current = saved?.mode === 'dentro' ? saved : { mode: 'dentro', cx: me?.x ?? 0, cy: me?.y ?? 0, zoom: 1, selectedId: null };
   }
   const [changeCountry, setChangeCountry] = useState(false);
   useEffect(() => {
     void syncCountry();
     if (!isSupabaseConfigured) return;
     let alive = true;
-    // con cuenta, mi isla en el mundo es la guardada en la nube, no el borrador del dispositivo
-    let myName: string | null = null;
-    const mineDone = myIsland()
-      .then((i) => {
-        if (!alive || !i) return;
-        myName = i.username;
-        setRemoteMineId(i.id);
-        mine.current = { objects: i.layout.objects, level: i.layout.maxLevel };
-        setRemoteMine(true);
-        setMineTick((n) => n + 1);
+    // se resuelven juntas para montar pixi una sola vez cuando llega el estado remoto.
+    Promise.all([myIsland().catch(() => null), listWorldIslands().catch(() => [])])
+      .then(([mineFromCloud, list]) => {
+        if (!alive) return;
+        if (mineFromCloud) {
+          mine.current = { objects: mineFromCloud.layout.objects, level: mineFromCloud.layout.maxLevel };
+          setRemoteMine(true);
+          setRemoteMineId(mineFromCloud.id);
+          setMineTick((n) => n + 1);
+        }
+        setOthers(list.filter((island) => island.username !== mineFromCloud?.username));
       })
-      .catch(() => undefined);
-    // solo personas registradas: las islas de otros jugadores vienen de la red, nunca se inventan
-    Promise.all([listWorldIslands(), mineDone])
-      .then(([list]) => alive && setOthers(list.filter((o) => o.username !== myName)))
-      .catch(() => undefined)
       .finally(() => alive && setLoaded(true));
     return () => {
       alive = false;
@@ -93,10 +90,22 @@ export function WorldPage() {
   const [listOpen, setListOpen] = useState(false);
   const [expOpen, setExpOpen] = useState(false);
   const [gadgetsOpen, setGadgetsOpen] = useState(false);
+  const [atlasOpen, setAtlasOpen] = useState(false);
+  const [atlasQuery, setAtlasQuery] = useState('');
+  const [countryFocus, setCountryFocus] = useState<string | null>(null);
   const selected = islands.find((i) => i.id === selectedId) ?? null;
   const forecast = useMemo(() => aeroForecast(country), [country]);
   const onlineTotal = Object.values(presence).reduce((total, count) => total + count, 0);
   const selectedOnline = selected ? (presence[selected.kind === 'mia' ? remoteMineId ?? selected.id : selected.id] ?? 0) : 0;
+  const focusedCountry = findCountry(countryFocus);
+  const focusedCountryIslands = countryFocus ? islands.filter((island) => island.country === countryFocus).length : 0;
+  const openCountry = (code: string) => {
+    const point = countryAnchor(code);
+    sceneRef.current?.enter();
+    sceneRef.current?.focusPoint(point.x, point.y);
+    setCountryFocus(code);
+    setAtlasOpen(false);
+  };
   const firstCountry = useRef(true);
   useEffect(() => {
     if (firstCountry.current) {
@@ -111,6 +120,7 @@ export function WorldPage() {
       onSelect: (id: string | null) => setSelectedId(id),
       onView: (v: ViewState) => saveWorldView(v),
       onMode: (m: 'lejos' | 'dentro') => setMode(m),
+      onCountry: (code: string) => setCountryFocus(code),
     }),
     [],
   );
@@ -186,7 +196,7 @@ export function WorldPage() {
             </a>
           )}
           <strong>mundo</strong>
-          <span className="world-hud__hint">{mode === 'lejos' ? 'toca el planeta para entrar' : 'arrastra para moverte y toca una isla'}</span>
+          <span className="world-hud__hint">{mode === 'lejos' ? 'vista exterior del planeta' : 'arrastra, usa rueda o pinza para zoom y toca un punto de país'}</span>
         </div>
         {loaded && (
           <p className="world-hud__note">
@@ -200,7 +210,7 @@ export function WorldPage() {
         <div className="world-radar__metrics"><span><b>{others.length + 1}</b> islas</span><span><b>{onlineTotal}</b> en línea</span><span><b>{Math.max(0, others.length)}</b> rutas</span></div>
         <div className="world-radar__actions">
           <button type="button" onClick={() => { sceneRef.current?.enter(); window.setTimeout(() => choose('mia'), 30); }}>mi zona</button>
-          <button type="button" onClick={() => { sceneRef.current?.enter(); setListOpen(true); }}>radar de islas</button>
+          <button type="button" onClick={() => setAtlasOpen(true)}>atlas de países</button>
           <button type="button" onClick={() => phoneBus.open('radio')}>radio</button>
         </div>
       </aside>
@@ -236,6 +246,16 @@ export function WorldPage() {
       {gadgetsOpen && (
         <AeroWindow className="win-world-list" title="gadgets" icon={<span className="mini-orb mini-orb--green" />} onClose={() => setGadgetsOpen(false)}>
           <GadgetsPanel level={mine.current.level} onUse={useGadget} />
+        </AeroWindow>
+      )}
+      {atlasOpen && (
+        <AeroWindow className="win-world-atlas" title="atlas de países" icon={<span className="mini-orb mini-orb--globe" />} onClose={() => setAtlasOpen(false)}>
+          <section className="world-atlas"><label>busca un país<input autoFocus value={atlasQuery} onChange={(event) => setAtlasQuery(event.target.value)} placeholder="nicaragua, japón, brasil..." /></label><div>{searchCountries(atlasQuery).slice(0, 18).map((entry) => <button key={entry.code} type="button" onClick={() => openCountry(entry.code)}><FlagBadge code={entry.code} width={28} /><span><strong>{entry.name}</strong><small>{islands.filter((island) => island.country === entry.code).length} islas en esta zona</small></span></button>)}</div></section>
+        </AeroWindow>
+      )}
+      {focusedCountry && mode === 'dentro' && (
+        <AeroWindow className="win-world-country" title={focusedCountry.name} icon={<FlagBadge code={focusedCountry.code} width={28} />} onClose={() => setCountryFocus(null)}>
+          <div className="world-country"><p>zona navegable del archipiélago</p><strong>{focusedCountryIslands} {focusedCountryIslands === 1 ? 'isla detectada' : 'islas detectadas'}</strong><small>usa la rueda, gestos de pinza o arrastra el mapa. los puntos azul claro abren otras zonas.</small><button type="button" className="vista-button vista-button--primary" onClick={() => { setListOpen(true); setCountryFocus(null); }}>ver islas de la zona</button></div>
         </AeroWindow>
       )}
 
@@ -282,7 +302,7 @@ export function WorldPage() {
         {selected ? `, seleccionada: ${selected.name}` : ''}
       </span>
 
-      <Taskbar tasks={[{ id: 'islas', label: 'islas', icon: <span className="mini-orb mini-orb--green" />, active: listOpen, onClick: () => setListOpen((v) => !v) },
+      <Taskbar tasks={[{ id: 'islas', label: 'islas', icon: <span className="mini-orb mini-orb--green" />, active: listOpen, onClick: () => setListOpen((v) => !v) }, { id: 'atlas', label: 'atlas', icon: <span className="mini-orb mini-orb--globe" />, active: atlasOpen, onClick: () => setAtlasOpen((v) => !v) },
         ...(isSupabaseConfigured ? [{ id: 'exp', label: 'expediciones', icon: <span className="mini-orb" />, active: expOpen, onClick: () => setExpOpen((v) => !v) }, { id: 'gadgets', label: 'gadgets', icon: <span className="mini-orb mini-orb--green" />, active: gadgetsOpen, onClick: () => setGadgetsOpen((v) => !v) }] : [])]} />
     </div>
   );
