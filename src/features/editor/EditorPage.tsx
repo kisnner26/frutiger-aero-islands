@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from 'react';
 import { sfx } from '../../audio/sfx';
 import { CATALOG, CATALOG_MAP } from '../../catalog/catalog';
 import { computeCharm, progressForLevel, LEVEL_UP_BONUS } from '../../domain/charm';
@@ -7,10 +7,17 @@ import type { IslandScene, SceneCallbacks } from '../../engine/IslandScene';
 import { SceneView } from '../../engine/SceneView';
 import { localRepository, quarantineCorrupt, type SaveResult } from '../../persistence/localDraft';
 import { Backdrop } from '../../scene/Backdrop';
+import { sceneBridge } from '../../engine/sceneBridge';
+import { addMemory, attachPhoto } from '../../memories/store';
+import { CameraOverlay } from '../camera/CameraOverlay';
+import { phoneBus } from '../phone/phoneBus';
 import { AeroWindow } from '../../ui/AeroWindow';
 import { Balloon } from '../../ui/Balloon';
 import { Taskbar } from '../../ui/Taskbar';
-import { MINE_POS } from '../../world/archipelago';
+import { minePosition } from '../../world/archipelago';
+import { CountryGate } from '../../world/CountryPicker';
+import { countryStore, useCountry } from '../../world/country';
+import { FlagBadge } from '../../world/FlagBadge';
 import { prepareFromIsland } from '../../world/worldState';
 import { createState, editorReducer, newObjectId, type Doc } from './commands';
 import { DecorationCatalog } from './DecorationCatalog';
@@ -27,6 +34,9 @@ interface Float {
 
 const COMBO_WINDOW_MS = 2500;
 
+/** evita registrar dos veces la creación de la isla en la misma carga de la página. */
+let creationStarted = false;
+
 function init(initialDoc?: Doc) {
   if (initialDoc) return { state: createState(initialDoc), recovered: false, corrupt: false };
   const res = localRepository.load();
@@ -35,7 +45,7 @@ function init(initialDoc?: Doc) {
     quarantineCorrupt();
     return { state: createState(), recovered: false, corrupt: true };
   }
-  return { state: createState(), recovered: false, corrupt: false };
+  return { state: createState(), recovered: false, corrupt: false, fresh: true };
 }
 
 export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla', saveRemote }: { initialDoc?: Doc; editable?: boolean; ownerLabel?: string; saveRemote?: (doc: Doc) => Promise<void> }) {
@@ -54,6 +64,33 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
   const comboRef = useRef({ count: 0, last: 0 });
   const floatId = useRef(0);
   const doc = state.doc;
+  const cameraOn = useSyncExternalStore(phoneBus.subscribe, phoneBus.cameraMode);
+  const country = useCountry();
+
+  /* primera visita local: el recuerdo de creación se registra al instante (con la fecha real) y la captura se añade cuando la escena está lista.
+     el trabajo no depende del ciclo de montaje: así tampoco se duplica ni se pierde con el doble montaje de desarrollo. */
+  useEffect(() => {
+    const fresh = (boot.current as { fresh?: boolean } | null)?.fresh;
+    if (!fresh || !editable || initialDoc || saveRemote || creationStarted) return;
+    creationStarted = true;
+    void (async () => {
+      try {
+        const memory = await addMemory({ kind: 'creacion', text: 'empezaste tu isla' }, { unique: true });
+        if (!memory) return;
+        for (let i = 0; i < 20 && !sceneBridge.get(); i++) await new Promise((r) => setTimeout(r, 300));
+        await new Promise((r) => setTimeout(r, 1800));
+        const scene = sceneBridge.get();
+        if (!scene) return;
+        const shot = await scene.capture();
+        if (shot) await attachPhoto(memory.id, shot.blob, shot.width, shot.height);
+      } catch {
+        /* el álbum es opcional: si falla, el juego sigue */
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => () => phoneBus.setCamera(false), []);
 
   const charm = useMemo(() => computeCharm(doc.objects, CATALOG_MAP), [doc.objects]);
   const progress = { level: doc.maxLevel, ...progressForLevel(charm, doc.maxLevel) };
@@ -201,7 +238,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
     return () => window.removeEventListener('keydown', onKey);
   }, [state.selectedId, editable]);
 
-  const sceneProps = useMemo(() => ({ objects: doc.objects, selectedId: state.selectedId, placing }), [doc.objects, state.selectedId, placing]);
+  const sceneProps = useMemo(() => ({ objects: doc.objects, selectedId: state.selectedId, placing, country: editable ? country : null }), [doc.objects, state.selectedId, placing, country, editable]);
   const saveText = saveStatus === 'cuota' ? 'sin espacio en este dispositivo' : saveStatus === 'error' || saveStatus === 'remoto-error' ? 'no se pudo guardar en la nube' : saveStatus === 'pendiente' ? 'guardando...' : saveRemote ? 'guardado en la nube' : 'guardado en este dispositivo';
   const placingItem = placing ? CATALOG_MAP.get(placing) : null;
 
@@ -217,13 +254,14 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
   const hasSel = !!selected;
 
   return (
-    <div className="game">
+    <div className={`game${cameraOn ? ' game--camera' : ''}`}>
       <Backdrop withIsland={false} />
       <SceneView scene={sceneProps} callbacks={callbacks} controlRef={sceneRef} />
 
       <header className="hud">
         <div className="hud__bar glass-panel">
           <span className="hud__avatar" aria-hidden="true" />
+          {editable && country && <FlagBadge code={country} width={40} />}
           <div className="hud__who">
             <strong>{ownerLabel}</strong>
             <span>{editable ? (saveRemote ? 'cuenta conectada' : 'modo local') : 'visita'}</span>
@@ -295,13 +333,15 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
             icon: <span className="mini-orb mini-orb--globe" />,
             active: false,
             onClick: () => {
-              prepareFromIsland(MINE_POS);
+              prepareFromIsland(minePosition(countryStore.get()));
               window.location.hash = '#/mundo';
             },
           },
           { id: 'objects', label: 'objetos', icon: <span className="mini-orb mini-orb--green" />, active: win.objects.open && !win.objects.min, onClick: () => toggleWin('objects') },
         ]}
       />
+      <CameraOverlay />
+      {editable && <CountryGate />}
       <span className="sr-only" aria-live="polite">
         {selected ? `seleccionado: ${CATALOG_MAP.get(selected.assetId)?.name}` : ''}
       </span>

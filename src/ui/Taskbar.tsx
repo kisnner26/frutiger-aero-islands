@@ -1,9 +1,14 @@
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { music } from '../audio/music';
 import { sfx } from '../audio/sfx';
 import { parseHash, routeHref } from '../app/useHashRoute';
-import { MINE_POS } from '../world/archipelago';
+import { signOut, useSession } from '../persistence/session';
+import { minePosition } from '../world/archipelago';
+import { countryStore, useCountry } from '../world/country';
+import { FlagBadge } from '../world/FlagBadge';
 import { prepareFromIsland } from '../world/worldState';
+
+const PhonePanel = lazy(() => import('../features/phone/PhonePanel'));
 
 export interface TaskItem {
   id: string;
@@ -32,59 +37,78 @@ function StartMenu({ onClose }: { onClose: () => void }) {
   const state = useSyncExternalStore(music.subscribe, music.getState);
   const volume = useSyncExternalStore(music.subscribe, music.getVolume);
   const sounds = useSyncExternalStore(sfx.subscribe, sfx.isEnabled);
+  const session = useSession();
+  const country = useCountry();
+  const current = parseHash(window.location.hash).route;
+  const loggedIn = session.status === 'con-sesion';
+  const who = loggedIn ? (session.username ? `@${session.username}` : session.email ?? 'sesión iniciada') : 'invitado';
+  const link = (route: 'isla' | 'mundo' | 'explorar' | 'inicio' | 'introduccion', ico: string, title: string, hint: string, onClick?: () => void) => (
+    <a role="menuitem" className="start-menu__item" href={routeHref(route)} aria-current={current === route ? 'page' : undefined} onClick={() => { onClick?.(); onClose(); }}>
+      <span className={`start-menu__ico start-menu__ico--${ico}`} aria-hidden="true" />
+      <span>
+        <strong>{title}</strong>
+        <small>{hint}</small>
+      </span>
+    </a>
+  );
   return (
     <div className="start-menu" role="menu" aria-label="menú de inicio">
-      <div className="start-menu__list">
-        <a role="menuitem" className="start-menu__item" href={routeHref('isla')} onClick={onClose}>
-          <span className="start-menu__ico start-menu__ico--isla" aria-hidden="true" />
-          <span>
-            <strong>mi isla</strong>
-            <small>decorar y jugar</small>
-          </span>
-        </a>
-        <a
-          role="menuitem"
-          className="start-menu__item"
-          href={routeHref('mundo')}
-          onClick={() => {
-            if (parseHash(window.location.hash).route === 'isla') prepareFromIsland(MINE_POS);
-            onClose();
-          }}
-        >
-          <span className="start-menu__ico start-menu__ico--mundo" aria-hidden="true" />
-          <span>
-            <strong>mundo</strong>
-            <small>ver el planeta y las islas</small>
-          </span>
-        </a>
-        <a role="menuitem" className="start-menu__item" href={routeHref('inicio')} onClick={onClose}>
-          <span className="start-menu__ico start-menu__ico--inicio" aria-hidden="true" />
-          <span>
-            <strong>bienvenida</strong>
-            <small>pantalla de inicio</small>
-          </span>
-        </a>
-        <a role="menuitem" className="start-menu__item" href={routeHref('introduccion')} onClick={onClose}>
-          <span className="start-menu__ico start-menu__ico--info" aria-hidden="true" />
-          <span>
-            <strong>cómo se juega</strong>
-            <small>introducción</small>
-          </span>
-        </a>
+      <header className="start-menu__head">
+        <span className="start-menu__avatar" aria-hidden="true" />
+        <span className="start-menu__who">
+          <strong>{who}</strong>
+          <small>{loggedIn ? 'sesión iniciada' : 'jugando en este dispositivo'}</small>
+        </span>
+        <FlagBadge code={country} width={34} />
+      </header>
+      <div className="start-menu__cols">
+        <div className="start-menu__list">
+          {link('isla', 'isla', 'mi isla', 'decorar y jugar')}
+          {link('mundo', 'mundo', 'mundo', 'el planeta y las islas', () => {
+            if (current === 'isla') prepareFromIsland(minePosition(countryStore.get()));
+          })}
+          {link('explorar', 'explorar', 'explorar', 'islas de la comunidad')}
+          {link('inicio', 'inicio', 'bienvenida', 'pantalla de inicio')}
+          {link('introduccion', 'info', 'cómo se juega', 'introducción')}
+        </div>
+        <div className="start-menu__side">
+          <button type="button" role="menuitemcheckbox" aria-checked={state === 'sonando'} disabled={state === 'sin-pista'} className="start-menu__toggle" onClick={() => void music.toggle()}>
+            {state === 'sin-pista' ? 'música no disponible' : state === 'sonando' ? 'pausar música' : 'reproducir música'}
+          </button>
+          <label className="start-menu__vol">
+            <span>volumen</span>
+            <input type="range" min={0} max={1} step={0.05} value={volume} onChange={(e) => music.setVolume(Number(e.target.value))} />
+          </label>
+          <button type="button" role="menuitemcheckbox" aria-checked={sounds} className="start-menu__toggle" onClick={() => sfx.setEnabled(!sounds)}>
+            {sounds ? 'silenciar efectos' : 'activar efectos'}
+          </button>
+          <p className="start-menu__note">{loggedIn ? 'tu isla se guarda en tu cuenta' : 'tu isla se guarda en este dispositivo'}</p>
+        </div>
       </div>
-      <div className="start-menu__side">
-        <button type="button" role="menuitemcheckbox" aria-checked={state === 'sonando'} disabled={state === 'sin-pista'} className="start-menu__toggle" onClick={() => void music.toggle()}>
-          {state === 'sin-pista' ? 'música: pista no disponible' : state === 'sonando' ? 'pausar música' : 'reproducir música'}
-        </button>
-        <label className="start-menu__vol">
-          <span>volumen</span>
-          <input type="range" min={0} max={1} step={0.05} value={volume} onChange={(e) => music.setVolume(Number(e.target.value))} />
-        </label>
-        <button type="button" role="menuitemcheckbox" aria-checked={sounds} className="start-menu__toggle" onClick={() => sfx.setEnabled(!sounds)}>
-          {sounds ? 'silenciar efectos' : 'activar efectos'}
-        </button>
-        <p className="start-menu__note">tu isla se guarda en este dispositivo</p>
-      </div>
+      <footer className="start-menu__foot">
+        <a role="menuitem" className="start-menu__btn" href={routeHref('auth')} onClick={onClose}>
+          {loggedIn ? 'mi cuenta' : 'entrar o crear cuenta'}
+        </a>
+        {loggedIn ? (
+          <button
+            type="button"
+            role="menuitem"
+            className="start-menu__btn"
+            onClick={() => {
+              onClose();
+              void signOut().then(() => {
+                window.location.hash = routeHref('inicio');
+              });
+            }}
+          >
+            cerrar sesión
+          </button>
+        ) : (
+          <a role="menuitem" className="start-menu__btn" href={routeHref('explorar')} onClick={onClose}>
+            ver islas
+          </a>
+        )}
+      </footer>
     </div>
   );
 }
@@ -96,6 +120,7 @@ interface Props {
 /** barra de tareas de cristal con orbe de inicio, ventanas abiertas y bandeja. */
 export function Taskbar({ tasks = [] }: Props) {
   const [open, setOpen] = useState(false);
+  const [phone, setPhone] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const state = useSyncExternalStore(music.subscribe, music.getState);
 
@@ -134,7 +159,18 @@ export function Taskbar({ tasks = [] }: Props) {
           </button>
         ))}
       </div>
+      {phone && (
+        <Suspense fallback={null}>
+          <PhonePanel onClose={() => setPhone(false)} />
+        </Suspense>
+      )}
       <div className="taskbar__tray">
+        <button type="button" className="tray-btn tray-btn--phone" aria-label="teléfono" aria-haspopup="dialog" aria-expanded={phone} onClick={() => setPhone((v) => !v)}>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="7" y="2.500" width="10" height="19" rx="2.500" />
+            <path d="M9.500 6h5M9.500 15.500h5M9.500 18h5" />
+          </svg>
+        </button>
         <button type="button" className="tray-btn" aria-label={state === 'sonando' ? 'pausar música' : 'reproducir música'} aria-pressed={state === 'sonando'} disabled={state === 'sin-pista'} onClick={() => void music.toggle()}>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 9v6h4l5 4V5L8 9H4z" />

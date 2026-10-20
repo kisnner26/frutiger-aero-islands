@@ -8,6 +8,11 @@ import { routeHref, useHashRoute, type Route } from './useHashRoute';
 import { AuthPage } from '../features/community/AuthPage';
 import { ExplorePage } from '../features/community/ExplorePage';
 import { MyIslandPage, VisitIslandPage } from '../features/community/IslandPages';
+import { AccountPanel } from '../features/community/AccountPanel';
+import { useSession } from '../persistence/session';
+import { sceneBridge } from '../engine/sceneBridge';
+import { Veil } from '../ui/Veil';
+import { veil } from '../ui/veilStore';
 
 const TITULOS: Record<Route, string> = {
   inicio: 'frutiger aero islands',
@@ -19,9 +24,16 @@ const TITULOS: Record<Route, string> = {
   visita: 'visita | frutiger aero islands',
 };
 
+/** la cuenta muestra el formulario solo si no hay sesión; con sesión muestra la cuenta. */
+function Cuenta() {
+  const session = useSession();
+  if (session.status === 'cargando') return <p className="scene-view__msg" role="status">comprobando tu sesión...</p>;
+  return session.status === 'con-sesion' ? <AccountPanel session={session} /> : <AuthPage />;
+}
+
 const WorldPage = lazy(() => import('../features/world/WorldPage').then((m) => ({ default: m.WorldPage })));
 
-function Channel({ href, label, hint, tone, onClick }: { href: string; label: string; hint: string; tone: 'isla' | 'info' | 'inicio' | 'mundo'; onClick?: () => void }) {
+function Channel({ href, label, hint, tone, onClick }: { href: string; label: string; hint: string; tone: 'isla' | 'info' | 'inicio' | 'mundo' | 'explorar' | 'cuenta'; onClick?: () => void }) {
   return (
     <a className={`channel channel--${tone}`} href={href} onClick={onClick}>
       <span className="channel__art" aria-hidden="true">
@@ -34,6 +46,7 @@ function Channel({ href, label, hint, tone, onClick }: { href: string; label: st
 }
 
 function Inicio() {
+  const session = useSession();
   const play = () => {
     sfx.click();
     if (music.wantsMusic()) void music.play();
@@ -49,8 +62,8 @@ function Inicio() {
         <nav className="channels" aria-label="canales">
           <Channel href={routeHref('isla')} label="mi isla" hint="jugar ahora" tone="isla" onClick={play} />
           <Channel href={routeHref('mundo')} label="mundo" hint="ver el planeta" tone="mundo" />
-          <Channel href={routeHref('explorar')} label="explorar" hint="ver islas" tone="info" />
-          <Channel href={routeHref('auth')} label="cuenta" hint="entrar" tone="inicio" />
+          <Channel href={routeHref('explorar')} label="explorar" hint="ver islas" tone="explorar" />
+          <Channel href={routeHref('auth')} label={session.status === 'con-sesion' ? 'mi cuenta' : 'cuenta'} hint={session.status === 'con-sesion' ? (session.username ? `@${session.username}` : 'sesión iniciada') : 'entrar o crear'} tone="cuenta" />
           <Channel href={routeHref('introduccion')} label="cómo se juega" hint="introducción" tone="info" />
         </nav>
         <p className="welcome__note">modo local: tu isla se guarda en este dispositivo.</p>
@@ -100,12 +113,34 @@ function Introduccion() {
   );
 }
 
-export function App() {
+function Routes() {
   const routeState = useHashRoute();
   const route = routeState.route;
   const primera = useRef(true);
 
   useEffect(() => music.armFirstGesture(), []);
+
+  /* transición: velo de cristal al abrir la isla o el mundo; la escena lo retira cuando está lista */
+  const prevRoute = useRef<Route | null>(null);
+  useEffect(() => {
+    const before = prevRoute.current;
+    prevRoute.current = route;
+    if (before === route) return;
+    let timer = 0;
+    if (route === 'isla') {
+      veil.show('abriendo tu isla');
+      timer = window.setTimeout(() => !sceneBridge.get() && veil.hide(), 4000);
+    } else if (route === 'mundo') {
+      veil.show(before === 'isla' ? 'viajando al mundo' : 'abriendo el mundo');
+    } else if (route === 'visita') {
+      veil.show('visitando una isla');
+      timer = window.setTimeout(() => !sceneBridge.get() && veil.hide(), 4000);
+    } else if (before === 'isla' || before === 'mundo' || before === 'visita') {
+      veil.show('volviendo');
+      timer = window.setTimeout(() => veil.hide(), 200);
+    }
+    return () => window.clearTimeout(timer);
+  }, [route]);
 
   useEffect(() => {
     document.title = TITULOS[route];
@@ -116,7 +151,7 @@ export function App() {
     document.querySelector<HTMLElement>('[data-vista-titulo]')?.focus();
   }, [route]);
 
-  if (route === 'auth') return <div className="app"><Backdrop /><main className="main"><AuthPage /></main><Taskbar /></div>;
+  if (route === 'auth') return <div className="app"><Backdrop /><main className="main"><Cuenta /></main><Taskbar /></div>;
   if (route === 'explorar') return <div className="app"><Backdrop /><main className="main"><ExplorePage /></main><Taskbar /></div>;
   if (route === 'visita' && routeState.username) return <VisitIslandPage username={routeState.username} />;
   if (route === 'mundo') {
@@ -141,5 +176,14 @@ export function App() {
       <main className="main">{route === 'inicio' ? <Inicio /> : <Introduccion />}</main>
       <Taskbar />
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <>
+      <Routes />
+      <Veil />
+    </>
   );
 }

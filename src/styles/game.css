@@ -693,3 +693,22 @@
 @media (prefers-reduced-motion: reduce) {
   .auth-form--renewed input, .auth-tabs button, .auth-form__submit { transition: none; }
 }
+
+.world-card__zone {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-8);
+  font-size: var(--t-12);
+  color: var(--tinta-suave);
+  font-weight: 700;
+  margin: 0;
+}
+
+.world-card .text-link {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font: 800 var(--t-12) var(--fuente);
+  min-height: var(--objetivo-tactil);
+}
