@@ -77,6 +77,11 @@ export const sfx = {
   levelUp() {
     [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, { type: 'triangle', gain: 0.13, at: i * 0.09 }));
   },
+  photo() {
+    noise(0.05, 0.1, 3200);
+    tone(1900, 0.04, { gain: 0.08 });
+    tone(1250, 0.07, { gain: 0.07, at: 0.06 });
+  },
   click() {
     tone(900, 0.04, { gain: 0.06 });
   },
