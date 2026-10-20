@@ -51,7 +51,7 @@ begin
 
   insert into public.profiles (id, username, display_name)
   values (v_user, v_username, v_display)
-  on conflict (id) do update set display_name = excluded.display_name, updated_at = now();
+  on conflict on constraint profiles_pkey do update set display_name = excluded.display_name, updated_at = now();
   insert into public.islands (owner_id) values (v_user) on conflict (owner_id) do nothing;
 
   return query select p.id, p.username, p.display_name, i.id, i.name, i.layout, i.revision
