@@ -12,7 +12,7 @@
 
 ## antes de publicar
 
-1. ejecuta las migraciones pendientes en el sql editor de supabase, en orden: `0005`, `0006`, `0007`, `0008` y `0009`.
+1. ejecuta las migraciones pendientes en el sql editor de supabase, en orden: `0005`, `0006`, `0007`, `0008`, `0009` y `0010`.
 2. en authentication > url configuration, conserva como site url la url de github pages y como redirect url esa misma url con `#/auth`.
 3. en authentication > sign in/providers, deja activada la confirmación de correo. antes de una campaña pública, configura smtp propio; el proveedor de prueba no sirve para volumen real.
 4. en authentication > rate limits, conserva límites bajos para registro, recuperación y envío de correo. habilita captcha/turnstile gratuito antes de abrir el registro a cualquiera.

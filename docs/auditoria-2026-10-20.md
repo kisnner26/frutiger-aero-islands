@@ -30,5 +30,6 @@
 - el laboratorio aero incorpora agua, cristales y hojas como recursos de cuenta.
 - el ciclo de marea entrega recursos cada seis horas mediante un RPC; el navegador no puede alterar los montos ni el enfriamiento.
 - cuatro recetas desbloqueables producen decoraciones, gadgets o recuerdos persistentes en inventario.
+- la marea diaria mantiene una racha de siete días y entrega recursos desde postgres; usa fecha UTC, bloqueo de fila y no acepta fechas ni montos del navegador.
 - el laboratorio enlaza al arcade, que concentra aqua racer, crystal drop y pez fuera del agua.
 - la migración `202610200008_aero_workshop.sql` es necesaria antes de usar este sistema.
