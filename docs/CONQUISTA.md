@@ -20,3 +20,7 @@ el mundo es una cuadrícula de 24×24 parcelas (432 dentro del círculo de la cu
 
 ## verificación
 la migración se probó en un postgres 16 local con tablas de apoyo (`auth.uid()`, `profiles`): reclamar, adyacencia, escudo, límite de aportes, capturas, retos, rankings y permisos de anon. falta probarla con la sesión real de supabase.
+
+## ranking (top 100)
+`supabase/migrations/202610200017_leaderboard.sql`. la puntuación usa solo acciones que el servidor puede comprobar (no el progreso que guarda el cliente, que se podría falsear): 10 por cada parcela que tienes, 15 por capturar, 5 por restaurar, 3 por reclamar y 2 por cada me gusta recibido. dos periodos: esta semana y de siempre. `leaderboard_top` devuelve 100 filas y `leaderboard_me` tu puesto aunque estés fuera. el cliente lo guarda 60 s en caché (`src/persistence/leaderboard.ts`) y la ventana está en `src/features/world/LeaderboardPanel.tsx` (botón "ranking" del mundo).
+límite conocido: los me gusta se pueden inflar con cuentas falsas; si pasa, se quitan de la fórmula.

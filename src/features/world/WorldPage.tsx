@@ -16,6 +16,7 @@ import { buildArchipelago, loadMine } from '../../world/archipelago';
 import { findCountry, searchCountries } from '../../world/countries';
 import { everyWhileVisible } from '../../persistence/fastcache';
 import { worldVisit } from '../../story/missions';
+import { LeaderboardPanel } from './LeaderboardPanel';
 import { TerritoryPanel, useTerritory } from './TerritoryPanel';
 import type { CellRef } from '../../world/territory';
 import { COUNTRY_FACTS } from '../../world/countryFacts';
@@ -96,6 +97,7 @@ export function WorldPage() {
   const [gadgetsOpen, setGadgetsOpen] = useState(false);
   const [atlasOpen, setAtlasOpen] = useState(false);
   const [zoomed, setZoomed] = useState(false);
+  const [leaderOpen, setLeaderOpen] = useState(false);
   const [conquestOpen, setConquestOpen] = useState(false);
   const [pickedCell, setPickedCell] = useState<CellRef | null>(null);
   const territory = useTerritory(sceneRef, conquestOpen);
@@ -285,6 +287,11 @@ export function WorldPage() {
           <GadgetsPanel level={mine.current.level} onUse={useGadget} />
         </AeroWindow>
       )}
+      {leaderOpen && (
+        <AeroWindow className="win-leader" title="ranking · top 100" icon={<span className="mini-orb" />} onClose={() => setLeaderOpen(false)}>
+          <LeaderboardPanel />
+        </AeroWindow>
+      )}
       {conquestOpen && (
         <AeroWindow className="win-territory" title="conquista y restauración" icon={<span className="mini-orb mini-orb--green" />} onClose={() => { setConquestOpen(false); setPickedCell(null); sceneRef.current?.selectCell(null); }}>
           <TerritoryPanel sceneRef={sceneRef} data={territory} picked={pickedCell} />
@@ -394,7 +401,7 @@ export function WorldPage() {
         )}
       </nav>
 
-      <Taskbar tasks={[{ id: 'islas', label: 'islas', icon: <span className="mini-orb mini-orb--green" />, active: listOpen, onClick: () => setListOpen((v) => !v) }, { id: 'conquista', label: 'conquista', icon: <span className="mini-orb mini-orb--green" />, active: conquestOpen, onClick: () => { if (!conquestOpen && sceneRef.current?.mode === 'lejos') sceneRef.current.enter(); setConquestOpen((v) => !v); } }, { id: 'atlas', label: 'atlas', icon: <span className="mini-orb mini-orb--globe" />, active: atlasOpen, onClick: () => setAtlasOpen((v) => !v) },
+      <Taskbar tasks={[{ id: 'islas', label: 'islas', icon: <span className="mini-orb mini-orb--green" />, active: listOpen, onClick: () => setListOpen((v) => !v) }, { id: 'ranking', label: 'ranking', icon: <span className="mini-orb" />, active: leaderOpen, onClick: () => setLeaderOpen((v) => !v) }, { id: 'conquista', label: 'conquista', icon: <span className="mini-orb mini-orb--green" />, active: conquestOpen, onClick: () => { if (!conquestOpen && sceneRef.current?.mode === 'lejos') sceneRef.current.enter(); setConquestOpen((v) => !v); } }, { id: 'atlas', label: 'atlas', icon: <span className="mini-orb mini-orb--globe" />, active: atlasOpen, onClick: () => setAtlasOpen((v) => !v) },
         ...(isSupabaseConfigured ? [{ id: 'exp', label: 'expediciones', icon: <span className="mini-orb" />, active: expOpen, onClick: () => setExpOpen((v) => !v) }, { id: 'gadgets', label: 'gadgets', icon: <span className="mini-orb mini-orb--green" />, active: gadgetsOpen, onClick: () => setGadgetsOpen((v) => !v) }] : [])]} />
     </div>
   );

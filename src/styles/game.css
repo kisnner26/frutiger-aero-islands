@@ -792,3 +792,21 @@
 .territory__list--rank li { justify-content: flex-start; } .territory__list--rank li strong { flex: 1; }
 .territory__list--rank li span { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: #dff3fb; font-size: 11px; font-weight: 900; }
 @media (max-width: 680px) { .win-territory { top: auto; bottom: 64px; right: 10px; max-height: 62svh; } .territory { max-height: calc(62svh - 60px); } }
+
+/* ranking */
+.win-leader { position: absolute; z-index: 27; left: 50%; top: 96px; transform: translateX(-50%); width: min(460px, calc(100vw - 28px)); }
+.leader { display: grid; gap: 8px; padding: 12px; color: #073d67; max-height: calc(100svh - 220px); overflow: auto; }
+.leader__tabs { display: flex; gap: 6px; }
+.leader__tabs button { min-height: 30px; padding: 0 16px; border: 1px solid #87bdd9; border-radius: 999px; background: #fff; color: #0a5a90; font: 800 12px var(--fuente, inherit); cursor: pointer; }
+.leader__tabs button.is-active { background: linear-gradient(180deg, #7fdcff, #1d9ad8); color: #fff; border-color: #fff; }
+.leader__rules { margin: 0; color: #52758d; font-size: 11px; font-weight: 700; }
+.leader__empty { margin: 0; color: #52758d; font-size: 12px; font-weight: 700; }
+.leader__list { list-style: none; display: grid; gap: 4px; margin: 0; padding: 0; }
+.leader__list li { display: grid; grid-template-columns: 28px 24px 1fr auto 44px; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,.72); border: 1px solid rgba(104,174,207,.3); }
+.leader__list li.is-me { background: linear-gradient(135deg, #fff8d8, #ffe9a0); border-color: #e8b830; }
+.leader__rank { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: #dff3fb; font-size: 11px; font-weight: 900; }
+.leader__list a { color: #0a5a90; font-size: 13px; font-weight: 800; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.leader__list small { color: #52758d; font-size: 10px; font-weight: 700; text-align: right; }
+.leader__list b { text-align: right; font-size: 14px; color: #0a6aa6; }
+.leader__me { margin: 0; padding: 8px 12px; border-radius: 10px; background: #e4f7ff; font-size: 12px; font-weight: 800; }
+@media (max-width: 680px) { .win-leader { top: auto; bottom: 64px; } .leader__list li { grid-template-columns: 26px 22px 1fr 44px; } .leader__list small { display: none; } }
