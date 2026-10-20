@@ -1,6 +1,8 @@
 export const BASIN_RADIUS = 1000;
 export const WORLD_MIN_ZOOM = 0.5;
 export const WORLD_MAX_ZOOM = 6;
+export const COUNTRY_FOCUS_ZOOM = 2.15;
+export const ISLAND_FOCUS_ZOOM = 2;
 
 export interface WorldCamera {
   /** centro de la vista en coordenadas de la cuenca. */
@@ -18,6 +20,16 @@ export const DEFAULT_WORLD_CAMERA: WorldCamera = { cx: 0, cy: 20, zoom: 1 };
 
 export function worldFit(vp: Viewport): number {
   return Math.min(vp.width, vp.height * 1.2) / 1100;
+}
+
+/**
+ * evita que un icono del mapa ocupe toda la pantalla al acercar la cámara.
+ * mantiene su escala natural mientras cabe y la reduce solo al superar el límite visual.
+ */
+export function worldObjectScale(vp: Viewport, zoom: number, worldWidth: number): number {
+  const screenWidth = worldWidth * worldFit(vp) * clampWorldZoom(zoom);
+  const limit = Math.min(520, vp.width * 0.36, vp.height * 0.42);
+  return Math.min(1, limit / Math.max(1, screenWidth));
 }
 
 export function clampWorldZoom(z: number): number {

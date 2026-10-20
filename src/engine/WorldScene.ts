@@ -7,7 +7,7 @@ import { landTier } from '../domain/geometry';
 import { loadLifeAssets, type LifeAssets } from './aeroLife';
 import { WavingFlag } from './flag';
 import { K, TILT, project } from './projection';
-import { BASIN_RADIUS, DEFAULT_WORLD_CAMERA, clampWorldCamera, screenToWorld, worldFit, zoomWorldAt, type WorldCamera } from '../world/worldCamera';
+import { BASIN_RADIUS, COUNTRY_FOCUS_ZOOM, DEFAULT_WORLD_CAMERA, ISLAND_FOCUS_ZOOM, clampWorldCamera, screenToWorld, worldFit, worldObjectScale, worldToScreen, zoomWorldAt, type WorldCamera } from '../world/worldCamera';
 import type { WorldIsland } from '../world/archipelago';
 import type { WorldView } from '../world/worldState';
 import { COUNTRIES } from '../world/countries';
@@ -26,7 +26,8 @@ export interface WorldCallbacks {
   onCell?(cx: number, cy: number): void;
 }
 
-const MINI = 0.3;
+/** escala de una isla dentro del mapa; la vista completa vive en IslandScene. */
+const MINI = 0.2;
 const TRANSITION_SECONDS = 1.35;
 
 const smooth = (a: number, b: number, t: number) => {
@@ -119,6 +120,7 @@ export class WorldScene {
   private countryMarkers = new Graphics();
   private countryLabels = new Container();
   private labelNodes: Array<{ code: string; x: number; y: number; text: Text }> = [];
+  private markerKey = '';
   private focusHalo = new Graphics();
   private focusCode: string | null = null;
   private islandLayer = new Container();
@@ -230,7 +232,7 @@ export class WorldScene {
     this.sky.anchor.set(0);
 
     if (this.traffic) this.under.addChild(this.traffic.root);
-    this.buildCountryMarkers();
+    this.updateCountryMarkers(true);
     this.buildIslands(islands);
     this.buildRoutes();
     this.buildLife();
@@ -263,11 +265,37 @@ export class WorldScene {
   /* ---------- construcción ---------- */
 
   /** puntos de entrada del atlas: se dibujan en una sola capa para no crear cientos de nodos DOM o sprites. */
-  private buildCountryMarkers() {
-    for (const country of COUNTRIES) {
-      const point = countryAnchor(country.code);
-      this.countryMarkers.circle(point.x, point.y, 7).fill({ color: 0xd8fbff, alpha: 0.8 });
-      this.countryMarkers.circle(point.x, point.y, 11).stroke({ width: 2, color: 0x319ed0, alpha: 0.68 });
+  private updateCountryMarkers(force = false) {
+    const vp = this.vp();
+    const screenScale = worldFit(vp) * this.cam.zoom;
+    const visible = !this.selectedId && this.cam.zoom >= (this.focusCode ? 1.05 : 1.35) && !this.mapMode;
+    this.countryMarkers.visible = visible;
+    if (!visible) {
+      this.countryMarkers.clear();
+      this.markerKey = '';
+      return;
+    }
+    const key = `${Math.round(this.cam.zoom * 50)}:${Math.round(this.cam.cx / 8)}:${Math.round(this.cam.cy / 8)}:${vp.width}:${vp.height}:${this.focusCode ?? ''}`;
+    if (!force && key === this.markerKey) return;
+    this.markerKey = key;
+    const radius = 7 / Math.max(0.01, screenScale);
+    this.countryMarkers.clear();
+    const occupied: Array<{ x: number; y: number }> = [];
+    const maxX = this.focusCode && vp.width > 680 ? vp.width - 390 : vp.width - 10;
+    const maxY = this.focusCode && vp.width <= 680 ? vp.height - Math.min(310, vp.height * 0.44) : vp.height - 58;
+    const candidates = COUNTRIES
+      .map((country) => {
+        const point = countryAnchor(country.code);
+        return { country, point, screen: worldToScreen(point, this.cam, vp), distance: Math.hypot(point.x - this.cam.cx, point.y - this.cam.cy) };
+      })
+      .filter(({ screen }) => screen.x >= 10 && screen.x <= maxX && screen.y >= 72 && screen.y <= maxY)
+      .sort((a, b) => Number(b.country.code === this.focusCode) - Number(a.country.code === this.focusCode) || a.distance - b.distance);
+    for (const { country, point, screen } of candidates) {
+      const focused = country.code === this.focusCode;
+      if (!focused && occupied.some((other) => Math.hypot(screen.x - other.x, screen.y - other.y) < 28)) continue;
+      this.countryMarkers.circle(point.x, point.y, radius).fill({ color: 0xd8fbff, alpha: 0.8 });
+      this.countryMarkers.circle(point.x, point.y, radius * 1.58).stroke({ width: 2 / Math.max(0.01, screenScale), color: 0x319ed0, alpha: 0.68 });
+      occupied.push(screen);
     }
   }
 
@@ -483,6 +511,9 @@ export class WorldScene {
     const g = this.territory;
     g.clear();
     this.blight.clear();
+    this.territory.visible = this.mapMode;
+    this.blight.visible = this.mapMode;
+    if (!this.mapMode) return;
     const now = Date.now();
     for (const { cx, cy } of ALL_CELLS) {
       const info = this.cells.get(cellKey(cx, cy));
@@ -551,10 +582,19 @@ export class WorldScene {
     this.renderNow();
   }
 
-  focus(id: string, zoom = 1.5) {
+  focus(id: string, zoom = ISLAND_FOCUS_ZOOM) {
     const n = this.nodes.get(id);
     if (!n) return;
-    this.moveCamera({ cx: n.data.x, cy: n.data.y, zoom });
+    const vp = this.vp();
+    const desktop = vp.width > 680;
+    const reservedWidth = desktop ? 450 : 0;
+    const reservedHeight = desktop ? 0 : Math.min(260, vp.height * 0.4);
+    const screenScale = worldFit(vp) * zoom;
+    this.moveCamera({
+      cx: n.data.x + reservedWidth / (2 * screenScale),
+      cy: n.data.y + reservedHeight / (2 * screenScale),
+      zoom,
+    });
   }
 
   focusPoint(x: number, y: number, zoom = 1.65) {
@@ -583,13 +623,43 @@ export class WorldScene {
       this.cb.onSelect(null);
       this.updateRings();
     }
-    for (const n of this.nodes.values()) n.box.alpha = !code || n.data.country === code ? 1 : 0.28;
+    for (const n of this.nodes.values()) {
+      n.box.visible = !code || n.data.country === code;
+      n.box.alpha = 1;
+    }
+    this.routes.visible = !code;
     this.drawFocus();
     if (code) {
-      const p = countryAnchor(code);
-      this.moveCamera({ cx: p.x, cy: p.y, zoom: 3.6 });
+      this.moveCamera(this.countryCamera(code));
     }
     this.renderNow();
+  }
+
+  /** encuadra todas las islas del país y reserva espacio para su panel informativo. */
+  private countryCamera(code: string): WorldCamera {
+    const anchor = countryAnchor(code);
+    const points = [...this.nodes.values()].filter((node) => node.data.country === code).map((node) => ({ x: node.data.x, y: node.data.y }));
+    if (!points.length) points.push(anchor);
+    const minX = Math.min(...points.map((point) => point.x));
+    const maxX = Math.max(...points.map((point) => point.x));
+    const minY = Math.min(...points.map((point) => point.y));
+    const maxY = Math.max(...points.map((point) => point.y));
+    const vp = this.vp();
+    const desktop = vp.width > 680;
+    const reservedWidth = desktop ? 390 : 0;
+    const reservedHeight = desktop ? 0 : Math.min(310, vp.height * 0.44);
+    const availableWidth = Math.max(280, vp.width - reservedWidth - 56);
+    const availableHeight = Math.max(220, vp.height - reservedHeight - 150);
+    const spanX = Math.max(280, maxX - minX + 300);
+    const spanY = Math.max(240, maxY - minY + 280);
+    const fit = Math.min(availableWidth / spanX, availableHeight / spanY) / worldFit(vp);
+    const zoom = Math.max(points.length > 1 ? 1.05 : 1.45, Math.min(COUNTRY_FOCUS_ZOOM, fit));
+    const screenScale = worldFit(vp) * zoom;
+    return clampWorldCamera({
+      cx: (minX + maxX) / 2 + reservedWidth / (2 * screenScale),
+      cy: (minY + maxY) / 2 + reservedHeight / (2 * screenScale),
+      zoom,
+    });
   }
 
   private drawFocus() {
@@ -598,12 +668,15 @@ export class WorldScene {
     if (!this.focusCode) return;
     const p = countryAnchor(this.focusCode);
     const has = [...this.nodes.values()].some((n) => n.data.country === this.focusCode);
-    g.circle(p.x, p.y, 130).fill({ color: 0xffffff, alpha: 0.1 }).stroke({ width: 3, color: 0xffffff, alpha: 0.75 });
-    g.circle(p.x, p.y, 92).stroke({ width: 2, color: 0x7fe0ff, alpha: 0.6 });
+    const screenScale = worldFit(this.vp()) * this.cam.zoom;
+    const outer = Math.min(130, 170 / Math.max(0.01, screenScale));
+    g.circle(p.x, p.y, outer).fill({ color: 0xffffff, alpha: 0.1 }).stroke({ width: 3 / Math.max(0.01, screenScale), color: 0xffffff, alpha: 0.75 });
+    g.circle(p.x, p.y, outer * 0.7).stroke({ width: 2 / Math.max(0.01, screenScale), color: 0x7fe0ff, alpha: 0.6 });
     if (!has) {
       // tierra libre: nadie ha construido aquí todavía
-      g.circle(p.x, p.y, 34).fill({ color: 0xbff4ff, alpha: 0.35 }).stroke({ width: 3, color: 0xffffff, alpha: 0.95 });
-      g.circle(p.x - 9, p.y - 10, 7).fill({ color: 0xffffff, alpha: 0.9 });
+      const empty = Math.min(34, 48 / Math.max(0.01, screenScale));
+      g.circle(p.x, p.y, empty).fill({ color: 0xbff4ff, alpha: 0.35 }).stroke({ width: 3 / Math.max(0.01, screenScale), color: 0xffffff, alpha: 0.95 });
+      g.circle(p.x - empty * 0.27, p.y - empty * 0.3, empty * 0.2).fill({ color: 0xffffff, alpha: 0.9 });
     }
   }
 
@@ -623,21 +696,35 @@ export class WorldScene {
   /** los nombres de países aparecen al acercarse y solo cerca del centro de la vista. */
   private updateLabels() {
     const z = this.cam.zoom;
-    const on = z >= 1.7 && this.mapMode === false;
+    const on = !this.selectedId && z >= (this.focusCode ? 1.05 : 1.45) && this.mapMode === false;
     this.countryLabels.visible = on;
     if (!on) return;
     this.buildLabels();
-    const alpha = smooth(1.7, 2.6, z);
+    const alpha = this.focusCode ? smooth(0.95, 1.6, z) : smooth(1.45, 2.15, z);
     const vp = this.vp();
-    const reach = (Math.max(vp.width, vp.height) / (worldFit(vp) * z)) * 0.62;
-    for (const l of this.labelNodes) {
-      const near = Math.hypot(l.x - this.cam.cx, l.y - this.cam.cy) <= reach;
-      l.text.visible = near;
-      if (near) {
-        const focus = l.code === this.focusCode;
-        l.text.alpha = focus ? 1 : alpha;
-        l.text.scale.set((focus ? 1.35 : 1) / Math.max(1, z * 0.7));
-      }
+    const screenScale = worldFit(vp) * z;
+    const reach = (Math.max(vp.width, vp.height) / screenScale) * 0.62;
+    const candidates = this.labelNodes
+      .map((label) => ({ label, distance: Math.hypot(label.x - this.cam.cx, label.y - this.cam.cy) }))
+      .filter(({ distance }) => distance <= reach)
+      .sort((a, b) => Number(b.label.code === this.focusCode) - Number(a.label.code === this.focusCode) || a.distance - b.distance);
+    const occupied: Array<{ left: number; right: number; top: number; bottom: number }> = [];
+    for (const node of this.labelNodes) node.text.visible = false;
+    for (const { label } of candidates) {
+      const focus = label.code === this.focusCode;
+      const point = worldToScreen({ x: label.x, y: label.y + 15 }, this.cam, vp);
+      const fontSize = focus ? 17 : 14;
+      const width = Math.min(170, label.text.text.length * fontSize * 0.62 + 14);
+      const box = { left: point.x - width / 2, right: point.x + width / 2, top: point.y, bottom: point.y + fontSize + 8 };
+      const maxX = this.focusCode && vp.width > 680 ? vp.width - 390 : vp.width - 8;
+      const maxY = this.focusCode && vp.width <= 680 ? vp.height - Math.min(310, vp.height * 0.44) : vp.height - 58;
+      const inside = box.left >= 8 && box.right <= maxX && box.top >= 72 && box.bottom <= maxY;
+      const overlaps = occupied.some((other) => box.left < other.right + 8 && box.right > other.left - 8 && box.top < other.bottom + 6 && box.bottom > other.top - 6);
+      if (!inside || (!focus && overlaps)) continue;
+      label.text.visible = true;
+      label.text.alpha = focus ? 1 : alpha;
+      label.text.scale.set((fontSize / 15) / Math.max(0.01, screenScale));
+      occupied.push(box);
     }
   }
 
@@ -713,6 +800,10 @@ export class WorldScene {
 
     this.updateLabels();
     const s = worldFit(this.vp()) * this.cam.zoom * lerp(0.4, 1, e);
+    const nodeScale = worldObjectScale(this.vp(), this.cam.zoom, GROUND_HALF.w * 2 * MINI);
+    for (const node of this.nodes.values()) node.box.scale.set(nodeScale);
+    this.updateCountryMarkers();
+    if (this.focusCode) this.drawFocus();
     this.inner.scale.set(s);
     this.inner.position.set(cx - this.cam.cx * s, cy - this.cam.cy * s);
   }
@@ -826,8 +917,9 @@ export class WorldScene {
     const wp = screenToWorld(p, this.cam, this.vp());
     let best: { id: string; y: number } | null = null;
     for (const n of this.nodes.values()) {
-      const dx = (wp.x - n.data.x) / (392 * K * MINI * 1.05);
-      const dy = (wp.y - (n.data.y - 22)) / (312 * K * TILT * MINI * 1.9);
+      const scale = Math.max(0.01, Math.abs(n.box.scale.x));
+      const dx = (wp.x - n.data.x) / (392 * K * MINI * 1.05 * scale);
+      const dy = (wp.y - (n.data.y - 22 * scale)) / (312 * K * TILT * MINI * 1.9 * scale);
       if (dx * dx + dy * dy <= 1 && (!best || n.data.y > best.y)) best = { id: n.data.id, y: n.data.y };
     }
     return best ? best.id : null;

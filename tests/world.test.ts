@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CATALOG_MAP } from '../src/catalog/catalog';
 import { isLand } from '../src/art/planet';
 import { validateObject } from '../src/domain/geometry';
-import { BASIN_RADIUS, DEFAULT_WORLD_CAMERA, clampWorldCamera, screenToWorld, worldToScreen, zoomWorldAt } from '../src/world/worldCamera';
+import { BASIN_RADIUS, DEFAULT_WORLD_CAMERA, clampWorldCamera, screenToWorld, worldFit, worldObjectScale, worldToScreen, zoomWorldAt } from '../src/world/worldCamera';
 import { buildArchipelago, minePosition } from '../src/world/archipelago';
 import { countryAnchor } from '../src/world/geoProjection';
 import { parseWorldView, prepareFromIsland } from '../src/world/worldState';
@@ -71,6 +71,15 @@ describe('cámara del mundo', () => {
     const after = screenToWorld(at, zoomWorldAt(DEFAULT_WORLD_CAMERA, vp, at, 1.9), vp);
     expect(after.x).toBeCloseTo(before.x, 5);
     expect(after.y).toBeCloseTo(before.y, 5);
+  });
+
+  it('limita el tamaño visual de una isla al acercar el mapa', () => {
+    const worldWidth = 288;
+    expect(worldObjectScale(vp, 1, worldWidth)).toBe(1);
+    const scale = worldObjectScale(vp, 6, worldWidth);
+    const screenWidth = worldWidth * worldFit(vp) * 6 * scale;
+    expect(scale).toBeLessThan(1);
+    expect(screenWidth).toBeLessThanOrEqual(Math.min(520, vp.width * 0.36, vp.height * 0.42) + 0.001);
   });
 });
 

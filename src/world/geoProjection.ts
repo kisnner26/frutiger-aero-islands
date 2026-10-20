@@ -5,7 +5,7 @@ const LAT0 = (22 * Math.PI) / 180;
 const LON0 = (-25 * Math.PI) / 180;
 export const MAP_RADIUS = 820;
 /** separación mínima entre centros de islas: elipse que sigue la forma de cada isla (ancha y baja). */
-export const ISLAND_SPACING = { x: 250, y: 150 } as const;
+export const ISLAND_SPACING = { x: 175, y: 105 } as const;
 
 /** separación normalizada: >= 1 significa que no se solapan. */
 export function islandGap(a: { x: number; y: number }, b: { x: number; y: number }): number {
