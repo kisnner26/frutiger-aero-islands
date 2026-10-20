@@ -23,7 +23,7 @@ export function Veil() {
 
   if (!mounted) return null;
   return (
-    <div className={`veil${s.visible ? ' is-on' : ' is-off'}`} key={s.key} role="status" aria-live="polite" aria-label={s.text}>
+    <div className={`veil${s.visible ? ' is-on' : ' is-off'}${s.kind === 'viaje' ? ' veil--viaje' : ''}`} key={s.key} role="status" aria-live="polite" aria-label={s.text}>
       <div className="veil__stage" aria-hidden="true">
         <span className="veil__ring veil__ring--a" />
         <span className="veil__ring veil__ring--b" />
@@ -31,6 +31,14 @@ export function Veil() {
         <span className="veil__fish veil__fish--a" style={{ backgroundImage: `url(${import.meta.env.BASE_URL}assets/ui/pez-payaso.svg)` }} />
         <span className="veil__fish veil__fish--b" style={{ backgroundImage: `url(${import.meta.env.BASE_URL}assets/decorations/pez.svg)` }} />
       </div>
+      {s.kind === 'viaje' && (
+        <div className="veil__sea" aria-hidden="true">
+          <span className="veil__cloud veil__cloud--a" />
+          <span className="veil__cloud veil__cloud--b" />
+          <span className="veil__boat" style={{ backgroundImage: `url(${import.meta.env.BASE_URL}assets/decorations/velero.svg)` }} />
+          <span className="veil__wake" />
+        </div>
+      )}
       <p className="veil__text">{s.text}</p>
     </div>
   );

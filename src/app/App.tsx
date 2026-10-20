@@ -129,7 +129,7 @@ function Routes() {
     } else if (route === 'mundo') {
       veil.show(before === 'isla' ? 'viajando al mundo' : 'abriendo el mundo');
     } else if (route === 'visita') {
-      veil.show('visitando una isla');
+      veil.show(routeState.username ? `viajando a la isla de @${routeState.username}` : 'visitando una isla', 'viaje');
       timer = window.setTimeout(() => !sceneBridge.get() && veil.hide(), 4000);
     } else if (before === 'isla' || before === 'mundo' || before === 'visita') {
       veil.show('volviendo');

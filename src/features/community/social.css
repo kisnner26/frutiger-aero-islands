@@ -4,3 +4,13 @@
 
 @media (max-width: 680px) { .island-social { top: auto; bottom: calc(66px + env(safe-area-inset-bottom)); right: 10px; width: min(390px, calc(100vw - 20px)); } }
 .gadget-list { list-style: none; margin: 0; padding: 4px; display: grid; gap: 8px; color: #073d67; }.gadget-list li { display: grid; gap: 6px; padding: 9px 12px; border: 1px solid rgba(255,255,255,.7); border-radius: 12px; background: rgba(227,251,255,.75); opacity: .6; }.gadget-list li.is-open { opacity: 1; background: linear-gradient(145deg, #eafcff, #bfeaf7); }.gadget-list small { color: #52758d; font-size: 12px; font-weight: 700; }.gadget-list em { font-style: normal; font-size: 11px; font-weight: 900; color: #1686b7; }.gadget-list button { justify-self: start; border: 1px solid #4e9bc3; border-radius: 999px; padding: 5px 11px; background: linear-gradient(#f3ffff, #9bdcf4); color: #064c76; font: 800 11px var(--fuente-vista); cursor: pointer; box-shadow: inset 0 1px rgba(255,255,255,.9); }.gadget-list button:hover { filter: brightness(1.08); }
+
+/* tarjeta de llegada a una isla visitada */
+.visit-banner { position: fixed; z-index: 54; left: 50%; top: max(70px, calc(env(safe-area-inset-top) + 58px)); transform: translateX(-50%); display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 28px); padding: 12px 16px 12px 14px; border: 1px solid rgba(255,255,255,.9); border-radius: 22px; background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(176,229,248,.9)); color: #06406f; box-shadow: inset 0 1px #fff, 0 14px 32px rgba(0,70,140,.32); animation: visita-llega 5.2s cubic-bezier(.2,.9,.3,1) both; }
+.visit-banner p { margin: 0; color: #2a7ba8; font-size: 11px; font-weight: 800; }
+.visit-banner strong { display: block; font-size: 20px; letter-spacing: -.03em; }
+.visit-banner small { color: #4a7f9c; font-size: 11px; font-weight: 700; }
+.visit-banner__orb { width: 38px; height: 38px; flex: none; border-radius: 50%; background: radial-gradient(circle at 34% 28%, #fff, #7fdcff 40%, #1d8ad0); box-shadow: 0 0 0 4px rgba(255,255,255,.55), 0 4px 10px rgba(0,80,140,.3); }
+.visit-banner button { border: 0; background: none; color: #5a8fb0; font: 900 20px/1 inherit; cursor: pointer; }
+@keyframes visita-llega { 0% { opacity: 0; transform: translate(-50%, -26px) scale(.92); } 9% { opacity: 1; transform: translate(-50%, 0) scale(1); } 88% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -14px); } }
+@media (prefers-reduced-motion: reduce) { .visit-banner { animation: none; } }
