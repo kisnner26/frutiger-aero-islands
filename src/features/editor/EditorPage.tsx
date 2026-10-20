@@ -21,6 +21,7 @@ import { FlagBadge } from '../../world/FlagBadge';
 import { routeHref } from '../../app/useHashRoute';
 import { AvatarImg } from '../../avatar/AvatarFace';
 import { useAvatar } from '../../avatar/store';
+import type { AvatarSpec } from '../../avatar/model';
 import { prepareFromIsland } from '../../world/worldState';
 import { createState, editorReducer, newObjectId, type Doc } from './commands';
 import { DecorationCatalog } from './DecorationCatalog';
@@ -51,7 +52,7 @@ function init(initialDoc?: Doc) {
   return { state: createState(), recovered: false, corrupt: false, fresh: true };
 }
 
-export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla', saveRemote }: { initialDoc?: Doc; editable?: boolean; ownerLabel?: string; saveRemote?: (doc: Doc) => Promise<void> }) {
+export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla', saveRemote, ownerAvatar }: { initialDoc?: Doc; editable?: boolean; ownerLabel?: string; saveRemote?: (doc: Doc) => Promise<void>; ownerAvatar?: AvatarSpec | null }) {
   const boot = useRef<ReturnType<typeof init> | null>(null);
   if (boot.current === null) boot.current = init(initialDoc);
   const [state, dispatch] = useReducer(editorReducer, boot.current.state);
@@ -66,6 +67,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
   const sceneRef = useRef<IslandScene | null>(null);
   const comboRef = useRef({ count: 0, last: 0 });
   const floatId = useRef(0);
+  const hydratedRemote = useRef(!initialDoc || !saveRemote);
   const doc = state.doc;
   const cameraOn = useSyncExternalStore(phoneBus.subscribe, phoneBus.cameraMode);
   const country = useCountry();
@@ -102,6 +104,12 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
 
   /* ---------- guardado local y remoto ---------- */
   useEffect(() => {
+    // la carga inicial viene del servidor: no la reescribimos ni incrementamos su revisión.
+    if (!hydratedRemote.current) {
+      hydratedRemote.current = true;
+      setSaveStatus('ok');
+      return;
+    }
     setSaveStatus('pendiente');
     const persist = () => {
       const local = localRepository.save(doc);
@@ -242,7 +250,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
     return () => window.removeEventListener('keydown', onKey);
   }, [state.selectedId, editable]);
 
-  const sceneProps = useMemo(() => ({ objects: doc.objects, selectedId: state.selectedId, placing, country: editable ? country : null, avatar: editable ? avatar : null }), [doc.objects, state.selectedId, placing, country, editable, avatar]);
+  const sceneProps = useMemo(() => ({ objects: doc.objects, selectedId: state.selectedId, placing, country: editable ? country : null, avatar: editable ? avatar : ownerAvatar ?? null }), [doc.objects, state.selectedId, placing, country, editable, avatar, ownerAvatar]);
   const saveText = saveStatus === 'cuota' ? 'sin espacio en este dispositivo' : saveStatus === 'error' || saveStatus === 'remoto-error' ? 'no se pudo guardar en la nube' : saveStatus === 'pendiente' ? 'guardando...' : saveRemote ? 'guardado en la nube' : 'guardado en este dispositivo';
   const placingItem = placing ? CATALOG_MAP.get(placing) : null;
 

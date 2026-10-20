@@ -19,6 +19,7 @@ export async function syncAvatar(): Promise<void> {
   if (!supabase) return;
   const session = await currentSession();
   if (!session) return;
+  avatarStore.setAccount(session.user.id);
   const { data, error } = await supabase.from('profiles').select('avatar').eq('id', session.user.id).maybeSingle();
   if (error || !data) return;
   const remote = (data as { avatar: unknown }).avatar;

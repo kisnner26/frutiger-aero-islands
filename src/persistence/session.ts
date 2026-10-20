@@ -27,13 +27,16 @@ async function loadUsername(userId: string): Promise<string | null> {
 }
 
 async function apply(session: { user: { id: string; email?: string | null } } | null) {
-  if (!session) return set({ status: 'sin-sesion', email: null, username: null });
+  if (!session) {
+    void import('../avatar/store').then((m) => m.avatarStore.setAccount(null)).catch(() => undefined);
+    return set({ status: 'sin-sesion', email: null, username: null });
+  }
   set({ status: 'con-sesion', email: session.user.email ?? null, username: state.username });
   const username = await loadUsername(session.user.id);
   set({ status: 'con-sesion', email: session.user.email ?? null, username });
   // el país del perfil es la fuente de verdad cuando existe
   void import('./country').then((m) => m.syncCountry()).catch(() => undefined);
-  void import('./avatar').then((m) => m.syncAvatar()).catch(() => undefined);
+  void import('../avatar/store').then((m) => m.avatarStore.setAccount(session.user.id)).then(() => import('./avatar')).then((m) => m.syncAvatar()).catch(() => undefined);
 }
 
 function start() {

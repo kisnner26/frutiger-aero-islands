@@ -11,10 +11,23 @@ function Loading({ text }: { text: string }) { return <p className="scene-view__
 
 export function MyIslandPage() {
   const [state, setState] = useState<'cargando' | 'local' | 'perfil' | 'listo' | 'error'>('cargando');
-  const [island, setIsland] = useState<PublicIsland | null>(null); const [username, setUsername] = useState(''); const [message, setMessage] = useState(''); const revision = useRef(0);
+  const [island, setIsland] = useState<PublicIsland | null>(null); const [username, setUsername] = useState(''); const [message, setMessage] = useState(''); const revision = useRef(0); const saveQueue = useRef(Promise.resolve());
   useEffect(() => { let alive = true; (async () => { if (!isSupabaseConfigured) { setState('local'); return; } const session = await currentSession(); if (!session) { window.location.hash = routeHref('auth'); return; } const existing = await myIsland(); if (!alive) return; if (existing) { revision.current = existing.revision; setIsland(existing); setState('listo'); void touchIslandPresence(existing.id).catch(() => undefined); } else setState('perfil'); })().catch(() => alive && setState('error')); return () => { alive = false; }; }, []);
   const create = async (e: React.FormEvent) => { e.preventDefault(); try { const result = await completeProfile(username); revision.current = result.revision; setIsland(result); setState('listo'); } catch (error) { setMessage(readableSupabaseError(error, 'no se pudo crear tu isla.')); } };
-  const remoteSave = useCallback(async (doc: Doc) => { if (!island) return; revision.current = await saveIsland(island.id, revision.current, doc); }, [island]);
+  const remoteSave = useCallback((doc: Doc) => {
+    if (!island) return Promise.resolve();
+    const write = async () => { revision.current = await saveIsland(island.id, revision.current, doc); };
+    const queued = saveQueue.current.then(write);
+    saveQueue.current = queued.catch(() => undefined);
+    return queued;
+  }, [island]);
+  useEffect(() => {
+    if (!island) return;
+    const report = () => void touchIslandPresence(island.id).catch(() => undefined);
+    report();
+    const timer = window.setInterval(report, 90_000);
+    return () => window.clearInterval(timer);
+  }, [island]);
   if (state === 'cargando') return <Loading text="abriendo tu isla..." />;
   if (state === 'local') return <EditorPage />;
   if (state === 'error') return <Loading text="no se pudo abrir tu isla. vuelve a intentarlo." />;
@@ -27,5 +40,5 @@ export function VisitIslandPage({ username }: { username: string }) {
   useEffect(() => { let alive = true; getIsland(username).then((v) => { if (!alive) return; setIsland(v); setState(v ? 'listo' : 'vacio'); }).catch(() => alive && setState('error')); return () => { alive = false; }; }, [username]);
   if (state === 'cargando') return <Loading text="visitando isla..." />;
   if (state !== 'listo' || !island) return <div className="app"><main className="main"><AeroWindow className="win-auth" title="visita" icon={<span className="mini-orb" />}><div className="auth-form"><h1 id="titulo-vista" tabIndex={-1}>{state === 'vacio' ? 'esta isla no existe' : 'no se pudo abrir la isla'}</h1><a href={routeHref('explorar')}>explorar islas</a></div></AeroWindow></main></div>;
-  return <><IslandSocialControls islandId={island.id} ownerName={island.displayName} /><EditorPage key={island.id} initialDoc={island.layout} editable={false} ownerLabel={`isla de ${island.displayName}`} /></>;
+  return <><IslandSocialControls islandId={island.id} ownerName={island.displayName} /><EditorPage key={island.id} initialDoc={island.layout} editable={false} ownerLabel={`isla de ${island.displayName}`} ownerAvatar={island.avatar} /></>;
 }
