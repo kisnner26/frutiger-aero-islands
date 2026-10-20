@@ -3,7 +3,8 @@ import { CATALOG_MAP } from '../src/catalog/catalog';
 import { isLand } from '../src/art/planet';
 import { validateObject } from '../src/domain/geometry';
 import { BASIN_RADIUS, DEFAULT_WORLD_CAMERA, clampWorldCamera, screenToWorld, worldToScreen, zoomWorldAt } from '../src/world/worldCamera';
-import { EXAMPLE_LAYOUTS, buildArchipelago } from '../src/world/archipelago';
+import { EXAMPLE_LAYOUTS, buildArchipelago, minePosition } from '../src/world/archipelago';
+import { countryAnchor } from '../src/world/geoProjection';
 import { parseWorldView, prepareFromIsland } from '../src/world/worldState';
 
 describe('continentes', () => {
@@ -36,8 +37,18 @@ describe('archipiélago', () => {
     expect(list.slice(1).every((i) => i.kind === 'ejemplo' && i.level === null)).toBe(true);
   });
 
-  it('las islas caben dentro de la cuenca', () => {
-    for (const i of buildArchipelago({ objects: [], level: 1 })) expect(Math.hypot(i.x, i.y)).toBeLessThan(BASIN_RADIUS * 0.7);
+  it('las islas caben dentro de la cuenca y cada una queda en la zona de su país', () => {
+    for (const i of buildArchipelago({ objects: [], level: 1 }, 'ni')) expect(Math.hypot(i.x, i.y)).toBeLessThan(BASIN_RADIUS * 0.9);
+    const list = buildArchipelago({ objects: [], level: 1 }, 'ni');
+    expect(list[0]).toMatchObject({ id: 'mia', country: 'ni', ...countryAnchor('ni') });
+    expect(minePosition('ni')).toEqual(countryAnchor('ni'));
+  });
+
+  it('cambiar de país mueve mi isla de zona y sin país va al mar abierto', () => {
+    const a = minePosition('ni');
+    const b = minePosition('jp');
+    expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(300);
+    expect(minePosition(null)).toEqual(countryAnchor(null));
   });
 });
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import type { WorldIsland } from '../world/archipelago';
 import type { WorldView as WorldViewState } from '../world/worldState';
+import { veil } from '../ui/veilStore';
 import { WorldScene, type WorldCallbacks } from './WorldScene';
 
 interface Props {
@@ -18,6 +19,7 @@ export function WorldView({ islands, initial, callbacks, controlRef }: Props) {
   const cbRef = useRef(callbacks);
   cbRef.current = callbacks;
   const initialRef = useRef(initial);
+  initialRef.current = initial;
 
   useEffect(() => {
     const host = hostRef.current;
@@ -43,9 +45,11 @@ export function WorldView({ islands, initial, callbacks, controlRef }: Props) {
         controlRef.current = s;
         mq.addEventListener('change', onMq);
         setStatus('listo');
+        veil.hide();
       })
       .catch(() => {
         if (!cancelled) setStatus('error');
+        veil.hide(true);
       });
     return () => {
       cancelled = true;

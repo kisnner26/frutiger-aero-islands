@@ -4,6 +4,7 @@ import { renderBasin, renderGlassFrame, renderHalo, renderPlanet, renderWorldSky
 import { pencilSprite } from '../art/pencil';
 import { GROUND_HALF, renderGround } from '../art/scenery';
 import { loadLifeAssets, type LifeAssets } from './aeroLife';
+import { WavingFlag } from './flag';
 import { K, TILT, project } from './projection';
 import { BASIN_RADIUS, DEFAULT_WORLD_CAMERA, clampWorldCamera, screenToWorld, worldFit, zoomWorldAt, type WorldCamera } from '../world/worldCamera';
 import type { WorldIsland } from '../world/archipelago';
@@ -29,6 +30,7 @@ interface IslandNode {
   data: WorldIsland;
   box: Container;
   ring: Graphics;
+  flag: WavingFlag | null;
 }
 
 interface Swimmer {
@@ -204,17 +206,22 @@ export class WorldScene {
         items.addChild(sp);
       }
       box.addChild(items);
-      if (data.kind === 'mia') {
-        const flag = new Graphics();
-        flag.moveTo(-70, -78).lineTo(-70, -128).stroke({ width: 3, color: 0x6b4220 });
-        flag.moveTo(-70, -128).lineTo(-42, -118).lineTo(-70, -106).closePath().fill({ color: 0xff5a4a }).stroke({ width: 1.5, color: 0xffffff });
+      let flag: WavingFlag | null = null;
+      if (data.country) {
+        flag = new WavingFlag(data.country, { pole: 62, cloth: 44 });
+        flag.position.set(-92, -30);
         box.addChild(flag);
+      } else if (data.kind === 'mia') {
+        const pennant = new Graphics();
+        pennant.moveTo(-70, -78).lineTo(-70, -128).stroke({ width: 3, color: 0x6b4220 });
+        pennant.moveTo(-70, -128).lineTo(-42, -118).lineTo(-70, -106).closePath().fill({ color: 0xff5a4a }).stroke({ width: 1.5, color: 0xffffff });
+        box.addChild(pennant);
       }
       const ring = new Graphics();
       ring.visible = false;
       box.addChildAt(ring, 1);
       this.islandLayer.addChild(box);
-      this.nodes.set(data.id, { data, box, ring });
+      this.nodes.set(data.id, { data, box, ring, flag });
     }
   }
 
@@ -447,6 +454,7 @@ export class WorldScene {
       }
     }
     if (this.t > 0.2) {
+      for (const n of this.nodes.values()) n.flag?.update(this.time);
       this.caustics.tilePosition.x += 6 * dt;
       this.caustics.tilePosition.y += 3 * dt;
       for (const sw of this.swimmers) {

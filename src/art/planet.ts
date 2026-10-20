@@ -1,5 +1,6 @@
 /** planeta y cuenca interior del mundo, dibujados por código con el mismo lápiz del juego. */
 import { cloudCanvas, softBlob } from './aero';
+import { projectLonLat } from '../world/geoProjection';
 import { hatch, makeCanvas, paperGrain, pencilize, rng, vnoise, wobbleEllipse } from './pencil';
 
 type LonLat = [number, number];
@@ -267,6 +268,39 @@ export function renderBasin(size = 1600): HTMLCanvasElement {
   ctx.fillRect(0, 0, size, size);
   hatch(ctx, box, { color: '#17608f', alpha: 0.18, angle: 4, spacing: size / 260, width: size / 520, seed: 71, amp: 2, len: size / 18 });
   hatch(ctx, box, { color: '#bff4ff', alpha: 0.22, angle: -3, spacing: size / 200, width: size / 480, seed: 72, amp: 2, len: size / 15, skip: 0.25 });
+
+  // continentes como bajíos claros: ubican cada zona del mundo bajo las islas (misma proyección que la ubicación por país)
+  const kpx = (size / 2 - 6) / 1000;
+  ctx.save();
+  for (const [name, poly] of Object.entries(CONTINENTS)) {
+    if (name === 'antartida') continue;
+    const pts = poly.map(([lon, lat]) => projectLonLat(lon, lat));
+    let ok = true;
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i];
+      const b = pts[(i + 1) % pts.length];
+      if (Math.hypot(a.x - b.x, a.y - b.y) > 650) ok = false;
+    }
+    if (!ok) continue;
+    ctx.beginPath();
+    pts.forEach((p, i) => {
+      const x = cx + p.x * kpx;
+      const y = cx + p.y * kpx;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(218,246,208,.34)';
+    ctx.fill();
+    ctx.save();
+    ctx.clip();
+    hatch(ctx, box, { color: '#5aa84a', alpha: 0.16, angle: 62, spacing: size / 300, width: size / 620, seed: 75, len: size / 36 });
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(255,255,255,.6)';
+    ctx.lineWidth = size / 420;
+    ctx.stroke();
+  }
+  ctx.restore();
 
   // costas: tres arcos de tierra en el borde, con arena y espuma
   const shore = (th: number) => {
