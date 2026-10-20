@@ -24,3 +24,11 @@
 - mover las recompensas de arcade a un RPC del servidor antes de permitir que otorguen brillos persistentes; el cliente no debe decidir monedas.
 - activar rate limits y captcha de Supabase Auth al abrir el registro público, y configurar correo SMTP propio antes de crecer.
 - añadir pruebas de integración con una cuenta de prueba para verificar alta, guardado, conflicto de revisión y restauración de avatar.
+
+## bucle de juego incorporado
+
+- el laboratorio aero incorpora agua, cristales y hojas como recursos de cuenta.
+- el ciclo de marea entrega recursos cada seis horas mediante un RPC; el navegador no puede alterar los montos ni el enfriamiento.
+- cuatro recetas desbloqueables producen decoraciones, gadgets o recuerdos persistentes en inventario.
+- el laboratorio enlaza al arcade, que concentra aqua racer, crystal drop y pez fuera del agua.
+- la migración `202610200008_aero_workshop.sql` es necesaria antes de usar este sistema.
