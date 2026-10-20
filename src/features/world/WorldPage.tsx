@@ -4,6 +4,8 @@ import { islandHref, routeHref } from '../../app/useHashRoute';
 import type { WorldScene } from '../../engine/WorldScene';
 import { WorldView } from '../../engine/WorldView';
 import { AeroWindow } from '../../ui/AeroWindow';
+import { WorldCommunityPanel } from '../community/WorldCommunityPanel';
+import { GadgetsPanel } from '../community/GadgetsPanel';
 import { Taskbar } from '../../ui/Taskbar';
 import { syncCountry } from '../../persistence/country';
 import { isSupabaseConfigured, myIsland } from '../../persistence/supabase';
@@ -69,6 +71,8 @@ export function WorldPage() {
   const [mode, setMode] = useState<'lejos' | 'dentro'>(initial.current?.mode ?? 'lejos');
   const [selectedId, setSelectedId] = useState<string | null>(initial.current?.selectedId ?? null);
   const [listOpen, setListOpen] = useState(false);
+  const [expOpen, setExpOpen] = useState(false);
+  const [gadgetsOpen, setGadgetsOpen] = useState(false);
   const selected = islands.find((i) => i.id === selectedId) ?? null;
   const firstCountry = useRef(true);
   useEffect(() => {
@@ -174,6 +178,17 @@ export function WorldPage() {
         </AeroWindow>
       )}
 
+      {expOpen && (
+        <AeroWindow className="win-world-list" title="expediciones" icon={<span className="mini-orb" />} onClose={() => setExpOpen(false)}>
+          <WorldCommunityPanel />
+        </AeroWindow>
+      )}
+      {gadgetsOpen && (
+        <AeroWindow className="win-world-list" title="gadgets" icon={<span className="mini-orb mini-orb--green" />} onClose={() => setGadgetsOpen(false)}>
+          <GadgetsPanel level={mine.current.level} />
+        </AeroWindow>
+      )}
+
       {selected && mode === 'dentro' && (
         <AeroWindow className="win-world-card" title={selected.name} icon={<span className="mini-orb" />} onClose={() => sceneRef.current?.select(null)}>
           <div className="world-card">
@@ -217,7 +232,8 @@ export function WorldPage() {
         {selected ? `, seleccionada: ${selected.name}` : ''}
       </span>
 
-      <Taskbar tasks={[{ id: 'islas', label: 'islas', icon: <span className="mini-orb mini-orb--green" />, active: listOpen, onClick: () => setListOpen((v) => !v) }]} />
+      <Taskbar tasks={[{ id: 'islas', label: 'islas', icon: <span className="mini-orb mini-orb--green" />, active: listOpen, onClick: () => setListOpen((v) => !v) },
+        ...(isSupabaseConfigured ? [{ id: 'exp', label: 'expediciones', icon: <span className="mini-orb" />, active: expOpen, onClick: () => setExpOpen((v) => !v) }, { id: 'gadgets', label: 'gadgets', icon: <span className="mini-orb mini-orb--green" />, active: gadgetsOpen, onClick: () => setGadgetsOpen((v) => !v) }] : [])]} />
     </div>
   );
 }

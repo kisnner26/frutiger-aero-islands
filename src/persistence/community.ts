@@ -44,3 +44,9 @@ export async function listGadgets(): Promise<Gadget[]> {
   if (error) throw error;
   return (data ?? []).map((row) => ({ id: row.id, name: row.name, kind: row.kind as Gadget['kind'], description: row.description, unlockLevel: row.unlock_level }));
 }
+
+export async function myExpeditionContributions(): Promise<Record<string, number>> {
+  const { data, error } = await requireClient().rpc('my_expedition_contributions');
+  if (error) return {};
+  return Object.fromEntries(((data ?? []) as Array<{ expedition_id: string; amount: number }>).map((r) => [r.expedition_id, Number(r.amount)]));
+}
