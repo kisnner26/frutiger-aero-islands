@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CATALOG_MAP } from '../src/catalog/catalog';
-import { isInWater, isOnLand, validateObject, validatePlacement } from '../src/domain/geometry';
+import { LAND_TIERS, isInWater, isOnLand, landRadii, landTier, nextExpansionLevel, validateObject, validateSaved, validatePlacement } from '../src/domain/geometry';
 import { project, unproject } from '../src/engine/projection';
 import { DEFAULT_CAMERA, MAX_ZOOM, MIN_ZOOM, clampCamera, screenToScene, sceneToScreen, zoomAt } from '../src/engine/camera';
 
@@ -41,6 +41,56 @@ describe('geometría', () => {
   it('rechaza el objeto 151', () => {
     expect(validatePlacement(palmera, { x: 500, y: 500, scale: 1, rotation: 0 }, 149)).toBeNull();
     expect(validatePlacement(palmera, { x: 500, y: 500, scale: 1, rotation: 0 }, 150)).toBe('limite-de-objetos');
+  });
+});
+
+describe('expansión del terreno', () => {
+  it('el tamaño depende del nivel y nunca encoge', () => {
+    expect([1, 3, 4, 6, 7, 10].map(landTier)).toEqual([0, 0, 1, 1, 2, 2]);
+    for (let l = 1; l < 12; l++) {
+      expect(landRadii(l + 1).rx).toBeGreaterThanOrEqual(landRadii(l).rx);
+      expect(landRadii(l + 1).ry).toBeGreaterThanOrEqual(landRadii(l).ry);
+    }
+    expect(nextExpansionLevel(1)).toBe(4);
+    expect(nextExpansionLevel(5)).toBe(7);
+    expect(nextExpansionLevel(7)).toBeNull();
+  });
+
+  it('la tierra llega más lejos en cada tamaño', () => {
+    expect(isOnLand(860, 500, 20, 1)).toBe(false);
+    expect(isOnLand(860, 500, 20, 4)).toBe(true);
+    expect(isOnLand(900, 500, 20, 4)).toBe(false);
+    expect(isOnLand(900, 500, 20, 7)).toBe(true);
+  });
+
+  it('el agua retrocede al crecer la isla y siempre queda borde de mar', () => {
+    expect(isInWater(880, 500, 14, 1)).toBe(true);
+    expect(isInWater(880, 500, 14, 4)).toBe(false);
+    for (const t of LAND_TIERS) expect(isInWater(1000 - 14, 500, 14, t.minLevel)).toBe(true);
+  });
+
+  it('lo colocado en tierra a nivel 1 sigue siendo válido al crecer', () => {
+    for (const item of [palmera, CATALOG_MAP.get('arbol')!, CATALOG_MAP.get('flores')!]) {
+      for (const [x, y] of [[500, 500], [840, 500], [500, 780], [250, 400]]) {
+        if (validateObject(item, { x, y, scale: 1, rotation: 0 }, 1) === null) {
+          expect(validateObject(item, { x, y, scale: 1, rotation: 0 }, 4)).toBeNull();
+          expect(validateObject(item, { x, y, scale: 1, rotation: 0 }, 7)).toBeNull();
+        }
+      }
+    }
+  });
+
+  it('un pez guardado en el mar sigue válido aunque la isla crezca sobre él', () => {
+    const pezEnMar = { x: 880, y: 500, scale: 1, rotation: 0 };
+    expect(validateObject(pez, pezEnMar, 4)).toBe('fuera-de-zona');
+    expect(validateSaved(pez, pezEnMar, 4)).toBeNull();
+    expect(validateSaved(pez, { ...pezEnMar, x: 500 }, 7)).toBe('fuera-de-zona');
+  });
+
+  it('valida con el nivel de la isla', () => {
+    expect(validateObject(palmera, { x: 880, y: 500, scale: 1, rotation: 0 }, 1)).toBe('fuera-de-zona');
+    expect(validateObject(palmera, { x: 880, y: 500, scale: 1, rotation: 0 }, 7)).toBeNull();
+    expect(validatePlacement(palmera, { x: 900, y: 500, scale: 1, rotation: 0 }, 0, 4)).toBe('fuera-de-zona');
   });
 });
 

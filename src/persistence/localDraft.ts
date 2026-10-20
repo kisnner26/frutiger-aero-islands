@@ -1,5 +1,5 @@
 import { CATALOG_MAP } from '../catalog/catalog';
-import { validateObject } from '../domain/geometry';
+import { validateSaved } from '../domain/geometry';
 import { MAX_OBJECTS, type PlacedObject } from '../domain/island';
 import type { Doc } from '../features/editor/commands';
 
@@ -23,17 +23,17 @@ export function parseDraft(raw: string): Doc | null {
   }
   if (!isObj(data) || data.version !== DRAFT_VERSION || !Array.isArray(data.objects)) return null;
   if (data.objects.length > MAX_OBJECTS) return null;
+  const maxLevel = Number(data.maxLevel);
   const ids = new Set<string>();
   const objects: PlacedObject[] = [];
   for (const o of data.objects) {
     if (!isObj(o) || typeof o.id !== 'string' || typeof o.assetId !== 'string') return null;
     const obj: PlacedObject = { id: o.id, assetId: o.assetId, x: Number(o.x), y: Number(o.y), scale: Number(o.scale), rotation: Number(o.rotation) };
-    if (ids.has(obj.id) || validateObject(CATALOG_MAP.get(obj.assetId), obj)) return null;
+    if (ids.has(obj.id) || validateSaved(CATALOG_MAP.get(obj.assetId), obj, Number.isInteger(maxLevel) ? maxLevel : 1)) return null;
     ids.add(obj.id);
     objects.push(obj);
   }
   const brillos = Number(data.brillos);
-  const maxLevel = Number(data.maxLevel);
   const stats = isObj(data.stats) ? data.stats : {};
   if (!Number.isFinite(brillos) || brillos < 0 || !Number.isInteger(maxLevel) || maxLevel < 1) return null;
   return {

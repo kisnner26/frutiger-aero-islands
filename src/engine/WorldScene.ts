@@ -3,6 +3,7 @@ import { CATALOG_MAP } from '../catalog/catalog';
 import { renderBasin, renderGlassFrame, renderHalo, renderPlanet, renderWorldSky } from '../art/planet';
 import { pencilSprite } from '../art/pencil';
 import { GROUND_HALF, renderGround } from '../art/scenery';
+import { landTier } from '../domain/geometry';
 import { loadLifeAssets, type LifeAssets } from './aeroLife';
 import { WavingFlag } from './flag';
 import { K, TILT, project } from './projection';
@@ -76,7 +77,7 @@ export class WorldScene {
   private swimmers: Swimmer[] = [];
   private bubbles: Bubble[] = [];
   private assets!: LifeAssets;
-  private groundTex!: Texture;
+  private groundTex = new Map<number, Texture>();
   private objTex = new Map<string, Texture>();
 
   private cam: WorldCamera = { ...DEFAULT_WORLD_CAMERA };
@@ -120,7 +121,6 @@ export class WorldScene {
       const [assets, ...tex] = await Promise.all([loadLifeAssets(), ...ids.map(async (id) => Texture.from(await pencilSprite(CATALOG_MAP.get(id)!.assetPath)))]);
       this.assets = assets;
       ids.forEach((id, i) => this.objTex.set(id, tex[i]));
-      this.groundTex = Texture.from(renderGround());
       this.planet.texture = Texture.from(renderPlanet(720));
       this.halo.texture = Texture.from(renderHalo(512));
       this.basin.texture = Texture.from(renderBasin(1600));
@@ -202,9 +202,15 @@ export class WorldScene {
       const box = new Container();
       box.position.set(data.x, data.y);
       box.zIndex = data.y;
-      const ground = new Sprite(this.groundTex);
+      const tier = landTier(data.level);
+      let groundTex = this.groundTex.get(tier);
+      if (!groundTex) {
+        groundTex = Texture.from(renderGround(data.level));
+        this.groundTex.set(tier, groundTex);
+      }
+      const ground = new Sprite(groundTex);
       ground.anchor.set(0.5);
-      ground.scale.set((GROUND_HALF.w * 2 * MINI) / this.groundTex.width);
+      ground.scale.set((GROUND_HALF.w * 2 * MINI) / groundTex.width);
       box.addChild(ground);
       const items = new Container();
       items.sortableChildren = true;

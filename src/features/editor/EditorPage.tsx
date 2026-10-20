@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncE
 import { sfx } from '../../audio/sfx';
 import { CATALOG, CATALOG_MAP } from '../../catalog/catalog';
 import { computeCharm, progressForLevel, LEVEL_UP_BONUS } from '../../domain/charm';
-import { clampToWorld } from '../../domain/geometry';
+import { LAND_TIERS, clampToWorld } from '../../domain/geometry';
 import type { IslandScene, SceneCallbacks } from '../../engine/IslandScene';
 import { SceneView } from '../../engine/SceneView';
 import { localRepository, quarantineCorrupt, type SaveResult } from '../../persistence/localDraft';
@@ -146,7 +146,8 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
     if (!state.levelUp) return;
     sfx.levelUp();
     const unlocked = CATALOG.filter((c) => c.unlockLevel === state.levelUp!.level).map((c) => c.name);
-    setToast({ id: state.levelUp.id, tone: 'info', text: `nivel ${state.levelUp.level}: +${LEVEL_UP_BONUS} brillos${unlocked.length ? `. desbloqueas ${unlocked.join(', ')}` : ''}` });
+    const grew = LAND_TIERS.some((t, i) => i > 0 && t.minLevel === state.levelUp!.level);
+    setToast({ id: state.levelUp.id, tone: 'info', text: `nivel ${state.levelUp.level}: +${LEVEL_UP_BONUS} brillos${unlocked.length ? `. desbloqueas ${unlocked.join(', ')}` : ''}${grew ? '. tu isla se hizo más grande' : ''}` });
   }, [state.levelUp]);
 
   useEffect(() => {
@@ -252,7 +253,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
     return () => window.removeEventListener('keydown', onKey);
   }, [state.selectedId, editable]);
 
-  const sceneProps = useMemo(() => ({ objects: doc.objects, selectedId: state.selectedId, placing, country: editable ? country : null, avatar: editable ? avatar : ownerAvatar ?? null }), [doc.objects, state.selectedId, placing, country, editable, avatar, ownerAvatar]);
+  const sceneProps = useMemo(() => ({ objects: doc.objects, level: doc.maxLevel, selectedId: state.selectedId, placing, country: editable ? country : null, avatar: editable ? avatar : ownerAvatar ?? null }), [doc.objects, doc.maxLevel, state.selectedId, placing, country, editable, avatar, ownerAvatar]);
   const saveText = saveStatus === 'cuota' ? 'sin espacio en este dispositivo' : saveStatus === 'error' || saveStatus === 'remoto-error' ? 'no se pudo guardar en la nube' : saveStatus === 'pendiente' ? 'guardando...' : saveRemote ? 'guardado en la nube' : 'guardado en este dispositivo';
   const placingItem = placing ? CATALOG_MAP.get(placing) : null;
 

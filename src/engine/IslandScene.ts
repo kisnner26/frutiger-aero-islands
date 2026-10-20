@@ -1,6 +1,6 @@
 import { Application, Container, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
 import { CATALOG, CATALOG_MAP } from '../catalog/catalog';
-import { ERROR_TEXT, clampToWorld, validateObject } from '../domain/geometry';
+import { ERROR_TEXT, clampToWorld, landTier, validateObject } from '../domain/geometry';
 import type { CatalogItem, PlacedObject } from '../domain/island';
 import { glassBubble } from '../art/aero';
 import { pencilSprite } from '../art/pencil';
@@ -24,6 +24,8 @@ export interface SceneCallbacks {
 
 export interface SceneProps {
   objects: readonly PlacedObject[];
+  /** nivel de la isla: define el tamaño del terreno (por defecto 1). */
+  level?: number;
   selectedId: string | null;
   /** id del catálogo en modo colocación. */
   placing: string | null;
@@ -258,8 +260,10 @@ export class IslandScene {
 
   setProps(props: SceneProps) {
     const placingChanged = props.placing !== this.props.placing;
+    const grew = landTier(props.level ?? 1) !== landTier(this.props.level ?? 1);
     this.props = props;
     if (!this.app) return;
+    if (grew) this.setupGround();
     this.syncFlag();
     void this.syncAvatar();
     if (placingChanged) this.endGhost();
@@ -361,7 +365,7 @@ export class IslandScene {
   /* ---------- dibujo ---------- */
 
   private setupGround() {
-    const canvas = renderGround();
+    const canvas = renderGround(this.props.level ?? 1);
     this.ground.texture = Texture.from(canvas);
     this.ground.anchor.set(0.5);
     this.ground.scale.set(GROUND_HALF.w / (canvas.width / 2));
@@ -811,7 +815,7 @@ export class IslandScene {
       d.world = clampToWorld(w.x - d.offX, w.y - d.offY);
       const entry = this.entries.get(d.id);
       if (!entry) return;
-      d.valid = validateObject(entry.item, { x: d.world.x, y: d.world.y, scale: entry.obj.scale, rotation: entry.obj.rotation }) === null;
+      d.valid = validateObject(entry.item, { x: d.world.x, y: d.world.y, scale: entry.obj.scale, rotation: entry.obj.rotation }, this.props.level ?? 1) === null;
       this.place(entry, d.world.x, d.world.y);
       entry.sprite.tint = d.valid ? 0xffffff : 0xff8a8a;
       this.renderNow();
@@ -921,7 +925,7 @@ export class IslandScene {
   private ghostValid(): boolean {
     const item = this.props.placing ? CATALOG_MAP.get(this.props.placing) : undefined;
     if (!item || !this.ghostWorld) return false;
-    return validateObject(item, { x: this.ghostWorld.x, y: this.ghostWorld.y, scale: 1, rotation: 0 }) === null;
+    return validateObject(item, { x: this.ghostWorld.x, y: this.ghostWorld.y, scale: 1, rotation: 0 }, this.props.level ?? 1) === null;
   }
 
   private endGhost() {

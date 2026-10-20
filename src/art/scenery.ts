@@ -1,5 +1,5 @@
 import { CATALOG_MAP } from '../catalog/catalog';
-import { LAND_RADII } from '../domain/geometry';
+import { LAND_RADII, landRadii, landTier } from '../domain/geometry';
 import type { PlacedObject } from '../domain/island';
 import { K, TILT, project } from '../engine/projection';
 import { cloudCanvas, ridgeY, softBlob } from './aero';
@@ -13,10 +13,17 @@ const ex = (rx: number) => rx * K * S;
 const ey = (ry: number) => ry * K * TILT * S;
 
 /** isla dibujada a lápiz: agua en torno, arena, hierba. centrada en el origen de la escena. */
-let groundCache: HTMLCanvasElement | null = null;
+const groundCache = new Map<number, HTMLCanvasElement>();
 
-export function renderGround(): HTMLCanvasElement {
-  if (groundCache) return groundCache;
+/** el terreno crece con el nivel; el lienzo mide siempre lo mismo y se redibuja al cambiar de tamaño. */
+export function renderGround(level = 1): HTMLCanvasElement {
+  const tier = landTier(level);
+  const cached = groundCache.get(tier);
+  if (cached) return cached;
+  const land = landRadii(level);
+  const grow = land.rx - LAND_RADII.rx;
+  const growY = land.ry - LAND_RADII.ry;
+  const area = (land.rx * land.ry) / (LAND_RADII.rx * LAND_RADII.ry);
   const W = GROUND_HALF.w * 2 * S;
   const H = GROUND_HALF.h * 2 * S;
   const c = makeCanvas(W, H);
@@ -34,14 +41,14 @@ export function renderGround(): HTMLCanvasElement {
 
   // sombra sobre el agua
   ctx.save();
-  clipEllipse(26, ex(412), ey(334));
+  clipEllipse(26, ex(412 + grow), ey(334 + growY));
   hatch(ctx, box, { color: '#0f4a66', alpha: 0.5, angle: 8, spacing: 3.2, width: 2.4, seed: 2, amp: 2 });
   hatch(ctx, box, { color: '#1c6a8c', alpha: 0.35, angle: -12, spacing: 4.5, width: 2, seed: 3 });
   ctx.restore();
 
   // costado de arena (grosor)
   ctx.save();
-  clipEllipse(20, ex(392), ey(312));
+  clipEllipse(20, ex(392 + grow), ey(312 + growY));
   ctx.fillStyle = '#c9a468';
   ctx.fillRect(0, 0, W, H);
   hatch(ctx, box, { color: '#8a6a34', alpha: 0.55, angle: 80, spacing: 3, width: 1.8, seed: 4 });
@@ -49,7 +56,7 @@ export function renderGround(): HTMLCanvasElement {
 
   // arena
   ctx.save();
-  clipEllipse(0, ex(392), ey(312));
+  clipEllipse(0, ex(392 + grow), ey(312 + growY));
   ctx.fillStyle = '#f3dfaa';
   ctx.fillRect(0, 0, W, H);
   hatch(ctx, box, { color: '#e2bd7a', alpha: 0.6, angle: 30, spacing: 3.4, width: 2, seed: 5 });
@@ -58,18 +65,18 @@ export function renderGround(): HTMLCanvasElement {
 
   // hierba
   ctx.save();
-  clipEllipse(0, ex(LAND_RADII.rx), ey(LAND_RADII.ry));
+  clipEllipse(0, ex(land.rx), ey(land.ry));
   ctx.fillStyle = '#84c04a';
   ctx.fillRect(0, 0, W, H);
   hatch(ctx, box, { color: '#3d8a2c', alpha: 0.5, angle: 62, spacing: 3.4, width: 2, seed: 7, len: 26 });
   hatch(ctx, box, { color: '#5fae38', alpha: 0.5, angle: 118, spacing: 3.8, width: 2, seed: 8, len: 30 });
   hatch(ctx, box, { color: '#c6ec7a', alpha: 0.55, angle: 80, spacing: 6, width: 2.6, seed: 9, skip: 0.35, len: 24 });
   // manchas de tono para romper la uniformidad
-  for (let i = 0; i < 38; i++) {
+  for (let i = 0; i < Math.round(38 * area); i++) {
     const a = r() * Math.PI * 2;
     const d = Math.sqrt(r()) * 0.85;
-    const px = cx + Math.cos(a) * d * ex(LAND_RADII.rx);
-    const py = cy + Math.sin(a) * d * ey(LAND_RADII.ry);
+    const px = cx + Math.cos(a) * d * ex(land.rx);
+    const py = cy + Math.sin(a) * d * ey(land.ry);
     const g2 = ctx.createRadialGradient(px, py, 0, px, py, 40 + r() * 60);
     g2.addColorStop(0, r() < 0.5 ? 'rgba(40,110,40,.28)' : 'rgba(210,240,120,.3)');
     g2.addColorStop(1, 'rgba(0,0,0,0)');
@@ -83,18 +90,18 @@ export function renderGround(): HTMLCanvasElement {
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
   // sombra de borde interior
-  const rim = ctx.createRadialGradient(cx, cy, ex(250), cx, cy, ex(LAND_RADII.rx));
+  const rim = ctx.createRadialGradient(cx, cy, ex(250 + grow), cx, cy, ex(land.rx));
   rim.addColorStop(0, 'rgba(30,90,30,0)');
   rim.addColorStop(1, 'rgba(30,90,30,.35)');
   ctx.fillStyle = rim;
   ctx.fillRect(0, 0, W, H);
   // briznas
   ctx.lineCap = 'round';
-  for (let i = 0; i < 520; i++) {
+  for (let i = 0; i < Math.round(520 * area); i++) {
     const a = r() * Math.PI * 2;
     const d = Math.sqrt(r()) * 0.95;
-    const x = cx + Math.cos(a) * d * ex(LAND_RADII.rx);
-    const y = cy + Math.sin(a) * d * ey(LAND_RADII.ry);
+    const x = cx + Math.cos(a) * d * ex(land.rx);
+    const y = cy + Math.sin(a) * d * ey(land.ry);
     ctx.strokeStyle = r() < 0.5 ? '#2f7a24' : '#a6dc5a';
     ctx.globalAlpha = 0.5 + r() * 0.4;
     ctx.lineWidth = 1.6;
@@ -111,20 +118,20 @@ export function renderGround(): HTMLCanvasElement {
   for (let pass = 0; pass < 2; pass++) {
     ctx.strokeStyle = pass ? '#3a7a2a' : '#2a5a22';
     ctx.globalAlpha = 0.75;
-    wobbleEllipse(ctx, cx, cy, ex(LAND_RADII.rx), ey(LAND_RADII.ry), 0.02, r);
+    wobbleEllipse(ctx, cx, cy, ex(land.rx), ey(land.ry), 0.02, r);
     ctx.stroke();
   }
   ctx.strokeStyle = '#6a5028';
   ctx.globalAlpha = 0.8;
-  wobbleEllipse(ctx, cx, cy, ex(392), ey(312), 0.015, r);
+  wobbleEllipse(ctx, cx, cy, ex(392 + grow), ey(312 + growY), 0.015, r);
   ctx.stroke();
-  wobbleEllipse(ctx, cx, cy + 20 * S, ex(392), ey(312), 0.015, r);
+  wobbleEllipse(ctx, cx, cy + 20 * S, ex(392 + grow), ey(312 + growY), 0.015, r);
   ctx.stroke();
 
   // ondas de agua alrededor
   ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 3;
-  for (const [rx, ry, al] of [[430, 350, 0.75], [470, 385, 0.45]] as const) {
+  for (const [rx, ry, al] of [[430 + grow, 350 + growY, 0.75], [470 + grow, 385 + growY, 0.45]] as const) {
     ctx.globalAlpha = al;
     for (let k = 0; k < 2; k++) {
       wobbleEllipse(ctx, cx, cy + 8 * S, ex(rx), ey(ry), 0.012, r);
@@ -133,7 +140,7 @@ export function renderGround(): HTMLCanvasElement {
   }
   ctx.globalAlpha = 1;
   paperGrain(c, 0.55, 3);
-  groundCache = c;
+  groundCache.set(tier, c);
   return c;
 }
 

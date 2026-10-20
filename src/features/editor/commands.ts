@@ -114,7 +114,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
   switch (action.type) {
     case 'place': {
       const item = CATALOG_MAP.get(action.obj.assetId);
-      const err = validatePlacement(item, action.obj, state.doc.objects.length);
+      const err = validatePlacement(item, action.obj, state.doc.objects.length, state.doc.maxLevel);
       if (err) return { ...state, notice: note(ERROR_TEXT[err]) };
       if (item!.unlockLevel > state.doc.maxLevel) return { ...state, notice: note(`se desbloquea en el nivel ${item!.unlockLevel}`) };
       if (state.doc.objects.some((o) => o.id === action.obj.id)) return { ...state, notice: note('identificador repetido') };
@@ -166,7 +166,7 @@ function patchObject(state: EditorState, id: string, patch: Partial<PlacedObject
   const current = state.doc.objects.find((o) => o.id === id);
   if (!current) return state;
   const next = { ...current, ...patch };
-  const err = validateObject(CATALOG_MAP.get(current.assetId), next);
+  const err = validateObject(CATALOG_MAP.get(current.assetId), next, state.doc.maxLevel);
   if (err) return { ...state, notice: note(ERROR_TEXT[err]) };
   const from: Partial<PlacedObject> = {};
   const to: Partial<PlacedObject> = {};
