@@ -15,6 +15,7 @@ import { listWorldIslands, type RealIsland } from '../../persistence/world';
 import { buildArchipelago, loadMine } from '../../world/archipelago';
 import { findCountry, searchCountries } from '../../world/countries';
 import { countryAnchor } from '../../world/geoProjection';
+import { COUNTRY_FACTS } from '../../world/countryFacts';
 import { countryStore, useCountry } from '../../world/country';
 import { CountryGate } from '../../world/CountryPicker';
 import { FlagBadge } from '../../world/FlagBadge';
@@ -98,7 +99,16 @@ export function WorldPage() {
   const onlineTotal = Object.values(presence).reduce((total, count) => total + count, 0);
   const selectedOnline = selected ? (presence[selected.kind === 'mia' ? remoteMineId ?? selected.id : selected.id] ?? 0) : 0;
   const focusedCountry = findCountry(countryFocus);
-  const focusedCountryIslands = countryFocus ? islands.filter((island) => island.country === countryFocus).length : 0;
+  const focusedCountryPlayers = countryFocus ? islands.filter((island) => island.country === countryFocus) : [];
+  const facts = countryFocus ? COUNTRY_FACTS.get(countryFocus) : undefined;
+  const exploreCountry = (code: string) => {
+    const point = countryAnchor(code);
+    sceneRef.current?.enter();
+    sceneRef.current?.focusPoint(point.x, point.y);
+  };
+  useEffect(() => {
+    sceneRef.current?.markCountry(countryFocus);
+  }, [countryFocus]);
   const openCountry = (code: string) => {
     const point = countryAnchor(code);
     sceneRef.current?.enter();
@@ -253,9 +263,34 @@ export function WorldPage() {
           <section className="world-atlas"><label>busca un país<input autoFocus value={atlasQuery} onChange={(event) => setAtlasQuery(event.target.value)} placeholder="nicaragua, japón, brasil..." /></label><div>{searchCountries(atlasQuery).slice(0, 18).map((entry) => <button key={entry.code} type="button" onClick={() => openCountry(entry.code)}><FlagBadge code={entry.code} width={28} /><span><strong>{entry.name}</strong><small>{islands.filter((island) => island.country === entry.code).length} islas en esta zona</small></span></button>)}</div></section>
         </AeroWindow>
       )}
-      {focusedCountry && mode === 'dentro' && (
+      {focusedCountry && (
         <AeroWindow className="win-world-country" title={focusedCountry.name} icon={<FlagBadge code={focusedCountry.code} width={28} />} onClose={() => setCountryFocus(null)}>
-          <div className="world-country"><p>zona navegable del archipiélago</p><strong>{focusedCountryIslands} {focusedCountryIslands === 1 ? 'isla detectada' : 'islas detectadas'}</strong><small>usa la rueda, gestos de pinza o arrastra el mapa. los puntos azul claro abren otras zonas.</small><button type="button" className="vista-button vista-button--primary" onClick={() => { setListOpen(true); setCountryFocus(null); }}>ver islas de la zona</button></div>
+          <div className="world-country">
+            <p>{facts?.continente ?? 'país'}</p>
+            {facts && (
+              <dl className="world-country__facts">
+                <div><dt>capital</dt><dd>{facts.capital}</dd></div>
+                <div><dt>idioma</dt><dd>{facts.idioma}</dd></div>
+              </dl>
+            )}
+            <strong>{focusedCountryPlayers.length} {focusedCountryPlayers.length === 1 ? 'isla de jugador' : 'islas de jugadores'} en esta zona</strong>
+            {focusedCountryPlayers.length > 0 ? (
+              <ul className="world-country__players">
+                {focusedCountryPlayers.slice(0, 6).map((i) => (
+                  <li key={i.id}>
+                    <span>{i.name}</span>
+                    {i.kind === 'mia' ? <a href={routeHref('isla')}>entrar</a> : <a href={islandHref(i.username!)}>visitar</a>}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <small>nadie ha construido aquí todavía. elige este país en tu perfil y sé el primero de la zona.</small>
+            )}
+            <div className="world-country__actions">
+              <button type="button" className="vista-button vista-button--primary" onClick={() => exploreCountry(focusedCountry.code)}>{mode === 'dentro' ? 'ir a la zona' : 'explorar la zona'}</button>
+              {focusedCountry.code !== country && <button type="button" className="vista-button" onClick={() => { countryStore.set(focusedCountry.code); void syncCountry(); }}>vivo aquí</button>}
+            </div>
+          </div>
         </AeroWindow>
       )}
 

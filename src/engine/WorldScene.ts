@@ -63,6 +63,8 @@ export class WorldScene {
   private far = new Container();
   private halo = new Sprite();
   private planet = new Sprite();
+  private pin = new Graphics();
+  private pinCode: string | null = null;
   private interior = new Container();
   private inner = new Container();
   private mask = new Graphics();
@@ -140,7 +142,7 @@ export class WorldScene {
 
     this.planet.anchor.set(0.5);
     this.halo.anchor.set(0.5);
-    this.far.addChild(this.halo, this.planet);
+    this.far.addChild(this.halo, this.planet, this.pin);
 
     this.basin.anchor.set(0.5);
     const basinR = this.basin.texture.width / 2 - 6;
@@ -313,6 +315,7 @@ export class WorldScene {
     const planetPx = Math.min(w, h) * 0.8;
     this.planet.scale.set(planetPx / this.planet.texture.width);
     this.halo.scale.set((planetPx * 1.55) / this.halo.texture.width);
+    this.markCountry(this.pinCode);
     this.halo.alpha = 0.8;
   }
 
@@ -560,6 +563,55 @@ export class WorldScene {
     );
   }
 
+  /* vista del planeta: misma proyección que renderPlanet (inclinación 0.36, lon central -38°) */
+  private planetRadius() {
+    return this.planet.scale.x * (this.planet.texture.width / 2 - 8);
+  }
+
+  private planetCountryAt(p: { x: number; y: number }): string | null {
+    const R = this.planetRadius();
+    const dx = (p.x - this.far.position.x) / R;
+    const dy = (p.y - this.far.position.y) / R;
+    const r2 = dx * dx + dy * dy;
+    if (r2 > 1) return null;
+    const nz = Math.sqrt(1 - r2);
+    const tilt = 0.36;
+    const Y2 = -dy * Math.cos(tilt) + nz * Math.sin(tilt);
+    const Z2 = dy * Math.sin(tilt) + nz * Math.cos(tilt);
+    const lat = Math.asin(Math.max(-1, Math.min(1, Y2)));
+    const lon = (-38 * Math.PI) / 180 + Math.atan2(dx, Z2);
+    let best: { code: string; d: number } | null = null;
+    for (const c of COUNTRIES) {
+      const la = (c.lat * Math.PI) / 180;
+      const lo = (c.lon * Math.PI) / 180;
+      const d = Math.acos(Math.max(-1, Math.min(1, Math.sin(lat) * Math.sin(la) + Math.cos(lat) * Math.cos(la) * Math.cos(lon - lo))));
+      if (d < 0.14 && (!best || d < best.d)) best = { code: c.code, d };
+    }
+    return best?.code ?? null;
+  }
+
+  /** marca un país sobre el planeta (si está en la cara visible) con un punto de cristal. */
+  markCountry(code: string | null) {
+    this.pinCode = code;
+    this.pin.clear();
+    const c = COUNTRIES.find((x) => x.code === code);
+    if (!c) return;
+    const tilt = 0.36;
+    const la = (c.lat * Math.PI) / 180;
+    const rel = (c.lon * Math.PI) / 180 - (-38 * Math.PI) / 180;
+    const x = Math.cos(la) * Math.sin(rel);
+    const yy = Math.sin(la);
+    const z = Math.cos(la) * Math.cos(rel);
+    const nz = yy * Math.sin(tilt) + z * Math.cos(tilt);
+    if (nz <= 0.05) return;
+    const Y = yy * Math.cos(tilt) - z * Math.sin(tilt);
+    const R = this.planetRadius();
+    const px = x * R;
+    const py = -Y * R;
+    this.pin.circle(px, py, 15).fill({ color: 0xffffff, alpha: 0.28 }).stroke({ width: 2, color: 0xffffff, alpha: 0.9 });
+    this.pin.circle(px, py, 6).fill({ color: 0xffd23a }).stroke({ width: 2, color: 0xffffff });
+  }
+
   private planetHit(p: { x: number; y: number }) {
     const w = this.app.screen.width;
     const h = this.app.screen.height;
@@ -643,7 +695,13 @@ export class WorldScene {
     const d = this.drag;
     this.drag = null;
     if (this.target === 0) {
-      if (this.planetHit(p)) this.enter();
+      if (this.planetHit(p)) {
+        const country = this.planetCountryAt(p);
+        if (country) {
+          this.markCountry(country);
+          this.cb.onCountry(country);
+        } else this.enter();
+      }
       return;
     }
     if (d && !d.moved && this.t >= 0.95) {
