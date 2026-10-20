@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Sprite, Texture } from 'pixi.js';
+import { Application, Container, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
 import { CATALOG, CATALOG_MAP } from '../catalog/catalog';
 import { ERROR_TEXT, clampToWorld, validateObject } from '../domain/geometry';
 import type { CatalogItem, PlacedObject } from '../domain/island';
@@ -6,6 +6,7 @@ import { glassBubble } from '../art/aero';
 import { pencilSprite } from '../art/pencil';
 import { GROUND_HALF, renderGround } from '../art/scenery';
 import { AeroLife, loadLifeAssets } from './aeroLife';
+import { WavingFlag } from './flag';
 import { DEFAULT_CAMERA, clampCamera, fitScale, screenToScene, zoomAt, type Camera } from './camera';
 import { K, TILT, project, unproject } from './projection';
 
@@ -23,6 +24,8 @@ export interface SceneProps {
   selectedId: string | null;
   /** id del catálogo en modo colocación. */
   placing: string | null;
+  /** país elegido: se planta su bandera en la isla. */
+  country?: string | null;
 }
 
 interface Entry {
@@ -80,6 +83,8 @@ export class IslandScene {
   private app!: Application;
   private root = new Container();
   private ground = new Sprite();
+  private flag: WavingFlag | null = null;
+  private flagCode: string | null = null;
   private life!: AeroLife;
   private lastSize = { w: 0, h: 0 };
   private ambient = new Container();
@@ -108,6 +113,8 @@ export class IslandScene {
   private ghostWorld: { x: number; y: number } | null = null;
   private lastTap = { t: 0, x: 0, y: 0 };
   private spawnTimer = 1;
+  /** acercamiento de entrada: null cuando no está activo (movimiento reducido o ya terminó). */
+  private intro: number | null = null;
   private time = 0;
   private reduced: boolean;
   private observer?: ResizeObserver;
@@ -185,6 +192,10 @@ export class IslandScene {
     app.ticker.add((t) => {
       this.update(t.deltaMS / 1000);
     });
+    if (!this.reduced) {
+      this.camera = { ...this.camera, zoom: 0.68 };
+      this.intro = -0.35;
+    }
     this.syncRunning();
     this.syncObjects();
     this.renderNow();
@@ -241,6 +252,7 @@ export class IslandScene {
     const placingChanged = props.placing !== this.props.placing;
     this.props = props;
     if (!this.app) return;
+    this.syncFlag();
     if (placingChanged) this.endGhost();
     this.syncObjects();
     this.renderNow();
@@ -254,6 +266,48 @@ export class IslandScene {
     this.camera = { ...DEFAULT_CAMERA };
     this.cb.onZoom(this.camera.zoom);
     this.renderNow();
+  }
+
+  /** fija el zoom de la cámara del juego (0.5–2.5) manteniendo el centro. */
+  setZoom(z: number) {
+    const vp = this.viewport();
+    this.camera = zoomAt(this.camera, vp, { x: vp.width / 2, y: vp.height * 0.45 }, z);
+    this.cb.onZoom(this.camera.zoom);
+    this.renderNow();
+  }
+
+  /**
+   * fotografía real de la escena visible: fondo del lago + capas de pixi, sin controles html ni marcas de edición.
+   * devuelve un jpeg comprimido (lado mayor <= maxEdge).
+   */
+  async capture(maxEdge = 1280, quality = 0.82): Promise<{ blob: Blob; width: number; height: number } | null> {
+    if (this.destroyed || !this.app) return null;
+    const marksVisible = this.marks.visible;
+    const ghostVisible = this.ghost.visible;
+    this.marks.visible = false;
+    this.ghost.visible = false;
+    try {
+      this.renderNow();
+      const vp = this.viewport();
+      const res = Math.min(2, this.app.renderer.resolution);
+      const layers = this.app.renderer.extract.canvas({ target: this.app.stage, frame: new Rectangle(0, 0, vp.width, vp.height), resolution: res }) as HTMLCanvasElement;
+      const scale = Math.min(1, maxEdge / Math.max(vp.width * res, vp.height * res));
+      const w = Math.max(1, Math.round(vp.width * res * scale));
+      const h = Math.max(1, Math.round(vp.height * res * scale));
+      const out = document.createElement('canvas');
+      out.width = w;
+      out.height = h;
+      const ctx = out.getContext('2d')!;
+      const bg = document.querySelector<HTMLCanvasElement>('.scene__paper');
+      if (bg) ctx.drawImage(bg, 0, 0, w, h);
+      ctx.drawImage(layers, 0, 0, w, h);
+      const blob = await new Promise<Blob | null>((resolve) => out.toBlob(resolve, 'image/jpeg', quality));
+      return blob ? { blob, width: w, height: h } : null;
+    } finally {
+      this.marks.visible = marksVisible;
+      this.ghost.visible = ghostVisible;
+      this.renderNow();
+    }
   }
 
   zoomBy(factor: number) {
@@ -368,6 +422,22 @@ export class IslandScene {
     s.scale.set(rotation % 2 ? -k : k, k);
   }
 
+  /** planta la bandera del país elegido en el borde trasero izquierdo de la isla. */
+  private syncFlag() {
+    const code = this.props.country ?? null;
+    if (code === this.flagCode && (this.flag || !code)) return;
+    this.flag?.destroy({ children: true });
+    this.flag = null;
+    this.flagCode = code;
+    if (!code) return;
+    const f = new WavingFlag(code, { pole: 118, cloth: 84 });
+    const p = project(285, 500);
+    f.position.set(p.x, p.y);
+    f.zIndex = p.y + 0.5;
+    this.objLayer.addChild(f);
+    this.flag = f;
+  }
+
   private syncObjects() {
     const ids = new Set<string>();
     for (const obj of this.props.objects) {
@@ -399,7 +469,16 @@ export class IslandScene {
 
   private update(dt: number) {
     this.time += dt;
+    if (this.intro !== null) {
+      this.intro += dt / 1.3;
+      const k = Math.min(1, Math.max(0, this.intro));
+      const e = 1 - Math.pow(1 - k, 3);
+      this.camera = clampCamera({ ...this.camera, zoom: 0.68 + (1 - 0.68) * e }, this.viewport());
+      if (this.intro >= 1) this.intro = null;
+      this.cb.onZoom(this.camera.zoom);
+    }
     this.life.update(dt, this.reduced);
+    if (!this.reduced) this.flag?.update(this.time);
     if (!this.reduced) {
       for (const e of this.entries.values()) {
         if (e.item.placementZone === 'water' && !(this.drag && this.drag.id === e.obj.id && this.drag.moved)) {
@@ -531,6 +610,7 @@ export class IslandScene {
       'wheel',
       (e: WheelEvent) => {
         e.preventDefault();
+        this.intro = null;
         const at = this.local(e);
         this.camera = zoomAt(this.camera, this.viewport(), at, this.camera.zoom * Math.exp(-e.deltaY * 0.0015));
         this.cb.onZoom(this.camera.zoom);
@@ -587,6 +667,7 @@ export class IslandScene {
   }
 
   private onDown(e: PointerEvent) {
+    this.intro = null;
     const p = this.local(e);
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
     this.pointers.set(e.pointerId, p);

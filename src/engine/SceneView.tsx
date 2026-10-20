@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { IslandScene, type SceneCallbacks, type SceneProps } from './IslandScene';
+import { veil } from '../ui/veilStore';
+import { sceneBridge } from './sceneBridge';
 
 interface SceneViewProps {
   scene: SceneProps;
@@ -45,13 +47,16 @@ export function SceneView({ scene, callbacks, controlRef }: SceneViewProps) {
         }
         engine = s;
         controlRef.current = s;
+        sceneBridge.set(s);
         if (import.meta.env.DEV) (window as unknown as { __scene?: IslandScene }).__scene = s;
         s.setProps(sceneRef.current);
         mq.addEventListener('change', onMq);
         setStatus('listo');
+        veil.hide();
       })
       .catch(() => {
         if (!cancelled) setStatus('error');
+        veil.hide(true);
       });
 
     return () => {
@@ -59,6 +64,7 @@ export function SceneView({ scene, callbacks, controlRef }: SceneViewProps) {
       mq.removeEventListener('change', onMq);
       engine?.destroy();
       controlRef.current = null;
+      sceneBridge.set(null);
     };
   }, [attempt, controlRef]);
 
