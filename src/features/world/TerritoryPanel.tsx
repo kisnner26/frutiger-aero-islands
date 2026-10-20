@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useState, type MutableRefObject } from
 import type { WorldScene } from '../../engine/WorldScene';
 import { useSession } from '../../persistence/session';
 import { isSupabaseConfigured, readableSupabaseError } from '../../persistence/supabase';
-import { claimCell, loadChallenges, loadLeaderboard, loadMyTerritory, loadRestoration, loadWorldCells, restoreCell, type Challenge, type Ranked, type Restoration, type TerritoryMe } from '../../persistence/territory';
+import { claimCell, forgetSnapshot, loadLeaderboard, loadSnapshot, restoreCell, type Challenge, type Ranked, type Restoration, type TerritoryMe } from '../../persistence/territory';
 import { COUNTRIES, findCountry } from '../../world/countries';
 import { countryAnchor } from '../../world/geoProjection';
 import { FlagBadge } from '../../world/FlagBadge';
+import { everyWhileVisible } from '../../persistence/fastcache';
 import { nextMilestone } from '../../story/lore';
 import { restorationStore } from '../../world/restorationStore';
 import { CELL, RESTORE_CAP_PER_PERSON, cellCenter, cellKey, claimHint, ownerColor, type CellInfo, type CellRef } from '../../world/territory';
@@ -32,18 +33,17 @@ export function useTerritory(sceneRef: MutableRefObject<WorldScene | null>, acti
   const [restoration, setRestoration] = useState<Restoration | null>(null);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (force = false) => {
     if (!isSupabaseConfigured) return;
-    const [c, m, r, ch] = await Promise.all([loadWorldCells().catch(() => null), loadMyTerritory(), loadRestoration(), loadChallenges()]);
-    if (c) {
-      setCells(c);
-      setLoaded(true);
-      sceneRef.current?.setTerritory(c, myName);
-    }
-    setMe(m);
-    setRestoration(r);
-    if (r) restorationStore.set(r.percent);
-    setChallenges(ch);
+    const snap = await loadSnapshot(force).catch(() => null);
+    if (!snap) return;
+    setCells(snap.cells);
+    setLoaded(true);
+    sceneRef.current?.setTerritory(snap.cells, myName);
+    setMe(snap.me);
+    setRestoration(snap.restoration);
+    if (snap.restoration) restorationStore.set(snap.restoration.percent);
+    setChallenges(snap.challenges);
   }, [sceneRef, myName]);
   // la escena se crea de forma asíncrona: cuando aparece (o cambia), se le entrega el mapa ya cargado
   useEffect(() => {
@@ -61,10 +61,24 @@ export function useTerritory(sceneRef: MutableRefObject<WorldScene | null>, acti
   useEffect(() => {
     void refresh();
     if (!active) return;
-    const t = window.setInterval(() => void refresh(), 25_000);
-    return () => window.clearInterval(t);
+    return everyWhileVisible(() => void refresh(), 40_000);
   }, [refresh, active]);
-  return { myName, cells, me, restoration, challenges, refresh, loaded };
+  /** actualiza al instante lo que ya sabemos (sin esperar al servidor); la lectura completa llega después. */
+  const patchLocal = useCallback(
+    (cx: number, cy: number, patch: Partial<CellInfo>, energyCost: number) => {
+      setCells((prev) => {
+        const next = new Map(prev);
+        const k = cellKey(cx, cy);
+        const base = next.get(k) ?? { cx, cy, owner: null, country: null, shieldUntil: 0, progress: 0 };
+        next.set(k, { ...base, ...patch });
+        sceneRef.current?.setTerritory(next, myName);
+        return next;
+      });
+      setMe((m) => (m ? { ...m, energy: Math.max(0, m.energy - energyCost) } : m));
+    },
+    [sceneRef, myName],
+  );
+  return { myName, cells, me, restoration, challenges, refresh, loaded, patchLocal };
 }
 
 interface Props {
@@ -74,7 +88,7 @@ interface Props {
 }
 
 export function TerritoryPanel({ sceneRef, data, picked }: Props) {
-  const { myName, cells, me, restoration, challenges, refresh } = data;
+  const { myName, cells, me, restoration, challenges, refresh, patchLocal } = data;
   const [tab, setTab] = useState<Tab>('retos');
   const [board, setBoard] = useState<Ranked[]>([]);
   const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
@@ -111,12 +125,15 @@ export function TerritoryPanel({ sceneRef, data, picked }: Props) {
     try {
       if (kind === 'restaurar') {
         const p = await restoreCell(picked.cx, picked.cy);
+        patchLocal(picked.cx, picked.cy, { progress: p }, 1);
         setMsg({ text: p >= 100 ? 'zona restaurada. el color vuelve al planeta.' : `restauración al ${p}%.` });
       } else {
         const a = await claimCell(picked.cx, picked.cy);
+        patchLocal(picked.cx, picked.cy, { owner: myName, shieldUntil: Date.now() + 30 * 60_000 }, a === 'capture' ? 2 : 1);
         setMsg({ text: a === 'capture' ? 'parcela capturada. tiene escudo 30 minutos.' : 'parcela reclamada. tiene escudo 30 minutos.' });
       }
-      await refresh();
+      forgetSnapshot();
+      void refresh(true); // sin bloquear: el resultado ya se ve
     } catch (error) {
       setMsg({ text: readableSupabaseError(error), error: true });
     } finally {

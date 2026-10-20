@@ -1,5 +1,6 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
 import type { Doc } from '../features/editor/commands';
+import { invalidate } from './fastcache';
 import { normalizeAvatar, type AvatarSpec } from '../avatar/model';
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
@@ -47,6 +48,7 @@ export async function completeProfile(username: string, displayName?: string): P
   if (!supabase) throw new Error('supabase no está configurado');
   const { data, error } = await supabase.rpc('complete_profile', { p_username: username, p_display_name: displayName || null });
   if (error) throw error;
+  invalidate('perfil:');
   const row = data?.[0];
   const layout = asDoc(row?.layout);
   if (!row || !layout) throw new Error('la isla inicial no se pudo crear');

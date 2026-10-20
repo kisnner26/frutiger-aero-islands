@@ -1,3 +1,4 @@
+import { cached } from './fastcache';
 import { supabase } from './supabase';
 
 export interface IslandSocialStatus { likes: number; favorites: number; isLiked: boolean; isFavorited: boolean; }
@@ -39,7 +40,11 @@ export async function listClubs(): Promise<ClubPreview[]> {
   return (data ?? []).map((row) => ({ id: row.id, slug: row.slug, name: row.name, motto: row.motto, badge: row.badge as ClubPreview['badge'] }));
 }
 
-export async function listGadgets(): Promise<Gadget[]> {
+export function listGadgets(): Promise<Gadget[]> {
+  return cached('gadgets', { ttl: 600_000, stale: true }, fetchGadgets);
+}
+
+async function fetchGadgets(): Promise<Gadget[]> {
   const { data, error } = await requireClient().from('gadget_catalog').select('id,name,kind,description,unlock_level').order('unlock_level');
   if (error) throw error;
   return (data ?? []).map((row) => ({ id: row.id, name: row.name, kind: row.kind as Gadget['kind'], description: row.description, unlockLevel: row.unlock_level }));

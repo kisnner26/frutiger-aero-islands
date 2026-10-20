@@ -1,7 +1,7 @@
 /** porcentaje de planeta restaurado por la comunidad, compartido por el editor, el mundo y los hitos. */
 import { useSyncExternalStore } from 'react';
 import { isSupabaseConfigured } from '../persistence/supabase';
-import { loadRestoration } from '../persistence/territory';
+import { loadSnapshot } from '../persistence/territory';
 
 const KEY = 'frutiger-aero-islands:restauracion';
 let percent = read();
@@ -35,8 +35,8 @@ export const restorationStore = {
   },
   async refresh() {
     if (!isSupabaseConfigured) return;
-    const r = await loadRestoration().catch(() => null);
-    if (r) restorationStore.set(r.percent);
+    const snap = await loadSnapshot().catch(() => null);
+    if (snap?.restoration) restorationStore.set(snap.restoration.percent);
   },
 };
 

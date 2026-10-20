@@ -1,3 +1,4 @@
+import { forgetProfileRow, myProfileRow } from './profileRow';
 import { currentSession, supabase } from './supabase';
 import { countryStore } from '../world/country';
 
@@ -11,6 +12,7 @@ export async function pushCountry(code: string): Promise<string | null> {
   const session = await currentSession();
   if (!session) return null;
   const { error } = await supabase.rpc('set_my_country', { p_country: code });
+  forgetProfileRow();
   return error ? error.message : null;
 }
 
@@ -19,9 +21,9 @@ export async function syncCountry(): Promise<void> {
   if (!supabase) return;
   const session = await currentSession();
   if (!session) return;
-  const { data, error } = await supabase.from('profiles').select('country_code').eq('id', session.user.id).maybeSingle();
-  if (error || !data) return;
-  const remote = (data as { country_code: string | null }).country_code;
+  const row = await myProfileRow(session.user.id);
+  if (!row) return;
+  const remote = row.country_code;
   if (remote) countryStore.set(remote);
   else {
     const local = countryStore.get();

@@ -1,5 +1,6 @@
 import { avatarStore } from '../avatar/store';
 import { normalizeAvatar } from '../avatar/model';
+import { forgetProfileRow, myProfileRow } from './profileRow';
 import { currentSession, supabase } from './supabase';
 
 /**
@@ -11,6 +12,7 @@ export async function pushAvatar(): Promise<string | null> {
   const session = await currentSession();
   if (!session) return null;
   const { error } = await supabase.rpc('set_my_avatar', { p_avatar: avatarStore.get() });
+  forgetProfileRow();
   return error ? error.message : null;
 }
 
@@ -20,9 +22,9 @@ export async function syncAvatar(): Promise<void> {
   const session = await currentSession();
   if (!session) return;
   avatarStore.setAccount(session.user.id);
-  const { data, error } = await supabase.from('profiles').select('avatar').eq('id', session.user.id).maybeSingle();
-  if (error || !data) return;
-  const remote = (data as { avatar: unknown }).avatar;
+  const row = await myProfileRow(session.user.id);
+  if (!row) return;
+  const remote = row.avatar;
   if (remote && typeof remote === 'object') avatarStore.set(normalizeAvatar(remote));
   else if (avatarStore.hasCustom()) await pushAvatar();
 }

@@ -15,6 +15,7 @@ import { listWorldIslands, type RealIsland } from '../../persistence/world';
 import { buildArchipelago, loadMine } from '../../world/archipelago';
 import { findCountry, searchCountries } from '../../world/countries';
 import { countryAnchor } from '../../world/geoProjection';
+import { everyWhileVisible } from '../../persistence/fastcache';
 import { worldVisit } from '../../story/missions';
 import { TerritoryPanel, useTerritory } from './TerritoryPanel';
 import type { CellRef } from '../../world/territory';
@@ -85,8 +86,8 @@ export function WorldPage() {
       }).catch(() => undefined);
     };
     refresh();
-    const timer = window.setInterval(refresh, 60_000);
-    return () => { alive = false; window.clearInterval(timer); };
+    const stop = everyWhileVisible(refresh, 60_000);
+    return () => { alive = false; stop(); };
   }, []);
 
   const [mode, setMode] = useState<'lejos' | 'dentro'>(initial.current?.mode ?? 'lejos');

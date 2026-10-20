@@ -1,4 +1,5 @@
 import { GRID, cellKey, type CellInfo } from '../world/territory';
+import { cached, invalidate } from './fastcache';
 import { supabase } from './supabase';
 
 export interface TerritoryMe {
@@ -100,3 +101,47 @@ export async function restoreCell(cx: number, cy: number): Promise<number> {
   if (error) throw error;
   return Number((data as Row[])[0]?.progress ?? 0);
 }
+
+export interface TerritorySnapshot {
+  cells: Map<string, CellInfo>;
+  me: TerritoryMe | null;
+  restoration: Restoration | null;
+  challenges: Challenge[];
+}
+
+function parseSnapshot(raw: Row): TerritorySnapshot {
+  const cells = new Map<string, CellInfo>();
+  for (const r of (raw.cells ?? []) as Row[]) {
+    const cx = Number(r.cx);
+    const cy = Number(r.cy);
+    cells.set(cellKey(cx, cy), { cx, cy, owner: null, country: null, shieldUntil: 0, progress: Number(r.progress), blight: true, zone: String(r.zone ?? '') });
+  }
+  for (const r of (raw.parcels ?? []) as Row[]) {
+    const cx = Number(r.cx);
+    const cy = Number(r.cy);
+    if (cx < 0 || cy < 0 || cx >= GRID || cy >= GRID) continue;
+    const prev = cells.get(cellKey(cx, cy));
+    cells.set(cellKey(cx, cy), { cx, cy, owner: String(r.owner), country: (r.country as string | null) ?? null, shieldUntil: Date.parse(String(r.shield_until)) || 0, progress: prev?.progress ?? 0, blight: prev?.blight, zone: prev?.zone });
+  }
+  const m = raw.me as Row | null;
+  const s = raw.summary as Row | null;
+  return {
+    cells,
+    me: m ? { energy: Number(m.energy), maxEnergy: Number(m.max_energy), secondsToNext: Number(m.seconds_to_next), owned: Number(m.owned), captured: Number(m.captured) } : null,
+    restoration: s ? { totalCells: Number(s.total_cells), restoredCells: Number(s.restored_cells), percent: Number(s.percent), helpers: Number(s.helpers) } : null,
+    challenges: ((raw.challenges ?? []) as Row[]).map((r) => ({ id: String(r.id), title: String(r.title), description: String(r.description), goal: Number(r.goal), progress: Number(r.progress), reward: String(r.reward), endsAt: String(r.ends_at) })),
+  };
+}
+
+/** todo el mapa de conquista en una sola ida y vuelta (con la función antigua de reserva si el proyecto aún no tiene la migración 0016). */
+export function loadSnapshot(force = false): Promise<TerritorySnapshot> {
+  if (force) invalidate('territorio');
+  return cached('territorio', { ttl: 15_000, stale: !force }, async () => {
+    const { data, error } = await client().rpc('world_snapshot');
+    if (!error && data) return parseSnapshot(data as Row);
+    const [cells, me, restoration, challenges] = await Promise.all([loadWorldCells(), loadMyTerritory(), loadRestoration(), loadChallenges()]);
+    return { cells, me, restoration, challenges };
+  });
+}
+
+export const forgetSnapshot = () => invalidate('territorio');

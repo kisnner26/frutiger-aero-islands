@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { myProfileRow } from './profileRow';
 import { supabase } from './supabase';
 
 export interface SessionInfo {
@@ -22,8 +23,7 @@ function set(next: SessionInfo) {
 async function loadUsername(userId: string): Promise<string | null> {
   if (!supabase) return null;
   try {
-    const { data } = await supabase.from('profiles').select('username').eq('id', userId).maybeSingle();
-    return (data as { username?: string } | null)?.username ?? null;
+    return (await myProfileRow(userId))?.username ?? null;
   } catch {
     return null;
   }

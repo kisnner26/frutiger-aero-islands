@@ -12,6 +12,7 @@ import { sceneBridge } from '../engine/sceneBridge';
 import { Veil } from '../ui/Veil';
 import { AeroLoader } from '../ui/AeroLoader';
 import { veil } from '../ui/veilStore';
+import { prefetchWorld } from '../persistence/prefetch';
 import { restorationStore, useRestoration } from '../world/restorationStore';
 
 const TITULOS: Record<Route, string> = {
@@ -45,6 +46,9 @@ function Inicio() {
   const session = useSession();
   const planet = useRestoration();
   useEffect(() => void restorationStore.refresh(), []);
+  useEffect(() => {
+    if (session.status === 'con-sesion') prefetchWorld();
+  }, [session.status]);
   if (session.status === 'cargando') return <div className="app"><Backdrop /><main className="main"><AeroLoader text="preparando tu archipiélago..." detail="la marea está conectando tu cuenta..." /></main></div>;
   const signed = session.status === 'con-sesion';
   return (

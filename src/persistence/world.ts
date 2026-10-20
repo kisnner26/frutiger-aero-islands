@@ -1,4 +1,5 @@
 import type { PlacedObject } from '../domain/island';
+import { cached } from './fastcache';
 import { supabase } from './supabase';
 
 /** isla de una persona real registrada, tal como se coloca en el mundo. */
@@ -43,7 +44,11 @@ function mapSummary(row: SummaryRow): RealIsland | null {
 }
 
 /** islas de jugadores reales (cuentas con perfil e isla), de la más antigua a la más reciente. no se inventa ninguna. */
-export async function listWorldIslands(limit = 32): Promise<RealIsland[]> {
+export function listWorldIslands(limit = 32): Promise<RealIsland[]> {
+  return cached(`mundo:${limit}`, { ttl: 45_000, stale: true }, () => fetchWorldIslands(limit));
+}
+
+async function fetchWorldIslands(limit: number): Promise<RealIsland[]> {
   if (!supabase) return [];
   const safeLimit = Math.max(1, Math.min(48, Math.floor(limit)));
   const summary = await supabase.rpc('world_island_summaries', { p_limit: safeLimit });
