@@ -64,6 +64,7 @@ export class WorldScene {
   private basin = new Sprite();
   private caustics!: TilingSprite;
   private under = new Container();
+  private routes = new Graphics();
   private islandLayer = new Container();
   private overlay = new Container();
   private frame = new Sprite();
@@ -145,7 +146,7 @@ export class WorldScene {
     this.caustics.alpha = 0.13;
     this.caustics.tileScale.set(1.8);
     this.islandLayer.sortableChildren = true;
-    this.inner.addChild(this.basin, this.caustics, this.under, this.islandLayer, this.overlay);
+    this.inner.addChild(this.basin, this.caustics, this.under, this.routes, this.islandLayer, this.overlay);
     this.frame.anchor.set(0.5);
     this.interior.addChild(this.inner, this.frame);
     this.interior.mask = this.mask;
@@ -153,6 +154,7 @@ export class WorldScene {
     this.sky.anchor.set(0);
 
     this.buildIslands(islands);
+    this.buildRoutes();
     this.buildLife();
 
     if (initial) {
@@ -222,6 +224,31 @@ export class WorldScene {
       box.addChildAt(ring, 1);
       this.islandLayer.addChild(box);
       this.nodes.set(data.id, { data, box, ring, flag });
+    }
+  }
+
+  /** rutas marítimas: unen islas reales con la del jugador y desaparecen si aún está solo. */
+  private buildRoutes() {
+    const mine = this.nodes.get('mia');
+    if (!mine) return;
+    const destinations = [...this.nodes.values()]
+      .filter((node) => node.data.id !== 'mia')
+      .sort((a, b) => Math.hypot(a.data.x - mine.data.x, a.data.y - mine.data.y) - Math.hypot(b.data.x - mine.data.x, b.data.y - mine.data.y))
+      .slice(0, 4);
+    for (const destination of destinations) {
+      const dx = destination.data.x - mine.data.x;
+      const dy = destination.data.y - mine.data.y;
+      const distance = Math.hypot(dx, dy);
+      const pieces = Math.max(3, Math.floor(distance / 72));
+      for (let part = 0; part < pieces; part += 2) {
+        const from = part / pieces;
+        const to = Math.min(1, (part + 1) / pieces);
+        this.routes
+          .moveTo(mine.data.x + dx * from, mine.data.y + dy * from)
+          .lineTo(mine.data.x + dx * to, mine.data.y + dy * to)
+          .stroke({ width: 5, color: 0xd8fbff, alpha: 0.62 });
+      }
+      this.routes.circle(destination.data.x, destination.data.y, 13).stroke({ width: 3, color: 0xaaf5ff, alpha: 0.8 });
     }
   }
 

@@ -6,7 +6,7 @@ import { WorldView } from '../../engine/WorldView';
 import { AeroWindow } from '../../ui/AeroWindow';
 import { WorldCommunityPanel } from '../community/WorldCommunityPanel';
 import { GadgetsPanel } from '../community/GadgetsPanel';
-import type { Gadget } from '../../persistence/community';
+import { worldPresence, type Gadget } from '../../persistence/community';
 import { phoneBus } from '../phone/phoneBus';
 import { Taskbar } from '../../ui/Taskbar';
 import { syncCountry } from '../../persistence/country';
@@ -18,13 +18,16 @@ import { countryStore, useCountry } from '../../world/country';
 import { CountryGate } from '../../world/CountryPicker';
 import { FlagBadge } from '../../world/FlagBadge';
 import { loadWorldView, saveWorldView, type WorldView as ViewState } from '../../world/worldState';
+import { aeroForecast } from '../../world/aeroForecast';
 
 /** mundo: planeta lejano, transición a su océano interior y selección de islas. */
 export function WorldPage() {
   const mine = useRef(loadMine());
   const [remoteMine, setRemoteMine] = useState(false);
+  const [remoteMineId, setRemoteMineId] = useState<string | null>(null);
   const [mineTick, setMineTick] = useState(0);
   const [others, setOthers] = useState<RealIsland[]>([]);
+  const [presence, setPresence] = useState<Record<string, number>>({});
   const [loaded, setLoaded] = useState(!isSupabaseConfigured);
   const country = useCountry();
   const sceneRef = useRef<WorldScene | null>(null);
@@ -56,6 +59,7 @@ export function WorldPage() {
       .then((i) => {
         if (!alive || !i) return;
         myName = i.username;
+        setRemoteMineId(i.id);
         mine.current = { objects: i.layout.objects, level: i.layout.maxLevel };
         setRemoteMine(true);
         setMineTick((n) => n + 1);
@@ -70,12 +74,29 @@ export function WorldPage() {
       alive = false;
     };
   }, []);
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    let alive = true;
+    const refresh = () => {
+      void worldPresence().then((rows) => {
+        if (!alive) return;
+        setPresence(Object.fromEntries(rows.map((row) => [row.islandId, row.onlineCount])));
+      }).catch(() => undefined);
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 60_000);
+    return () => { alive = false; window.clearInterval(timer); };
+  }, []);
+
   const [mode, setMode] = useState<'lejos' | 'dentro'>(initial.current?.mode ?? 'lejos');
   const [selectedId, setSelectedId] = useState<string | null>(initial.current?.selectedId ?? null);
   const [listOpen, setListOpen] = useState(false);
   const [expOpen, setExpOpen] = useState(false);
   const [gadgetsOpen, setGadgetsOpen] = useState(false);
   const selected = islands.find((i) => i.id === selectedId) ?? null;
+  const forecast = useMemo(() => aeroForecast(country), [country]);
+  const onlineTotal = Object.values(presence).reduce((total, count) => total + count, 0);
+  const selectedOnline = selected ? (presence[selected.kind === 'mia' ? remoteMineId ?? selected.id : selected.id] ?? 0) : 0;
   const firstCountry = useRef(true);
   useEffect(() => {
     if (firstCountry.current) {
@@ -174,6 +195,16 @@ export function WorldPage() {
         )}
       </header>
 
+      <aside className={`world-radar world-radar--${mode}`} aria-label="radar del archipiélago">
+        <header><span className={`world-radar__weather world-radar__weather--${forecast.tone}`} aria-hidden="true" /><div><p>radar aero</p><strong>{forecast.label}</strong><small>{forecast.detail}</small></div></header>
+        <div className="world-radar__metrics"><span><b>{others.length + 1}</b> islas</span><span><b>{onlineTotal}</b> en línea</span><span><b>{Math.max(0, others.length)}</b> rutas</span></div>
+        <div className="world-radar__actions">
+          <button type="button" onClick={() => { sceneRef.current?.enter(); window.setTimeout(() => choose('mia'), 30); }}>mi zona</button>
+          <button type="button" onClick={() => { sceneRef.current?.enter(); setListOpen(true); }}>radar de islas</button>
+          <button type="button" onClick={() => phoneBus.open('radio')}>radio</button>
+        </div>
+      </aside>
+
       {mode === 'lejos' && (
         <div className="world-enter">
           <button type="button" className="vista-button vista-button--primary" onClick={() => sceneRef.current?.enter()}>
@@ -189,7 +220,7 @@ export function WorldPage() {
               <li key={i.id}>
                 <button type="button" aria-pressed={i.id === selectedId} onClick={() => choose(i.id)}>
                   <strong>{i.name}</strong>
-                  <small>{i.kind === 'mia' ? (remoteMine ? 'tuya, guardada en tu cuenta' : 'tuya, guardada en este dispositivo') : `@${i.username}`}</small>
+                  <small>{i.kind === 'mia' ? (remoteMine ? 'tuya, guardada en tu cuenta' : 'tuya, guardada en este dispositivo') : `@${i.username}`} · {presence[i.id] ?? 0} en línea</small>
                 </button>
               </li>
             ))}
@@ -214,7 +245,7 @@ export function WorldPage() {
             {selected.kind === 'mia' ? (
               <>
                 <p>
-                  {selected.objects.length} objetos · nivel {selected.level} · {remoteMine ? 'guardada en tu cuenta' : 'guardada en este dispositivo'}
+                  {selected.objects.length} objetos · nivel {selected.level} · {remoteMine ? 'guardada en tu cuenta' : 'guardada en este dispositivo'} · {selectedOnline} en línea
                 </p>
                 <p className="world-card__zone">
                   <FlagBadge code={selected.country} width={34} />
@@ -230,7 +261,7 @@ export function WorldPage() {
             ) : (
               <>
                 <p>
-                  {selected.objects.length} objetos · nivel {selected.level}
+                  {selected.objects.length} objetos · nivel {selected.level} · {selectedOnline} en línea
                 </p>
                 <p className="world-card__zone">
                   <FlagBadge code={selected.country} width={34} />
