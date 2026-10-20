@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { completeProfile, isSupabaseConfigured, readableSupabaseError, supabase } from '../../persistence/supabase';
 import { routeHref } from '../../app/useHashRoute';
+import { sfx } from '../../audio/sfx';
 import './auth.css';
 import './login.css';
 
@@ -16,24 +17,24 @@ const copy: Record<AuthMode, { title: string; description: string; action: strin
 export function AuthPage() {
   const [mode, setMode] = useState<AuthMode>('entrar'); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [username, setUsername] = useState(''); const [status, setStatus] = useState<{ text: string; error?: boolean } | null>(null); const [busy, setBusy] = useState(false);
   const text = copy[mode];
-  const chooseMode = (next: AuthMode) => { setMode(next); setStatus(null); };
+  const chooseMode = (next: AuthMode) => { if (next !== mode) sfx.click(); setMode(next); setStatus(null); };
   const submit = async (event: React.FormEvent) => {
     event.preventDefault(); if (!supabase) return; setBusy(true); setStatus(null);
     try {
       if (mode === 'recuperar') {
         const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}${window.location.pathname}#/auth` });
-        if (error) throw error; setStatus({ text: 'la llave de acceso ya va camino a tu correo.' });
+        if (error) throw error; sfx.coin(); setStatus({ text: 'la llave de acceso ya va camino a tu correo.' });
       } else if (mode === 'registro') {
         const normalizedUsername = username.toLowerCase();
         if (!usernameOk(normalizedUsername)) throw new Error('tu usuario debe tener de 3 a 24 caracteres: letras, números o guion bajo.');
         const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { pending_username: normalizedUsername }, emailRedirectTo: `${window.location.origin}${window.location.pathname}#/auth` } });
         if (error) throw error;
-        if (data.session) { await completeProfile(normalizedUsername); window.location.hash = routeHref('isla'); return; }
-        setStatus({ text: 'cuenta creada. confirma el correo y vuelve a conectar tu isla.' });
+        if (data.session) { await completeProfile(normalizedUsername); sfx.coin(); window.location.hash = routeHref('isla'); return; }
+        sfx.coin(); setStatus({ text: 'cuenta creada. confirma el correo y vuelve a conectar tu isla.' });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) throw error; window.location.hash = routeHref('isla');
+        const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) throw error; sfx.coin(); window.location.hash = routeHref('isla');
       }
-    } catch (error) { setStatus({ text: readableSupabaseError(error), error: true }); } finally { setBusy(false); }
+    } catch (error) { sfx.error(); setStatus({ text: readableSupabaseError(error), error: true }); } finally { setBusy(false); }
   };
 
   const icon = (d: string) => (
