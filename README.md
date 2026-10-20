@@ -13,7 +13,7 @@ npm run dev
 
 otros scripts: `npm run typecheck`, `npm run build`, `npm run preview`, `npm test`. copiar `.env.example` a `.env` solo cuando exista backend; hoy no se usa.
 
-rutas hash: `#/` (inicio), `#/introduccion`, `#/isla` (el juego) y `#/mundo` (planeta y archipiélago; las islas de ejemplo son dibujos del prototipo). doble clic o doble toque en el fondo restablece la cámara; rueda o pellizco para acercar; esc cancela.
+rutas hash: `#/` (inicio), `#/introduccion`, `#/isla` (el juego) y `#/mundo` (planeta y archipiélago con islas de jugadores reales; sin cuentas solo aparece la tuya). doble clic o doble toque en el fondo restablece la cámara; rueda o pellizco para acercar; esc cancela.
 
 música: radio generativa original en el teléfono de la bandeja (véase [radio](docs/RADIO.md)); no suena hasta que la pulses. la pista personal del autor (`public/audio/soundtrack.mp3`) se publica como emisora opcional por decisión suya; sus derechos no están verificados (véase [recursos](docs/ASSETS.md)).
 

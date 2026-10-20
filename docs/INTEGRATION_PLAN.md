@@ -9,7 +9,7 @@ estado al 2026-10-19. este documento separa lo que ya existe de lo que falta y f
 | motor de escena pixijs, editor, catálogo de 8 objetos, economía local (brillos, encanto, niveles) | operativo, solo local | src/engine, src/features/editor |
 | audio | un único motor de radio; efectos sintetizados aparte | src/audio |
 | teléfono | cuerpo y panel; aplicaciones: radio, cámara y álbum | src/features/phone |
-| mundo (planeta, archipiélago) | prototipo, islas de ejemplo identificadas | src/features/world |
+| mundo (planeta, archipiélago) | solo islas de jugadores reales registrados | src/features/world |
 | comunidad: auth, explorar, visitas, migración inicial | en construcción por otra sesión (perfiles, islas, rpc `complete_profile` y `save_island`) | src/features/community, supabase/migrations |
 | mascotas, personaje, expansiones, concursos, fotos | no existen | |
 
