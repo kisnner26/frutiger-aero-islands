@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-export type Route = 'inicio' | 'introduccion' | 'isla' | 'mundo' | 'auth' | 'explorar' | 'visita' | 'personaje' | 'arcade';
+export type Route = 'inicio' | 'introduccion' | 'isla' | 'mundo' | 'auth' | 'explorar' | 'visita' | 'personaje' | 'arcade' | 'reglas';
 export interface RouteState { route: Route; username?: string }
 
 const PATHS: Record<Route, string> = {
@@ -10,6 +10,7 @@ const PATHS: Record<Route, string> = {
   mundo: '/mundo',
   personaje: '/personaje',
   arcade: '/arcade',
+  reglas: '/reglas',
   auth: '/auth',
   explorar: '/explorar',
   visita: '/island',
@@ -22,6 +23,7 @@ export function parseHash(hash: string): RouteState {
   if (path === PATHS.mundo) return { route: 'mundo' };
   if (path === PATHS.personaje) return { route: 'personaje' };
   if (path === PATHS.arcade) return { route: 'arcade' };
+  if (path === PATHS.reglas) return { route: 'reglas' };
   if (path === PATHS.auth) return { route: 'auth' };
   if (path === PATHS.explorar) return { route: 'explorar' };
   const visit = path.match(/^\/island\/([a-z0-9_]{3,24})$/i);

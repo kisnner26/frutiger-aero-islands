@@ -1,0 +1,23 @@
+.win-rules { position: relative; width: min(680px, calc(100vw - 24px)); margin: 24px auto 90px; }
+.rules { display: grid; gap: 10px; padding: 18px 22px 22px; color: #073d67; font-size: 14px; line-height: 1.55; max-height: calc(100svh - 150px); overflow: auto; }
+.rules h1 { margin: 0; font-size: clamp(26px, 5vw, 34px); letter-spacing: -.03em; }
+.rules h2 { margin: 10px 0 0; font-size: 16px; color: #0a6aa6; }
+.rules p, .rules ul { margin: 0; }
+.rules ul { padding-left: 20px; display: grid; gap: 4px; }
+.rules a { color: #0a6aa6; font-weight: 800; }
+.rules__beta { padding: 10px 14px; border-radius: 12px; background: linear-gradient(135deg, #fff8d8, #ffe9a0); border: 1px solid #e8b830; }
+.rules__foot { margin-top: 8px; }
+.report-btn { position: fixed; z-index: 53; left: 14px; bottom: calc(66px + env(safe-area-inset-bottom)); min-height: 34px; padding: 0 14px; border: 1px solid rgba(255,255,255,.9); border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(190,225,240,.85)); color: #7a3a2a; font: 800 12px var(--fuente, inherit); cursor: pointer; box-shadow: 0 4px 12px rgba(0,60,100,.25); }
+.win-report { position: fixed; z-index: 80; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(400px, calc(100vw - 24px)); }
+.report { display: grid; gap: 10px; padding: 14px 16px 16px; color: #073d67; }
+.report label { display: grid; gap: 4px; font-size: 12px; font-weight: 800; }
+.report select, .report textarea { padding: 8px 10px; border: 1px solid #87bdd9; border-radius: 9px; background: #fff; color: #073d67; font: 700 13px var(--fuente, inherit); }
+.report textarea { min-height: 70px; resize: vertical; }
+.report__actions { display: flex; gap: 8px; justify-content: flex-end; }
+.report__msg { margin: 0; font-size: 12px; font-weight: 800; } .report__msg.is-error { color: #9a3326; }
+.footer-links { display: flex; gap: 14px; justify-content: center; margin: 14px 0 0; font-size: 12px; font-weight: 800; }
+.footer-links a { color: inherit; opacity: .85; }
+.account__legal { margin: 6px 0 0; font-size: 12px; font-weight: 800; text-align: center; }
+.account__legal a, .account__legal button { color: #5a7f95; background: none; border: 0; font: inherit; text-decoration: underline; cursor: pointer; }
+.account__delete { display: grid; gap: 8px; padding: 10px 12px; border-radius: 12px; background: #fde9e5; border: 1px solid #e8a79a; color: #7a2a1e; font-size: 12px; font-weight: 700; }
+.account__delete p { margin: 0; } .account__delete input { padding: 8px 10px; border: 1px solid #d9a79d; border-radius: 8px; font: 700 13px var(--fuente, inherit); }

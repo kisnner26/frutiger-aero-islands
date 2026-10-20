@@ -65,6 +65,7 @@ export function AuthPage() {
           {text.title}
         </h1>
         <p className="logon__lead">{text.description}</p>
+        {mode === 'registro' && <p className="logon__lead">al crear tu cuenta aceptas las <a href={routeHref('reglas')}>reglas y la privacidad</a> de la beta.</p>}
 
         <div className="logon__tabs" role="tablist" aria-label="opciones de cuenta">
           {modes.map((m) => (
@@ -123,6 +124,7 @@ export function AuthPage() {
               olvidé mi clave
             </button>
           )}
+          <a href={routeHref('reglas')}>reglas y privacidad</a>
           <a href={routeHref('inicio')}>volver a la bienvenida</a>
         </p>
       </section>

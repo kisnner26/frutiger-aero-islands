@@ -21,6 +21,7 @@ const TITULOS: Record<Route, string> = {
   mundo: 'mundo | frutiger aero islands',
   personaje: 'mi personaje | frutiger aero islands',
   arcade: 'arcade | frutiger aero islands',
+  reglas: 'reglas y privacidad | frutiger aero islands',
   isla: 'tu isla | frutiger aero islands',
   auth: 'cuenta | frutiger aero islands',
   explorar: 'explorar | frutiger aero islands',
@@ -35,6 +36,7 @@ function Cuenta() {
 }
 
 const WorldPage = lazy(() => import('../features/world/WorldPage').then((m) => ({ default: m.WorldPage })));
+const RulesPage = lazy(() => import('../features/legal/RulesPage').then((m) => ({ default: m.RulesPage })));
 const ArcadePage = lazy(() => import('../features/arcade/ArcadePage').then((m) => ({ default: m.ArcadePage })));
 const AvatarEditor = lazy(() => import('../features/avatar/AvatarEditor').then((m) => ({ default: m.AvatarEditor })));
 const ExplorePage = lazy(() => import('../features/community/ExplorePage').then((m) => ({ default: m.ExplorePage })));
@@ -74,6 +76,7 @@ function Inicio() {
         <li><strong>visitas públicas</strong><small>otros te encuentran</small></li>
         <li><strong>sincronizado</strong><small>mismo progreso en todo</small></li>
       </ul>
+      <p className="footer-links"><a href={routeHref('reglas')}>reglas y privacidad</a><span>beta</span></p>
     </div>
   );
 }
@@ -154,6 +157,7 @@ function Routes() {
     document.querySelector<HTMLElement>('[data-vista-titulo]')?.focus();
   }, [route]);
 
+  if (route === 'reglas') return <div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text="abriendo las reglas..." />}><RulesPage /></Suspense></main></div>;
   if (route === 'auth') return <div className="app"><Backdrop /><main className="main"><Cuenta /></main>{session.status === 'con-sesion' && <Taskbar />}</div>;
   if (route === 'personaje') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text="abriendo el personaje..." />}><AvatarEditor /></Suspense></main><Taskbar /></div></AccessGate>;
   if (route === 'arcade') return <AccessGate><Suspense fallback={<AeroLoader variant="scene" text="abriendo el arcade..." detail="preparando desafíos sobre el agua..." />}><ArcadePage onExit={() => { window.location.hash = routeHref('mundo'); }} /></Suspense></AccessGate>;

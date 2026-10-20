@@ -810,3 +810,4 @@
 .leader__list b { text-align: right; font-size: 14px; color: #0a6aa6; }
 .leader__me { margin: 0; padding: 8px 12px; border-radius: 10px; background: #e4f7ff; font-size: 12px; font-weight: 800; }
 @media (max-width: 680px) { .win-leader { top: auto; bottom: 64px; } .leader__list li { grid-template-columns: 26px 22px 1fr 44px; } .leader__list small { display: none; } }
+@media (max-width: 680px) { .world-controls[data-card="1"] { display: none; } }

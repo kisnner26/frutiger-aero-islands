@@ -384,7 +384,7 @@ export function WorldPage() {
         {selected ? `, seleccionada: ${selected.name}` : ''}
       </span>
 
-      <nav className="world-controls" aria-label="controles del mundo">
+      <nav className="world-controls" aria-label="controles del mundo" data-card={selected && mode === 'dentro' ? '1' : '0'}>
         {mode === 'lejos' ? (
           <>
             <button type="button" className="world-controls__wide" disabled={!country} onClick={() => country && sceneRef.current?.faceCountry(country)}>ir a mi país</button>

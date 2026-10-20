@@ -5,6 +5,7 @@ import { completeProfile, currentSession, getIsland, isSupabaseConfigured, myIsl
 import { touchIslandPresence } from '../../persistence/community';
 import { IslandSocialControls } from './IslandSocialControls';
 import { VisitBanner } from './VisitBanner';
+import { ReportButton } from '../legal/ReportButton';
 import { AeroWindow } from '../../ui/AeroWindow';
 import { EditorPage } from '../editor/EditorPage';
 import { AeroLoader } from '../../ui/AeroLoader';
@@ -42,5 +43,5 @@ export function VisitIslandPage({ username }: { username: string }) {
   useEffect(() => { let alive = true; getIsland(username).then((v) => { if (!alive) return; setIsland(v); setState(v ? 'listo' : 'vacio'); }).catch(() => alive && setState('error')); return () => { alive = false; }; }, [username]);
   if (state === 'cargando') return <Loading text="visitando isla..." />;
   if (state !== 'listo' || !island) return <div className="app"><main className="main"><AeroWindow className="win-auth" title="visita" icon={<span className="mini-orb" />}><div className="auth-form"><h1 id="titulo-vista" tabIndex={-1}>{state === 'vacio' ? 'esta isla no existe' : 'no se pudo abrir la isla'}</h1><a href={routeHref('explorar')}>explorar islas</a></div></AeroWindow></main></div>;
-  return <><VisitBanner island={island} /><IslandSocialControls islandId={island.id} ownerName={island.displayName} /><EditorPage key={island.id} initialDoc={island.layout} editable={false} ownerLabel={`isla de ${island.displayName}`} ownerAvatar={island.avatar} /></>;
+  return <><VisitBanner island={island} /><ReportButton username={island.username} /><IslandSocialControls islandId={island.id} ownerName={island.displayName} /><EditorPage key={island.id} initialDoc={island.layout} editable={false} ownerLabel={`isla de ${island.displayName}`} ownerAvatar={island.avatar} /></>;
 }

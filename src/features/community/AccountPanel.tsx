@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { routeHref } from '../../app/useHashRoute';
+import { deleteMyAccount } from '../../persistence/safety';
 import { signOut, type SessionInfo } from '../../persistence/session';
 import { AeroWindow } from '../../ui/AeroWindow';
+import '../legal/legal.css';
 import { findCountry } from '../../world/countries';
 import { useCountry } from '../../world/country';
 import { CountryGate } from '../../world/CountryPicker';
@@ -13,6 +15,9 @@ export function AccountPanel({ session }: { session: SessionInfo }) {
   const country = useCountry();
   const [changeCountry, setChangeCountry] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [deleteError, setDeleteError] = useState('');
   const name = session.username ? `@${session.username}` : session.email ?? 'tu cuenta';
 
   const leave = async () => {
@@ -49,6 +54,38 @@ export function AccountPanel({ session }: { session: SessionInfo }) {
         <button type="button" className="account__out" disabled={busy} onClick={() => void leave()}>
           {busy ? 'cerrando sesión...' : 'cerrar sesión'}
         </button>
+        <p className="account__legal">
+          <a href={routeHref('reglas')}>reglas y privacidad</a>
+          {session.username && (
+            <>
+              {' · '}
+              <button type="button" className="account__link" onClick={() => setDeleting((v) => !v)}>borrar mi cuenta</button>
+            </>
+          )}
+        </p>
+        {deleting && session.username && (
+          <form
+            className="account__delete"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setBusy(true);
+              setDeleteError('');
+              try {
+                await deleteMyAccount();
+                window.location.hash = routeHref('inicio');
+                window.location.reload();
+              } catch {
+                setDeleteError('no se pudo borrar la cuenta. inténtalo de nuevo.');
+                setBusy(false);
+              }
+            }}
+          >
+            <p>esto borra tu isla, tu personaje y tus puntos para siempre. para confirmar escribe <strong>{session.username}</strong>.</p>
+            <input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} autoComplete="off" aria-label="escribe tu usuario para confirmar" />
+            {deleteError && <p role="alert">{deleteError}</p>}
+            <button className="vista-button" disabled={busy || confirmText !== session.username}>borrar para siempre</button>
+          </form>
+        )}
       </section>
       <CountryGate forceOpen={changeCountry} onClose={() => setChangeCountry(false)} />
     </AeroWindow>

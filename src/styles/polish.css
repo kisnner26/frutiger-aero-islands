@@ -626,3 +626,9 @@
 @keyframes velero-cruza { from { left: -100px; } to { left: calc(100% + 10px); } }
 @keyframes velero-cabecea { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-5px) rotate(2deg); } }
 @keyframes nube-pasa { from { left: -220px; } to { left: 110%; } }
+
+/* barra de tareas: con muchas ventanas se desplaza sin pisar el reloj ni la bandeja */
+.taskbar__tasks { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.taskbar__tasks::-webkit-scrollbar { display: none; }
+.task { flex: none; }
+.taskbar__tray { flex: none; }
