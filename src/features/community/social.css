@@ -14,3 +14,5 @@
 .visit-banner button { border: 0; background: none; color: #5a8fb0; font: 900 20px/1 inherit; cursor: pointer; }
 @keyframes visita-llega { 0% { opacity: 0; transform: translate(-50%, -26px) scale(.92); } 9% { opacity: 1; transform: translate(-50%, 0) scale(1); } 88% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -14px); } }
 @media (prefers-reduced-motion: reduce) { .visit-banner { animation: none; } }
+.island-card { position: relative; }
+.island-card__online { position: absolute; top: 8px; right: 8px; padding: 2px 8px 2px 18px; border-radius: 999px; background: #e8fbe0 radial-gradient(circle at 9px 50%, #8bf06a 0 4px, transparent 5px); color: #1f6a28; font-size: 10px; font-weight: 900; border: 1px solid #9ad88a; }

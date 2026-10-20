@@ -271,6 +271,19 @@ export class WorldScene {
     }
   }
 
+  /** añade islas nuevas (por ejemplo las de un país que se acaba de abrir) sin reconstruir el mundo. */
+  async addIslands(list: WorldIsland[]) {
+    const fresh = list.filter((i) => !this.nodes.has(i.id) && i.objects.every((o) => CATALOG_MAP.has(o.assetId)));
+    if (!fresh.length || this.destroyed || !this.app) return;
+    const need = [...new Set(fresh.flatMap((i) => i.objects.map((o) => o.assetId)))].filter((id) => !this.objTex.has(id));
+    const tex = await Promise.all(need.map(async (id) => Texture.from(await pencilSprite(CATALOG_MAP.get(id)!.assetPath))));
+    if (this.destroyed) return;
+    need.forEach((id, i) => this.objTex.set(id, tex[i]));
+    this.buildIslands(fresh.filter((i) => !this.nodes.has(i.id)));
+    if (this.focusCode) this.focusCountry(this.focusCode);
+    this.renderNow();
+  }
+
   private buildIslands(islands: WorldIsland[]) {
     for (const data of islands) {
       const box = new Container();

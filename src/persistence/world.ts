@@ -72,3 +72,13 @@ async function fetchWorldIslands(limit: number): Promise<RealIsland[]> {
     })
     .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
 }
+
+/** todas las islas de un país concreto (se piden al explorar esa zona). */
+export function listCountryIslands(country: string): Promise<RealIsland[]> {
+  return cached(`mundo-pais:${country}`, { ttl: 30_000, stale: true }, async () => {
+    if (!supabase) return [];
+    const { data, error } = await supabase.rpc('world_islands_by_country', { p_country: country, p_limit: 30 });
+    if (error) return [];
+    return ((data ?? []) as SummaryRow[]).map(mapSummary).filter((island): island is RealIsland => island !== null);
+  });
+}

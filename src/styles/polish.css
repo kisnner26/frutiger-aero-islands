@@ -636,7 +636,7 @@
 /* ===== teléfono: ventanas como hojas inferiores, botones táctiles y sin zoom accidental ===== */
 @media (max-width: 680px) {
   .win-territory, .win-leader, .win-missions, .win-world-atlas, .win-world-list, .win-world-country, .win-world-card,
-  .win-objects, .win-workshop, .win-daily, .win-report {
+  .win-objects, .win-workshop, .win-daily, .win-report, .win-players {
     position: fixed !important;
     left: 8px !important;
     right: 8px !important;

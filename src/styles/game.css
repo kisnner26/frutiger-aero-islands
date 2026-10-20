@@ -840,3 +840,16 @@
 .vsb__clock { width: 112px; margin: 0 auto; filter: drop-shadow(0 3px 5px rgba(0,60,100,.3)); }
 .vsb__bar { display: block; height: 7px; overflow: hidden; border-radius: 999px; background: #c9dde6; } .vsb__bar b { display: block; height: 100%; background: linear-gradient(90deg, #6a9aa8, #8adf58 60%, #3ab9dc); }
 .vsb.is-closed .vsb__tab { border-radius: 10px 0 0 10px; }
+
+/* jugadores en línea y directorio */
+.win-players { position: absolute; z-index: 27; left: 14px; top: 96px; width: min(380px, calc(100vw - 28px)); }
+.players { display: grid; gap: 8px; padding: 12px; color: #073d67; max-height: calc(100svh - 220px); overflow: auto; }
+.players__empty { margin: 0; color: #52758d; font-size: 12px; font-weight: 700; }
+.players__list { list-style: none; display: grid; gap: 4px; margin: 0; padding: 0; }
+.players__list li { display: grid; grid-template-columns: 24px 1fr auto 12px; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,.72); border: 1px solid rgba(104,174,207,.3); }
+.players__list li.is-me { background: linear-gradient(135deg, #fff8d8, #ffe9a0); border-color: #e8b830; }
+.players__list a { color: #0a5a90; font-size: 13px; font-weight: 800; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.players__list small { color: #52758d; font-size: 10px; font-weight: 700; }
+.players__list i { width: 10px; height: 10px; border-radius: 50%; background: #b8c8d2; }
+.players__list i.is-on { background: radial-gradient(circle at 35% 30%, #fff, #8bf06a 45%, #1f9a3a); box-shadow: 0 0 6px rgba(120,240,100,.8); }
+.players__search { width: auto; }

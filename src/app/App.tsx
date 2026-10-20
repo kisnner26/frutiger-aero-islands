@@ -13,6 +13,8 @@ import { Veil } from '../ui/Veil';
 import { AeroLoader } from '../ui/AeroLoader';
 import { veil } from '../ui/veilStore';
 import { prefetchWorld } from '../persistence/prefetch';
+import { everyWhileVisible } from '../persistence/fastcache';
+import { touchMyPresence } from '../persistence/presence';
 import { restorationStore, useRestoration } from '../world/restorationStore';
 
 const TITULOS: Record<Route, string> = {
@@ -123,6 +125,14 @@ function Routes() {
   const primera = useRef(true);
 
   useEffect(() => music.armFirstGesture(), []);
+
+  /* presencia: con sesión, avisamos cada minuto desde cualquier pantalla para que los demás nos vean en línea */
+  useEffect(() => {
+    if (session.status !== 'con-sesion' || !session.username) return;
+    const beat = () => void touchMyPresence().catch(() => undefined);
+    beat();
+    return everyWhileVisible(beat, 60_000);
+  }, [session.status, session.username]);
 
   /* transición: velo de cristal al abrir la isla o el mundo; la escena lo retira cuando está lista */
   const prevRoute = useRef<Route | null>(null);

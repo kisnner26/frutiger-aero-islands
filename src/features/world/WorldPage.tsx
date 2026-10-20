@@ -18,6 +18,10 @@ import { everyWhileVisible } from '../../persistence/fastcache';
 import { useExclusiveWindows } from '../../ui/useExclusiveWindows';
 import { worldVisit } from '../../story/missions';
 import { LeaderboardPanel } from './LeaderboardPanel';
+import { useSession } from '../../persistence/session';
+import { PlayersPanel } from './PlayersPanel';
+import { loadCountryCounts, type CountryCount } from '../../persistence/presence';
+import { listCountryIslands } from '../../persistence/world';
 import { TerritoryPanel, useTerritory } from './TerritoryPanel';
 import type { CellRef } from '../../world/territory';
 import { COUNTRY_FACTS } from '../../world/countryFacts';
@@ -37,6 +41,7 @@ export function WorldPage() {
   const [presence, setPresence] = useState<Record<string, number>>({});
   const [loaded, setLoaded] = useState(!isSupabaseConfigured);
   const country = useCountry();
+  const sessionUser = useSession().username;
   const sceneRef = useRef<WorldScene | null>(null);
   const initial = useRef<ViewState | null>(null);
   const prevCountry = useRef(country);
@@ -50,6 +55,8 @@ export function WorldPage() {
     }
     return list;
   }, [country, mineTick, others]);
+  const mineNode = islands.find((i) => i.id === 'mia');
+  const rebuildKey = `${mineNode?.x},${mineNode?.y},${mineNode?.level},${mineNode?.objects.length},${country}`;
   if (initial.current === null) {
     const saved = loadWorldView();
     const me = buildArchipelago(mine.current, [], countryStore.get()).find((i) => i.id === 'mia');
@@ -99,6 +106,8 @@ export function WorldPage() {
   const [atlasOpen, setAtlasOpen] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const [leaderOpen, setLeaderOpen] = useState(false);
+  const [playersOpen, setPlayersOpen] = useState(false);
+  const [counts, setCounts] = useState<Record<string, CountryCount>>({});
   const [conquestOpen, setConquestOpen] = useState(false);
   const [pickedCell, setPickedCell] = useState<CellRef | null>(null);
   const territory = useTerritory(sceneRef, conquestOpen);
@@ -107,14 +116,42 @@ export function WorldPage() {
   const [atlasQuery, setAtlasQuery] = useState('');
   const [countryFocus, setCountryFocus] = useState<string | null>(null);
   useExclusiveWindows(
-    { lista: listOpen, expediciones: expOpen, gadgets: gadgetsOpen, atlas: atlasOpen, conquista: conquestOpen, ranking: leaderOpen, pais: Boolean(countryFocus) },
-    { lista: () => setListOpen(false), expediciones: () => setExpOpen(false), gadgets: () => setGadgetsOpen(false), atlas: () => setAtlasOpen(false), conquista: () => { setConquestOpen(false); setPickedCell(null); }, ranking: () => setLeaderOpen(false), pais: () => setCountryFocus(null) },
+    { jugadores: playersOpen, lista: listOpen, expediciones: expOpen, gadgets: gadgetsOpen, atlas: atlasOpen, conquista: conquestOpen, ranking: leaderOpen, pais: Boolean(countryFocus) },
+    { jugadores: () => setPlayersOpen(false), lista: () => setListOpen(false), expediciones: () => setExpOpen(false), gadgets: () => setGadgetsOpen(false), atlas: () => setAtlasOpen(false), conquista: () => { setConquestOpen(false); setPickedCell(null); }, ranking: () => setLeaderOpen(false), pais: () => setCountryFocus(null) },
   );
   const selected = islands.find((i) => i.id === selectedId) ?? null;
   const forecast = useMemo(() => aeroForecast(country), [country]);
   const onlineTotal = Object.values(presence).reduce((total, count) => total + count, 0);
   const selectedOnline = selected ? (presence[selected.kind === 'mia' ? remoteMineId ?? selected.id : selected.id] ?? 0) : 0;
   const focusedCountry = findCountry(countryFocus);
+  const countOf = (code: string) => Math.max(counts[code]?.islands ?? 0, islands.filter((island) => island.country === code).length);
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    let alive = true;
+    const load = () => void loadCountryCounts().then((c) => alive && setCounts(c));
+    load();
+    const stop = everyWhileVisible(load, 60_000);
+    return () => {
+      alive = false;
+      stop();
+    };
+  }, []);
+  // al explorar un país se piden todas sus islas (el mundo solo trae una muestra al abrir)
+  useEffect(() => {
+    if (!countryFocus || !isSupabaseConfigured) return;
+    let alive = true;
+    void listCountryIslands(countryFocus).then((list) => {
+      if (!alive || !list.length) return;
+      setOthers((prev) => {
+        const known = new Set(prev.map((i) => i.id));
+        const add = list.filter((i) => !known.has(i.id) && i.username !== sessionUser);
+        return add.length ? [...prev, ...add] : prev;
+      });
+    });
+    return () => {
+      alive = false;
+    };
+  }, [countryFocus, sessionUser]);
   const focusedCountryPlayers = countryFocus ? islands.filter((island) => island.country === countryFocus) : [];
   const facts = countryFocus ? COUNTRY_FACTS.get(countryFocus) : undefined;
   const exploreCountry = (code: string) => {
@@ -225,7 +262,7 @@ export function WorldPage() {
 
   return (
     <div className="game world">
-      <WorldView islands={islands} initial={initial.current} callbacks={callbacks} controlRef={sceneRef} />
+      <WorldView islands={islands} initial={initial.current} callbacks={callbacks} controlRef={sceneRef} rebuildKey={rebuildKey} />
 
       <header className="world-hud">
         <div className="glass-panel world-hud__bar">
@@ -292,6 +329,11 @@ export function WorldPage() {
           <GadgetsPanel level={mine.current.level} onUse={useGadget} />
         </AeroWindow>
       )}
+      {playersOpen && (
+        <AeroWindow className="win-players" title="jugadores" icon={<span className="mini-orb mini-orb--green" />} onClose={() => setPlayersOpen(false)}>
+          <PlayersPanel me={territory.myName} />
+        </AeroWindow>
+      )}
       {leaderOpen && (
         <AeroWindow className="win-leader" title="ranking · top 100" icon={<span className="mini-orb" />} onClose={() => setLeaderOpen(false)}>
           <LeaderboardPanel />
@@ -304,7 +346,7 @@ export function WorldPage() {
       )}
       {atlasOpen && (
         <AeroWindow className="win-world-atlas" title="atlas de países" icon={<span className="mini-orb mini-orb--globe" />} onClose={() => setAtlasOpen(false)}>
-          <section className="world-atlas"><label>busca un país<input autoFocus value={atlasQuery} onChange={(event) => setAtlasQuery(event.target.value)} placeholder="nicaragua, japón, brasil..." /></label><div>{searchCountries(atlasQuery).slice(0, 18).map((entry) => <button key={entry.code} type="button" onClick={() => openCountry(entry.code)}><FlagBadge code={entry.code} width={28} /><span><strong>{entry.name}</strong><small>{islands.filter((island) => island.country === entry.code).length} islas en esta zona</small></span></button>)}</div></section>
+          <section className="world-atlas"><label>busca un país<input autoFocus value={atlasQuery} onChange={(event) => setAtlasQuery(event.target.value)} placeholder="nicaragua, japón, brasil..." /></label><div>{searchCountries(atlasQuery).slice(0, 18).map((entry) => <button key={entry.code} type="button" onClick={() => openCountry(entry.code)}><FlagBadge code={entry.code} width={28} /><span><strong>{entry.name}</strong><small>{countOf(entry.code)} {countOf(entry.code) === 1 ? 'isla' : 'islas'} en esta zona{counts[entry.code]?.online ? ` · ${counts[entry.code].online} en línea` : ''}</small></span></button>)}</div></section>
         </AeroWindow>
       )}
       {focusedCountry && (
@@ -317,7 +359,7 @@ export function WorldPage() {
                 <div><dt>idioma</dt><dd>{facts.idioma}</dd></div>
               </dl>
             )}
-            <strong>{focusedCountryPlayers.length} {focusedCountryPlayers.length === 1 ? 'isla de jugador' : 'islas de jugadores'} en esta zona</strong>
+            <strong>{countOf(focusedCountry.code)} {countOf(focusedCountry.code) === 1 ? 'isla de jugador' : 'islas de jugadores'} en esta zona{counts[focusedCountry.code]?.online ? ` · ${counts[focusedCountry.code].online} en línea` : ''}</strong>
             {focusedCountryPlayers.length > 0 ? (
               <ul className="world-country__players">
                 {focusedCountryPlayers.slice(0, 6).map((i) => (
@@ -406,7 +448,7 @@ export function WorldPage() {
         )}
       </nav>
 
-      <Taskbar tasks={[{ id: 'islas', label: 'islas', icon: <span className="mini-orb mini-orb--green" />, active: listOpen, onClick: () => setListOpen((v) => !v) }, { id: 'ranking', label: 'ranking', icon: <span className="mini-orb" />, active: leaderOpen, onClick: () => setLeaderOpen((v) => !v) }, { id: 'conquista', label: 'conquista', icon: <span className="mini-orb mini-orb--green" />, active: conquestOpen, onClick: () => { if (!conquestOpen && sceneRef.current?.mode === 'lejos') sceneRef.current.enter(); setConquestOpen((v) => !v); } }, { id: 'atlas', label: 'atlas', icon: <span className="mini-orb mini-orb--globe" />, active: atlasOpen, onClick: () => setAtlasOpen((v) => !v) },
+      <Taskbar tasks={[{ id: 'islas', label: 'islas', icon: <span className="mini-orb mini-orb--green" />, active: listOpen, onClick: () => setListOpen((v) => !v) }, { id: 'jugadores', label: 'jugadores', icon: <span className="mini-orb mini-orb--green" />, active: playersOpen, onClick: () => setPlayersOpen((v) => !v) }, { id: 'ranking', label: 'ranking', icon: <span className="mini-orb" />, active: leaderOpen, onClick: () => setLeaderOpen((v) => !v) }, { id: 'conquista', label: 'conquista', icon: <span className="mini-orb mini-orb--green" />, active: conquestOpen, onClick: () => { if (!conquestOpen && sceneRef.current?.mode === 'lejos') sceneRef.current.enter(); setConquestOpen((v) => !v); } }, { id: 'atlas', label: 'atlas', icon: <span className="mini-orb mini-orb--globe" />, active: atlasOpen, onClick: () => setAtlasOpen((v) => !v) },
         ...(isSupabaseConfigured ? [{ id: 'exp', label: 'expediciones', icon: <span className="mini-orb" />, active: expOpen, onClick: () => setExpOpen((v) => !v) }, { id: 'gadgets', label: 'gadgets', icon: <span className="mini-orb mini-orb--green" />, active: gadgetsOpen, onClick: () => setGadgetsOpen((v) => !v) }] : [])]} />
     </div>
   );

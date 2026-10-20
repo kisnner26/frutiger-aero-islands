@@ -33,7 +33,7 @@ export function loadMine(): { objects: PlacedObject[]; level: number } {
 export function buildArchipelago(mine: { objects: PlacedObject[]; level: number } | null, others: readonly RealIsland[] = [], country: string | null = null): WorldIsland[] {
   const pos = placeIslands([
     ...(mine ? [{ id: 'mia', country, order: -1, priority: 0 }] : []),
-    ...others.map((o, i) => ({ id: o.id, country: o.country, order: i })),
+    ...others.map((o, i) => ({ id: o.id, country: o.country, order: Date.parse(o.createdAt) || i })),
   ]);
   const at = (id: string) => pos.get(id) ?? { x: 0, y: 0 };
   const list: WorldIsland[] = [];

@@ -10,10 +10,14 @@ interface Props {
   initial: WorldViewState | null;
   callbacks: WorldCallbacks;
   controlRef: MutableRefObject<WorldScene | null>;
+  /** cambia solo cuando hay que rehacer el mundo (mi isla o mi país); las islas nuevas se añaden sin reconstruir. */
+  rebuildKey: string;
 }
 
 /** monta la escena del mundo de forma diferida y la destruye al desmontar. */
-export function WorldView({ islands, initial, callbacks, controlRef }: Props) {
+export function WorldView({ islands, initial, callbacks, controlRef, rebuildKey }: Props) {
+  const islandsRef = useRef(islands);
+  islandsRef.current = islands;
   const hostRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<'cargando' | 'listo' | 'error'>('cargando');
   const [attempt, setAttempt] = useState(0);
@@ -34,7 +38,7 @@ export function WorldView({ islands, initial, callbacks, controlRef }: Props) {
       host,
       { onSelect: (id) => cbRef.current.onSelect(id), onView: (v) => cbRef.current.onView(v), onMode: (m) => cbRef.current.onMode(m), onCountry: (code) => cbRef.current.onCountry(code), onCell: (cx, cy) => cbRef.current.onCell?.(cx, cy) },
       mq.matches,
-      islands,
+      islandsRef.current,
       initialRef.current,
     )
       .then((s) => {
@@ -58,7 +62,11 @@ export function WorldView({ islands, initial, callbacks, controlRef }: Props) {
       engine?.destroy();
       controlRef.current = null;
     };
-  }, [attempt, islands, controlRef]);
+  }, [attempt, rebuildKey, controlRef]);
+
+  useEffect(() => {
+    void controlRef.current?.addIslands(islands);
+  }, [islands, controlRef]);
 
   return (
     <div className="scene-view">
