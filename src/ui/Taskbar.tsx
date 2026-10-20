@@ -8,6 +8,7 @@ import { countryStore, useCountry } from '../world/country';
 import { FlagBadge } from '../world/FlagBadge';
 import { AvatarImg } from '../avatar/AvatarFace';
 import { prepareFromIsland } from '../world/worldState';
+import { phoneBus, type PhoneApp } from '../features/phone/phoneBus';
 
 const PhonePanel = lazy(() => import('../features/phone/PhonePanel'));
 
@@ -125,6 +126,8 @@ interface Props {
 export function Taskbar({ tasks = [] }: Props) {
   const [open, setOpen] = useState(false);
   const [phone, setPhone] = useState(false);
+  const [phoneApp, setPhoneApp] = useState<PhoneApp>('inicio');
+  const requestedPhoneApp = useSyncExternalStore(phoneBus.subscribe, phoneBus.phoneApp);
   const ref = useRef<HTMLDivElement>(null);
   const state = useSyncExternalStore(music.subscribe, music.getState);
 
@@ -143,6 +146,13 @@ export function Taskbar({ tasks = [] }: Props) {
       document.removeEventListener('keydown', key);
     };
   }, [open]);
+
+  useEffect(() => {
+    if (!requestedPhoneApp) return;
+    setPhoneApp(requestedPhoneApp);
+    setPhone(true);
+    phoneBus.consumeOpen();
+  }, [requestedPhoneApp]);
 
   return (
     <div className="taskbar" ref={ref}>
@@ -165,7 +175,7 @@ export function Taskbar({ tasks = [] }: Props) {
       </div>
       {phone && (
         <Suspense fallback={null}>
-          <PhonePanel onClose={() => setPhone(false)} />
+          <PhonePanel onClose={() => setPhone(false)} initialApp={phoneApp} />
         </Suspense>
       )}
       <div className="taskbar__tray">

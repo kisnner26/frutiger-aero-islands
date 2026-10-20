@@ -6,6 +6,8 @@ import { WorldView } from '../../engine/WorldView';
 import { AeroWindow } from '../../ui/AeroWindow';
 import { WorldCommunityPanel } from '../community/WorldCommunityPanel';
 import { GadgetsPanel } from '../community/GadgetsPanel';
+import type { Gadget } from '../../persistence/community';
+import { phoneBus } from '../phone/phoneBus';
 import { Taskbar } from '../../ui/Taskbar';
 import { syncCountry } from '../../persistence/country';
 import { isSupabaseConfigured, myIsland } from '../../persistence/supabase';
@@ -128,6 +130,23 @@ export function WorldPage() {
     sc.focus(id);
   };
 
+  const useGadget = (gadget: Gadget) => {
+    sfx.click();
+    setGadgetsOpen(false);
+    if (gadget.kind === 'phone') return phoneBus.open();
+    if (gadget.kind === 'music') return phoneBus.open('radio');
+    if (gadget.kind === 'camera') {
+      window.location.hash = routeHref('isla');
+      window.setTimeout(() => phoneBus.open('camara'), 0);
+      return;
+    }
+    if (gadget.kind === 'laptop') {
+      window.location.hash = routeHref('explorar');
+      return;
+    }
+    window.location.hash = routeHref('arcade');
+  };
+
   const status = mode === 'lejos' ? 'vista lejana del planeta' : 'dentro del planeta, archipiélago interior';
 
   return (
@@ -185,7 +204,7 @@ export function WorldPage() {
       )}
       {gadgetsOpen && (
         <AeroWindow className="win-world-list" title="gadgets" icon={<span className="mini-orb mini-orb--green" />} onClose={() => setGadgetsOpen(false)}>
-          <GadgetsPanel level={mine.current.level} />
+          <GadgetsPanel level={mine.current.level} onUse={useGadget} />
         </AeroWindow>
       )}
 

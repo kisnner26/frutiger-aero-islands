@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { AlbumApp } from './AlbumApp';
 import { CameraApp } from './CameraApp';
 import { RadioApp } from './RadioApp';
+import type { PhoneApp } from './phoneBus';
 
-type App = 'inicio' | 'radio' | 'camara' | 'album';
+type App = PhoneApp;
 
 const APPS: Array<{ id: Exclude<App, 'inicio'>; label: string; glyph: string }> = [
   { id: 'radio', label: 'radio', glyph: 'M3 9h18v11H3zM7 9L17 3M8 14.500h5M16 14.500h2' },
@@ -14,9 +15,10 @@ const APPS: Array<{ id: Exclude<App, 'inicio'>; label: string; glyph: string }> 
 const TITLE: Record<App, string> = { inicio: 'teléfono', radio: 'radio', camara: 'cámara', album: 'álbum' };
 
 /** teléfono aero: cuerpo retro con teclado decorativo y pantalla táctil grande. aplicaciones: radio, cámara y álbum. */
-export default function PhonePanel({ onClose }: { onClose: () => void }) {
+export default function PhonePanel({ onClose, initialApp = 'inicio' }: { onClose: () => void; initialApp?: App }) {
   const ref = useRef<HTMLElement>(null);
-  const [app, setApp] = useState<App>('inicio');
+  const [app, setApp] = useState<App>(initialApp);
+  useEffect(() => setApp(initialApp), [initialApp]);
   useEffect(() => {
     ref.current?.focus();
     const key = (e: KeyboardEvent) => {

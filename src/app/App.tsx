@@ -20,6 +20,7 @@ const TITULOS: Record<Route, string> = {
   introduccion: 'cómo se juega | frutiger aero islands',
   mundo: 'mundo | frutiger aero islands',
   personaje: 'mi personaje | frutiger aero islands',
+  arcade: 'arcade | frutiger aero islands',
   isla: 'tu isla | frutiger aero islands',
   auth: 'cuenta | frutiger aero islands',
   explorar: 'explorar | frutiger aero islands',
@@ -34,6 +35,7 @@ function Cuenta() {
 }
 
 const WorldPage = lazy(() => import('../features/world/WorldPage').then((m) => ({ default: m.WorldPage })));
+const ArcadePage = lazy(() => import('../features/arcade/ArcadePage').then((m) => ({ default: m.ArcadePage })));
 
 function Channel({ href, label, hint, tone, onClick }: { href: string; label: string; hint: string; tone: 'isla' | 'info' | 'inicio' | 'mundo' | 'explorar' | 'cuenta' | 'personaje'; onClick?: () => void }) {
   return (
@@ -156,6 +158,7 @@ function Routes() {
 
   if (route === 'auth') return <div className="app"><Backdrop /><main className="main"><Cuenta /></main><Taskbar /></div>;
   if (route === 'personaje') return <div className="app"><Backdrop /><main className="main"><AvatarEditor /></main><Taskbar /></div>;
+  if (route === 'arcade') return <Suspense fallback={<p className="scene-view__msg" role="status">abriendo el arcade...</p>}><ArcadePage onExit={() => { window.location.hash = routeHref('mundo'); }} /></Suspense>;
   if (route === 'explorar') return <div className="app"><Backdrop /><main className="main"><ExplorePage /></main><Taskbar /></div>;
   if (route === 'visita' && routeState.username) return <VisitIslandPage username={routeState.username} />;
   if (route === 'mundo') {

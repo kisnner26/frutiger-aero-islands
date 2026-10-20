@@ -3,7 +3,7 @@ import { listGadgets, type Gadget } from '../../persistence/community';
 import './social.css';
 
 /** gadgets del catálogo: se desbloquean al alcanzar el nivel de tu isla. */
-export function GadgetsPanel({ level }: { level: number }) {
+export function GadgetsPanel({ level, onUse }: { level: number; onUse: (gadget: Gadget) => void }) {
   const [items, setItems] = useState<Gadget[] | null>(null);
   useEffect(() => { listGadgets().then(setItems).catch(() => setItems([])); }, []);
   if (items && !items.length) return <p className="world-community__message">los gadgets estarán disponibles al conectar la comunidad.</p>;
@@ -15,7 +15,7 @@ export function GadgetsPanel({ level }: { level: number }) {
           <li key={g.id} className={open ? 'is-open' : ''}>
             <strong>{g.name}</strong>
             <small>{g.description}</small>
-            <em>{open ? 'desbloqueado' : `se desbloquea en el nivel ${g.unlockLevel}`}</em>
+            {open ? <button type="button" onClick={() => onUse(g)}>usar gadget</button> : <em>se desbloquea en el nivel {g.unlockLevel}</em>}
           </li>
         );
       })}
