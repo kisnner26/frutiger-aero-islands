@@ -8,6 +8,7 @@ import './login.css';
 type AuthMode = 'entrar' | 'registro' | 'recuperar';
 
 const usernameOk = (value: string) => /^[a-z][a-z0-9_]{2,23}$/.test(value);
+const registrationPasswordOk = (value: string) => value.length >= 12;
 const copy: Record<AuthMode, { title: string; description: string; action: string }> = {
   entrar: { title: 'bienvenido de vuelta', description: 'tu isla, tus recuerdos y tus visitas te esperan.', action: 'conectar' },
   registro: { title: 'empieza tu isla', description: 'elige un nombre público para que otros exploradores te encuentren.', action: 'crear mi cuenta' },
@@ -27,6 +28,7 @@ export function AuthPage() {
       } else if (mode === 'registro') {
         const normalizedUsername = username.toLowerCase();
         if (!usernameOk(normalizedUsername)) throw new Error('tu usuario debe tener de 3 a 24 caracteres: letras, números o guion bajo.');
+        if (!registrationPasswordOk(password)) throw new Error('tu clave debe tener al menos 12 caracteres.');
         const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { pending_username: normalizedUsername }, emailRedirectTo: `${window.location.origin}${window.location.pathname}#/auth` } });
         if (error) throw error;
         if (data.session) { await completeProfile(normalizedUsername); sfx.coin(); window.location.hash = routeHref('isla'); return; }
@@ -100,7 +102,7 @@ export function AuthPage() {
               <span>{mode === 'registro' ? 'crea una clave' : 'clave'}</span>
               <div>
                 {icon('M6 11h12v9H6zM8.5 11V8a3.500 3.500 0 017 0v3')}
-                <input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="mínimo 8 caracteres" autoComplete={mode === 'registro' ? 'new-password' : 'current-password'} />
+                <input required minLength={mode === 'registro' ? 12 : 8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder={mode === 'registro' ? 'mínimo 12 caracteres' : 'tu clave'} autoComplete={mode === 'registro' ? 'new-password' : 'current-password'} />
               </div>
             </label>
           )}
