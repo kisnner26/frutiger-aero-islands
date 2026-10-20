@@ -12,7 +12,7 @@ import type { WorldIsland } from '../world/archipelago';
 import type { WorldView } from '../world/worldState';
 import { COUNTRIES } from '../world/countries';
 import { ALL_CELLS, CELL, cellAt, cellCenter, cellKey, ownerColor, type CellInfo } from '../world/territory';
-import { countryAnchor } from '../world/geoProjection';
+import { countryAnchor, unprojectXY } from '../world/geoProjection';
 import type { Globe3D } from './Globe3D';
 import { OrbitalAccents, SeaTraffic } from './worldExtras';
 import { pencilSprite as pencilTex } from '../art/pencil';
@@ -62,6 +62,37 @@ interface Bubble {
 }
 
 /** vista 2.5d del mundo: planeta lejano, transición hacia su océano interior y archipiélago. */
+/** objetos feos que desaparecen al restaurar la zona: chimeneas, ruinas, árboles secos, basura y charcos. */
+function drawBlight(g: Graphics, x: number, y: number, seed: number, damage: number) {
+  const variant = ((seed % 5) + 5) % 5;
+  const a = Math.min(1, damage * 1.2);
+  if (damage > 0.05) {
+    const ink = 0x3c4146;
+    if (variant === 0) {
+      g.rect(x - 7, y - 24, 14, 30).fill({ color: 0x8a8f94, alpha: a }).stroke({ width: 2, color: ink, alpha: a });
+      g.rect(x - 9, y - 28, 18, 6).fill({ color: 0x5a5f64, alpha: a }).stroke({ width: 1.5, color: ink, alpha: a });
+      for (const [dx, dy, r] of [[2, -40, 6], [8, -50, 8], [0, -62, 10]] as const) g.circle(x + dx, y + dy, r).fill({ color: 0x9aa0a6, alpha: a * 0.55 });
+    } else if (variant === 1) {
+      g.poly([x - 20, y + 8, x - 20, y - 14, x - 8, y - 22, x - 2, y - 10, x + 6, y - 18, x + 20, y - 4, x + 20, y + 8]).fill({ color: 0x9a9084, alpha: a }).stroke({ width: 2, color: ink, alpha: a });
+      g.moveTo(x - 8, y - 22).lineTo(x - 6, y + 8).stroke({ width: 1.5, color: ink, alpha: a * 0.7 });
+      g.rect(x + 2, y - 4, 6, 8).fill({ color: 0x4a4540, alpha: a });
+    } else if (variant === 2) {
+      g.moveTo(x, y + 8).lineTo(x, y - 24).stroke({ width: 4, color: 0x5a4a3a, alpha: a });
+      for (const [dx, dy] of [[-14, -30], [12, -34], [-10, -16], [14, -20]] as const) g.moveTo(x, y - 12 + dy / 4).lineTo(x + dx, y + dy).stroke({ width: 2.4, color: 0x5a4a3a, alpha: a });
+    } else if (variant === 3) {
+      for (const [dx, dy, w, h, c] of [[-14, 0, 14, 8, 0x7a7f84], [2, -4, 12, 10, 0x6a5a48], [-4, -10, 10, 8, 0x8a8f94], [12, 2, 10, 7, 0x5a6a70]] as const) g.rect(x + dx, y + dy, w, h).fill({ color: c, alpha: a }).stroke({ width: 1.4, color: ink, alpha: a });
+    } else {
+      g.ellipse(x, y + 2, 24, 8).fill({ color: 0x2c2a3a, alpha: a * 0.85 });
+      g.ellipse(x - 6, y, 10, 3).fill({ color: 0x7a5a9a, alpha: a * 0.5 });
+    }
+  } else {
+    // zona restaurada: matas y una flor
+    g.ellipse(x, y + 6, 12, 4).fill({ color: 0x7ccb48, alpha: 0.9 });
+    g.circle(x - 4, y + 2, 3.2).fill({ color: 0xff7aa8 });
+    g.circle(x + 6, y + 4, 2.6).fill({ color: 0xffffff });
+  }
+}
+
 export class WorldScene {
   private app!: Application;
   private sky = new Sprite();
@@ -72,6 +103,7 @@ export class WorldScene {
   private traffic: SeaTraffic | null = null;
   private globe: Globe3D | null = null;
   private territory = new Graphics();
+  private blight = new Graphics();
   private cells = new Map<string, CellInfo>();
   private myName: string | null = null;
   private mapMode = false;
@@ -186,7 +218,7 @@ export class WorldScene {
     this.caustics.alpha = 0.13;
     this.caustics.tileScale.set(1.8);
     this.islandLayer.sortableChildren = true;
-    this.inner.addChild(this.basin, this.caustics, this.under, this.routes, this.territory, this.countryMarkers, this.islandLayer, this.overlay);
+    this.inner.addChild(this.basin, this.caustics, this.under, this.routes, this.territory, this.blight, this.countryMarkers, this.islandLayer, this.overlay);
     this.frame.anchor.set(0.5);
     this.interior.addChild(this.inner, this.frame);
     this.interior.mask = this.mask;
@@ -408,6 +440,13 @@ export class WorldScene {
     this.drawTerritory();
     const done = [...cells.values()].reduce((a, c) => a + c.progress, 0);
     this.globe?.setRestoration(done / (ALL_CELLS.length * 100));
+    this.globe?.setDamage(
+      ALL_CELLS.map(({ cx, cy }) => {
+        const c = cellCenter(cx, cy);
+        const ll = unprojectXY(c.x, c.y);
+        return { ...ll, damage: 1 - (cells.get(cellKey(cx, cy))?.progress ?? 0) / 100 };
+      }),
+    );
   }
 
   setMapMode(on: boolean) {
@@ -426,6 +465,7 @@ export class WorldScene {
   private drawTerritory() {
     const g = this.territory;
     g.clear();
+    this.blight.clear();
     const now = Date.now();
     for (const { cx, cy } of ALL_CELLS) {
       const info = this.cells.get(cellKey(cx, cy));
@@ -444,6 +484,8 @@ export class WorldScene {
         g.circle(x - h * 0.45, y - h * 0.4, 2.4).fill({ color: 0xffffff, alpha: 0.9 });
         g.circle(x + h * 0.5, y + h * 0.3, 1.8).fill({ color: 0xd8fbff, alpha: 0.9 });
       }
+      const hsh = (Math.imul(cx + 11, 73856093) ^ Math.imul(cy + 7, 19349663)) >>> 0;
+      drawBlight(this.blight, x + ((hsh >>> 3) % 31) - 15, y + ((hsh >>> 9) % 23) - 11, hsh >>> 5, damage);
       if (info?.owner) {
         const mine = info.owner === this.myName;
         const color = ownerColor(info.owner);

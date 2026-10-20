@@ -12,6 +12,7 @@ import { sceneBridge } from '../engine/sceneBridge';
 import { Veil } from '../ui/Veil';
 import { AeroLoader } from '../ui/AeroLoader';
 import { veil } from '../ui/veilStore';
+import { restorationStore, useRestoration } from '../world/restorationStore';
 
 const TITULOS: Record<Route, string> = {
   inicio: 'frutiger aero islands',
@@ -42,6 +43,8 @@ const LoadingRoute = ({ text }: { text: string }) => <AeroLoader variant="page" 
 
 function Inicio() {
   const session = useSession();
+  const planet = useRestoration();
+  useEffect(() => void restorationStore.refresh(), []);
   if (session.status === 'cargando') return <div className="app"><Backdrop /><main className="main"><AeroLoader text="preparando tu archipiélago..." detail="la marea está conectando tu cuenta..." /></main></div>;
   const signed = session.status === 'con-sesion';
   return (
@@ -52,7 +55,7 @@ function Inicio() {
         <aside className="landing__signal" aria-label="estado de la comunidad">
           <span className="landing__dot" aria-hidden="true" />
           <strong>{signed ? 'conectado' : 'acceso protegido'}</strong>
-          <small>{signed ? 'guardado en la nube' : 'inicia sesión para entrar'}</small>
+          <small>{signed ? `planeta restaurado ${planet.toFixed(planet < 10 ? 1 : 0)}%` : 'inicia sesión para entrar'}</small>
         </aside>
       </header>
       <section className="landing__copy" aria-labelledby="titulo-vista">

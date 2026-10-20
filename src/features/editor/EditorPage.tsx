@@ -15,6 +15,10 @@ import { AeroWindow } from '../../ui/AeroWindow';
 import { Balloon } from '../../ui/Balloon';
 import { Taskbar } from '../../ui/Taskbar';
 import { ExploreMode } from '../explore/ExploreMode';
+import { Prologue, prologueSeen } from '../../story/Prologue';
+import { MissionsPanel } from '../../story/MissionsPanel';
+import { nextMission, worldVisit } from '../../story/missions';
+import { restorationStore } from '../../world/restorationStore';
 import { minePosition } from '../../world/archipelago';
 import { CountryGate } from '../../world/CountryPicker';
 import { countryStore, useCountry } from '../../world/country';
@@ -61,6 +65,9 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
   const [state, dispatch] = useReducer(editorReducer, boot.current.state);
   const [placing, setPlacing] = useState<string | null>(null);
   const [exploring, setExploring] = useState(false);
+  const [missionsOpen, setMissionsOpen] = useState(false);
+  const [prologue, setPrologue] = useState(() => editable && !prologueSeen());
+  useEffect(() => void restorationStore.refresh(), []);
   const [floats, setFloats] = useState<Float[]>([]);
   const [combo, setCombo] = useState(0);
   const [win, setWin] = useState({ catalog: { open: true, min: false }, objects: { open: false, min: false }, workshop: { open: false, min: false }, daily: { open: false, min: false } });
@@ -104,6 +111,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
 
   const charm = useMemo(() => computeCharm(doc.objects, CATALOG_MAP), [doc.objects]);
   const progress = { level: doc.maxLevel, ...progressForLevel(charm, doc.maxLevel) };
+  const mission = nextMission({ objects: doc.objects, level: doc.maxLevel, country, visitedWorld: worldVisit.get() });
   const selected = doc.objects.find((o) => o.id === state.selectedId) ?? null;
 
   /* ---------- guardado local y remoto ---------- */
@@ -302,7 +310,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
           </div>
         </div>
         <p className="hud__hint">
-          {placingItem ? `toca la isla para colocar: ${placingItem.name}. esc para terminar.` : 'revienta burbujas, atrapa la mariposa y el pez saltarín; decora tu isla.'}
+          {placingItem ? `toca la isla para colocar: ${placingItem.name}. esc para terminar.` : mission ? `misión: ${mission.mission.text} (${mission.value}/${mission.mission.goal})` : 'revienta burbujas, atrapa la mariposa y el pez saltarín; decora tu isla.'}
           {combo > 1 && <span className="hud__combo"> combo x{combo}</span>}
         </p>
       </header>
@@ -374,10 +382,17 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
           },
           { id: 'workshop', label: 'laboratorio', icon: <span className="mini-orb mini-orb--green" />, active: win.workshop.open && !win.workshop.min, onClick: () => toggleWin('workshop') },
           { id: 'daily', label: 'marea diaria', icon: <span className="mini-orb mini-orb--globe" />, active: win.daily.open && !win.daily.min, onClick: () => toggleWin('daily') },
+          { id: 'missions', label: 'misiones', icon: <span className="mini-orb" />, active: missionsOpen, onClick: () => setMissionsOpen((v) => !v) },
           { id: 'explore', label: 'caminar', icon: <span className="mini-orb mini-orb--green" />, active: exploring, onClick: () => setExploring(true) },
           { id: 'objects', label: 'objetos', icon: <span className="mini-orb mini-orb--green" />, active: win.objects.open && !win.objects.min, onClick: () => toggleWin('objects') },
         ]}
       />
+      {prologue && <Prologue onDone={() => setPrologue(false)} />}
+      {missionsOpen && (
+        <AeroWindow className="win-missions" title="misiones del faro" icon={orbIcon} onClose={() => setMissionsOpen(false)}>
+          <MissionsPanel ctx={{ objects: doc.objects, level: doc.maxLevel, country, visitedWorld: worldVisit.get() }} />
+        </AeroWindow>
+      )}
       {exploring && <ExploreMode objects={doc.objects} level={doc.maxLevel} avatar={avatar} onExit={() => setExploring(false)} />}
       <CameraOverlay />
       {editable && <CountryGate />}

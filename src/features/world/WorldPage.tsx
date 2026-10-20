@@ -15,6 +15,7 @@ import { listWorldIslands, type RealIsland } from '../../persistence/world';
 import { buildArchipelago, loadMine } from '../../world/archipelago';
 import { findCountry, searchCountries } from '../../world/countries';
 import { countryAnchor } from '../../world/geoProjection';
+import { worldVisit } from '../../story/missions';
 import { TerritoryPanel, useTerritory } from './TerritoryPanel';
 import type { CellRef } from '../../world/territory';
 import { COUNTRY_FACTS } from '../../world/countryFacts';
@@ -97,6 +98,7 @@ export function WorldPage() {
   const [conquestOpen, setConquestOpen] = useState(false);
   const [pickedCell, setPickedCell] = useState<CellRef | null>(null);
   const territory = useTerritory(sceneRef, conquestOpen);
+  useEffect(() => worldVisit.mark(), []);
   if (import.meta.env.DEV) (window as unknown as { __world?: unknown }).__world = sceneRef; // solo para pruebas en desarrollo
   const [atlasQuery, setAtlasQuery] = useState('');
   const [countryFocus, setCountryFocus] = useState<string | null>(null);
@@ -367,22 +369,10 @@ export function WorldPage() {
       <nav className="world-controls" aria-label="controles del mundo">
         {mode === 'lejos' ? (
           <>
-            <div className="world-pad" role="group" aria-label="girar el planeta">
-              <button type="button" aria-label="girar hacia arriba" onClick={() => sceneRef.current?.spinPlanet(0, 0.14)}>▴</button>
-              <button type="button" aria-label="girar a la izquierda" onClick={() => sceneRef.current?.spinPlanet(-14)}>◂</button>
-              <button type="button" aria-label="girar a la derecha" onClick={() => sceneRef.current?.spinPlanet(14)}>▸</button>
-              <button type="button" aria-label="girar hacia abajo" onClick={() => sceneRef.current?.spinPlanet(0, -0.14)}>▾</button>
-            </div>
             <button type="button" className="world-controls__wide" disabled={!country} onClick={() => country && sceneRef.current?.faceCountry(country)}>ir a mi país</button>
           </>
         ) : (
           <>
-            <div className="world-pad" role="group" aria-label="mover el mapa">
-              <button type="button" aria-label="mover hacia arriba" onClick={() => sceneRef.current?.pan(0, -90)}>▴</button>
-              <button type="button" aria-label="mover a la izquierda" onClick={() => sceneRef.current?.pan(-90, 0)}>◂</button>
-              <button type="button" aria-label="mover a la derecha" onClick={() => sceneRef.current?.pan(90, 0)}>▸</button>
-              <button type="button" aria-label="mover hacia abajo" onClick={() => sceneRef.current?.pan(0, 90)}>▾</button>
-            </div>
             <div className="world-zoom" role="group" aria-label="zoom">
               <button type="button" aria-label="acercar" onClick={() => sceneRef.current?.zoomBy(1.3)}>+</button>
               <button type="button" aria-label="alejar" onClick={() => sceneRef.current?.zoomBy(1 / 1.3)}>−</button>

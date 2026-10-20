@@ -44,6 +44,8 @@ export class Globe3D {
   private planet: Mesh;
   private clouds: Mesh;
   private pin = new Group();
+  private damageCanvas = document.createElement('canvas');
+  private damageTex: CanvasTexture | null = null;
   private pinCode: string | null = null;
   private moon: Mesh;
   private sat = new Group();
@@ -86,7 +88,12 @@ export class Globe3D {
     const cloudTex = new CanvasTexture(renderCloudMap());
     cloudTex.colorSpace = SRGBColorSpace;
     this.clouds = new Mesh(new SphereGeometry(1.018, 64, 48), new MeshBasicMaterial({ map: cloudTex, transparent: true, opacity: 0.42, depthWrite: false }));
-    this.root.add(this.planet, this.clouds, this.pin);
+    this.damageCanvas.width = 1024;
+    this.damageCanvas.height = 512;
+    this.damageTex = new CanvasTexture(this.damageCanvas);
+    this.damageTex.colorSpace = SRGBColorSpace;
+    const damage = new Mesh(new SphereGeometry(1.007, 64, 48), new MeshBasicMaterial({ map: this.damageTex, transparent: true, depthWrite: false }));
+    this.root.add(this.planet, damage, this.clouds, this.pin);
     this.scene.add(this.root);
 
     const atmo = new Mesh(
@@ -191,6 +198,29 @@ export class Globe3D {
     while (to - this.lon < -180) to += 360;
     this.tween = { fromLon: this.lon, toLon: to, fromLat: this.lat, toLat: Math.max(-60, Math.min(60, c.lat)), t: this.reduced ? 1 : 0 };
     this.vLon = this.vLat = 0;
+  }
+
+  /** parches grises sobre las regiones dañadas (lon, lat en grados; damage 0..1). */
+  setDamage(points: ReadonlyArray<{ lon: number; lat: number; damage: number }>) {
+    const ctx = this.damageCanvas.getContext('2d');
+    if (!ctx || !this.damageTex) return;
+    const w = this.damageCanvas.width;
+    const h = this.damageCanvas.height;
+    ctx.clearRect(0, 0, w, h);
+    for (const p of points) {
+      if (p.damage <= 0.02) continue;
+      const x = ((p.lon + 180) / 360) * w;
+      const y = ((90 - p.lat) / 180) * h;
+      const r = (15 / Math.max(0.35, Math.cos((p.lat * Math.PI) / 180))) * 0.8 + 6;
+      for (const dx of [0, -w, w]) {
+        const g = ctx.createRadialGradient(x + dx, y, 0, x + dx, y, r);
+        g.addColorStop(0, `rgba(96,102,108,${0.78 * p.damage})`);
+        g.addColorStop(1, 'rgba(96,102,108,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(x + dx - r, y - r, r * 2, r * 2);
+      }
+    }
+    this.damageTex.needsUpdate = true;
   }
 
   /** 0 = planeta dañado y grisáceo, 1 = totalmente restaurado y brillante. */

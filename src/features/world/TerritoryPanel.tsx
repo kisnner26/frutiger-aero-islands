@@ -6,6 +6,8 @@ import { claimCell, loadChallenges, loadLeaderboard, loadMyTerritory, loadRestor
 import { COUNTRIES, findCountry } from '../../world/countries';
 import { countryAnchor } from '../../world/geoProjection';
 import { FlagBadge } from '../../world/FlagBadge';
+import { nextMilestone } from '../../story/lore';
+import { restorationStore } from '../../world/restorationStore';
 import { CELL, RESTORE_CAP_PER_PERSON, cellCenter, cellKey, claimHint, ownerColor, type CellInfo, type CellRef } from '../../world/territory';
 
 type Tab = 'retos' | 'jugadores' | 'paises' | 'restauradores';
@@ -40,6 +42,7 @@ export function useTerritory(sceneRef: MutableRefObject<WorldScene | null>, acti
     }
     setMe(m);
     setRestoration(r);
+    if (r) restorationStore.set(r.percent);
     setChallenges(ch);
   }, [sceneRef, myName]);
   // la escena se crea de forma asíncrona: cuando aparece (o cambia), se le entrega el mapa ya cargado
@@ -133,6 +136,7 @@ export function TerritoryPanel({ sceneRef, data, picked }: Props) {
           </small>
         </div>
         <i aria-hidden="true"><b style={{ width: `${Math.min(100, pct)}%` }} /></i>
+        <small>{nextMilestone(pct) ? `próximo regalo para todos a ${nextMilestone(pct)!.percent}%: ${nextMilestone(pct)!.reward}` : 'el planeta brilla otra vez'}</small>
       </section>
 
       <section className="territory__me" aria-label="tu energía">

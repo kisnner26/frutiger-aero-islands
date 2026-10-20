@@ -25,6 +25,22 @@ export function projectLonLat(lon: number, lat: number): { x: number; y: number 
   return { x: x * s, y: y * s };
 }
 
+/** inversa de la proyección: de un punto de la cuenca a longitud y latitud (grados). */
+export function unprojectXY(x: number, y: number): { lon: number; lat: number } {
+  const s = MAP_RADIUS / 2;
+  const px = x / s;
+  const py = -y / s; // hacia el norte
+  const rho = Math.hypot(px, py);
+  if (rho < 1e-9) return { lon: (LON0 * 180) / Math.PI, lat: (LAT0 * 180) / Math.PI };
+  const c = 2 * Math.asin(Math.min(1, rho / 2));
+  const lat = Math.asin(Math.max(-1, Math.min(1, Math.cos(c) * Math.sin(LAT0) + (py * Math.sin(c) * Math.cos(LAT0)) / rho)));
+  const lon = LON0 + Math.atan2(px * Math.sin(c), rho * Math.cos(LAT0) * Math.cos(c) - py * Math.sin(LAT0) * Math.sin(c));
+  let deg = (lon * 180) / Math.PI;
+  while (deg > 180) deg -= 360;
+  while (deg < -180) deg += 360;
+  return { lon: deg, lat: (lat * 180) / Math.PI };
+}
+
 /** punto de referencia de un país en la cuenca; sin país, el centro del mar abierto. */
 export function countryAnchor(code: string | null | undefined): { x: number; y: number } {
   const c = findCountry(code);

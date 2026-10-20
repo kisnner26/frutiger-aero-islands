@@ -87,3 +87,14 @@ describe('migración de país', () => {
     expect(sql).toMatch(/auth\.uid\(\)/);
   });
 });
+
+import { projectLonLat as _p, unprojectXY } from '../src/world/geoProjection';
+describe('proyección inversa', () => {
+  it('ida y vuelta con longitud y latitud', () => {
+    for (const [lon, lat] of [[-85, 13], [2, 46], [139, 36], [151, -33], [-60, -15]] as const) {
+      const back = unprojectXY(_p(lon, lat).x, _p(lon, lat).y);
+      expect(back.lon).toBeCloseTo(lon, 4);
+      expect(back.lat).toBeCloseTo(lat, 4);
+    }
+  });
+});

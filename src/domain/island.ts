@@ -35,4 +35,6 @@ export interface CatalogItem {
   charm: number;
   /** nivel necesario para desbloquear. */
   unlockLevel: number;
+  /** hito comunitario: porcentaje de planeta restaurado necesario (además del nivel). */
+  unlockPercent?: number;
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CATALOG } from '../../catalog/catalog';
 import type { CatalogItem } from '../../domain/island';
+import { useRestoration } from '../../world/restorationStore';
 
 interface Props {
   placing: string | null;
@@ -21,6 +22,7 @@ const GROUPS: Array<{ id: Group; label: string; has: (i: CatalogItem) => boolean
 /** fichas al estilo del menú de la wii u: cuadrados brillantes con etiqueta. */
 export function DecorationCatalog({ placing, level, brillos, onChoose }: Props) {
   const [group, setGroup] = useState<Group>('todo');
+  const planet = useRestoration();
   const shown = CATALOG.filter(GROUPS.find((g) => g.id === group)!.has).sort((a, b) => a.unlockLevel - b.unlockLevel || a.cost - b.cost);
   return (
     <>
@@ -33,7 +35,8 @@ export function DecorationCatalog({ placing, level, brillos, onChoose }: Props) 
     </div>
     <ul className="tiles" aria-label="decoraciones">
       {shown.map((item) => {
-        const locked = item.unlockLevel > level;
+        const lockedByPlanet = Boolean(item.unlockPercent && planet < item.unlockPercent);
+        const locked = item.unlockLevel > level || lockedByPlanet;
         const poor = !locked && item.cost > brillos;
         const active = placing === item.id;
         return (
@@ -50,7 +53,7 @@ export function DecorationCatalog({ placing, level, brillos, onChoose }: Props) 
             >
               <span className="tile__art">
                 <img src={item.assetPath} alt="" draggable={false} />
-                {locked && <span className="tile__lock">nivel {item.unlockLevel}</span>}
+                {locked && <span className="tile__lock">{lockedByPlanet ? `planeta ${item.unlockPercent}%` : `nivel ${item.unlockLevel}`}</span>}
               </span>
               <span className="tile__name">{item.name}</span>
               <span className="tile__cost">
