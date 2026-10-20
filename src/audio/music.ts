@@ -14,6 +14,8 @@ export const music = {
   pause: () => radio.pause(),
   toggle: () => radio.toggle(),
   setVolume: (v: number) => radio.setVolume(v),
+  /** salta a otra canción de la pista larga (solo con la estación personal). */
+  next: () => radio.nextTrack(),
   /** verdadero solo si la persona dejó la radio encendida la última vez. */
   wantsMusic: () => radio.wantsMusic(),
   armFirstGesture: () => radio.armFirstGesture(),

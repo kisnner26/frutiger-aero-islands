@@ -21,6 +21,18 @@ export interface RadioSnapshot {
 }
 
 const PERSONAL_URL = `${import.meta.env.BASE_URL}audio/soundtrack.mp3`;
+const CHAPTERS_URL = `${import.meta.env.BASE_URL}audio/soundtrack.chapters.json`;
+const LAST_CHAPTER_KEY = 'frutiger-aero-islands:pista-ultima';
+
+/** baraja los índices 0..n-1 (fisher-yates). */
+function shuffled(n: number): number[] {
+  const a = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 const FADE = 1.3;
 
 interface Session {
@@ -53,6 +65,12 @@ class RadioEngine {
   private message: string | null = null;
   private personalAvailable = false;
   private personalChecked = false;
+  /* la pista personal dura más de media hora: se reparte en canciones (por los silencios) y se baraja para no oír siempre el principio */
+  private chapterStarts: number[] = [];
+  private chapterDuration = 0;
+  private chapterBag: number[] = [];
+  private chapterNow = -1;
+  private jumping = false;
   private snap: RadioSnapshot;
 
   constructor() {
@@ -443,24 +461,129 @@ class RadioEngine {
     this.emit();
   }
 
+  private async loadChapters(): Promise<void> {
+    if (this.chapterStarts.length) return;
+    try {
+      const r = await fetch(CHAPTERS_URL);
+      const j = (await r.json()) as { duration?: number; starts?: number[] };
+      if (Array.isArray(j.starts) && j.starts.length > 1) {
+        this.chapterStarts = j.starts.filter((n) => Number.isFinite(n) && n >= 0).sort((a, b) => a - b);
+        this.chapterDuration = Number(j.duration) || 0;
+      }
+    } catch {
+      /* sin capítulos: se usa el reparto por tiempo de más abajo */
+    }
+  }
+
+  /** capítulos de reserva: trozos de unos 2,5 minutos si no hay lista de canciones. */
+  private ensureChapters(duration: number) {
+    if (this.chapterStarts.length && this.chapterDuration) return;
+    const d = duration || this.chapterDuration || 0;
+    if (!d) return;
+    this.chapterDuration = d;
+    this.chapterStarts = Array.from({ length: Math.max(2, Math.floor(d / 150)) }, (_, i) => Math.round(i * (d / Math.max(2, Math.floor(d / 150)))));
+  }
+
+  private nextChapterIndex(): number {
+    const n = this.chapterStarts.length;
+    if (n < 2) return 0;
+    let last = -1;
+    try {
+      last = Number(window.localStorage.getItem(LAST_CHAPTER_KEY));
+    } catch {
+      /* sin almacenamiento */
+    }
+    if (!this.chapterBag.length) {
+      this.chapterBag = shuffled(n);
+      // la primera de la nueva tanda nunca es la que acaba de sonar
+      if (this.chapterBag[0] === this.chapterNow || (this.chapterNow < 0 && this.chapterBag[0] === last)) this.chapterBag.push(this.chapterBag.shift()!);
+    }
+    return this.chapterBag.shift()!;
+  }
+
+  private chapterEnd(i: number): number {
+    return this.chapterStarts[i + 1] ?? this.chapterDuration;
+  }
+
+  /** salta a una canción (con fundido) y recuerda cuál fue para no repetirla la próxima vez. */
+  private async playChapter(i: number, fade: boolean): Promise<void> {
+    const p = this.personal;
+    const ctx = this.ctx;
+    if (!p || !ctx || !p.gain) return;
+    this.chapterNow = i;
+    try {
+      window.localStorage.setItem(LAST_CHAPTER_KEY, String(i));
+    } catch {
+      /* sin almacenamiento */
+    }
+    if (fade && !p.el.paused) {
+      this.jumping = true;
+      p.gain.gain.cancelScheduledValues(ctx.currentTime);
+      p.gain.gain.setValueAtTime(Math.max(p.gain.gain.value, 0.0001), ctx.currentTime);
+      p.gain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+      await new Promise((r) => window.setTimeout(r, 1250));
+      p.el.currentTime = this.chapterStarts[i];
+      p.gain.gain.cancelScheduledValues(ctx.currentTime);
+      p.gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      p.gain.gain.linearRampToValueAtTime(1, ctx.currentTime + 1.8);
+      this.jumping = false;
+    } else {
+      p.el.currentTime = this.chapterStarts[i];
+    }
+  }
+
+  /** pasa a otra canción al azar (se usa al terminar la actual). */
+  async nextTrack(): Promise<void> {
+    if (this.prefs.station !== 'personal' || this.jumping) return;
+    await this.playChapter(this.nextChapterIndex(), true);
+  }
+
   private async startPersonal(): Promise<void> {
     const ctx = this.ctx!;
     if (!this.personal) {
       const el = new Audio();
       el.loop = true;
-      el.preload = 'none';
+      el.preload = 'metadata';
       el.crossOrigin = 'anonymous';
       el.src = PERSONAL_URL;
       el.addEventListener('error', () => {
         if (this.prefs.station === 'personal') this.setStatus('error', 'no se pudo cargar la pista personal.');
       });
+      el.addEventListener('timeupdate', () => {
+        // al llegar al final de la canción actual se salta a otra distinta
+        if (this.prefs.station !== 'personal' || this.status !== 'sonando' || this.jumping || this.chapterNow < 0) return;
+        if (el.currentTime >= this.chapterEnd(this.chapterNow) - 1.5) void this.nextTrack();
+      });
       this.personal = { el, src: null, gain: null };
     }
+    await this.loadChapters();
     const p = this.personal;
     if (!p.src) {
       p.src = ctx.createMediaElementSource(p.el);
       p.gain = ctx.createGain();
       p.src.connect(p.gain).connect(this.musicBus);
+    }
+    // empieza en una canción al azar, no siempre en el principio
+    if (p.el.readyState < 1) {
+      await new Promise<void>((resolve) => {
+        const done = () => resolve();
+        p.el.addEventListener('loadedmetadata', done, { once: true });
+        window.setTimeout(done, 4000);
+      });
+    }
+    this.ensureChapters(Number.isFinite(p.el.duration) ? p.el.duration : 0);
+    if (this.chapterStarts.length > 1 && this.chapterNow < 0) {
+      this.chapterNow = this.nextChapterIndex();
+      try {
+        window.localStorage.setItem(LAST_CHAPTER_KEY, String(this.chapterNow));
+      } catch {
+        /* sin almacenamiento */
+      }
+      try {
+        p.el.currentTime = this.chapterStarts[this.chapterNow];
+      } catch {
+        /* el navegador aún no permite saltar: empieza desde el principio */
+      }
     }
     p.gain!.gain.cancelScheduledValues(ctx.currentTime);
     p.gain!.gain.setValueAtTime(0.0001, ctx.currentTime);
