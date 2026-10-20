@@ -268,6 +268,19 @@
   padding: var(--e-12);
 }
 
+.win-workshop {
+  position: absolute;
+  z-index: 23;
+  left: 8px;
+  top: 128px;
+  width: min(440px, calc(100vw - 16px));
+  max-height: calc(100svh - 210px);
+  display: flex;
+  flex-direction: column;
+}
+
+.win-workshop .aero-window__body { overflow-y: auto; padding: var(--e-12); }
+
 .catalog-bar {
   display: flex;
   flex-wrap: wrap;
@@ -427,6 +440,8 @@
     max-height: 46svh;
     z-index: 24;
   }
+
+  .win-workshop { top: auto; bottom: 60px; left: 8px; max-height: 64svh; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
