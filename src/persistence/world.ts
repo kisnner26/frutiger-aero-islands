@@ -66,7 +66,7 @@ async function fetchWorldIslands(limit: number): Promise<RealIsland[]> {
   const rows = (res.data ?? []) as unknown as Row[];
   return rows
     .flatMap((r) => {
-      const isl = r.islands?.[0];
+      const isl = Array.isArray(r.islands) ? r.islands[0] : (r.islands as unknown as Row['islands'][number] | undefined);
       if (!isl || !Array.isArray(isl.layout?.objects)) return [];
       return [{ id: isl.id, username: r.username, displayName: r.display_name, country: r.country_code ?? null, objects: isl.layout!.objects!, level: Math.max(1, Number(isl.layout?.maxLevel) || 1), createdAt: isl.created_at }];
     })

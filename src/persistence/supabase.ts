@@ -9,6 +9,14 @@ const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
 export const isSupabaseConfigured = Boolean(url && key);
 export const supabase: SupabaseClient | null = isSupabaseConfigured ? createClient(url!, key!, { auth: { detectSessionInUrl: true, persistSession: true } }) : null;
 
+interface IslandRow {
+  id: string;
+  name: string;
+  layout: unknown;
+  revision: number;
+  created_at: string;
+}
+
 export interface PublicIsland {
   id: string;
   username: string;
@@ -18,6 +26,11 @@ export interface PublicIsland {
   revision: number;
   createdAt: string;
   avatar: AvatarSpec | null;
+}
+
+/** una isla por persona: según la consulta, el servidor la devuelve como objeto o como lista de un elemento. */
+export function firstOf<T>(value: T | T[] | null | undefined): T | undefined {
+  return Array.isArray(value) ? value[0] : (value ?? undefined);
 }
 
 export function readableSupabaseError(error: unknown, fallback = 'no se pudo completar la operación.'): string {
@@ -88,7 +101,7 @@ export async function getIsland(username: string): Promise<PublicIsland | null> 
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  const island = (data.islands as unknown as Array<{ id: string; name: string; layout: unknown; revision: number; created_at: string }>)[0];
+  const island = firstOf(data.islands as unknown as IslandRow | IslandRow[]);
   const layout = asDoc(island?.layout);
   if (!island || !layout) return null;
   return { id: island.id, username: data.username, displayName: data.display_name, name: island.name, layout, revision: Number(island.revision), createdAt: island.created_at, avatar: data.avatar && typeof data.avatar === 'object' ? normalizeAvatar(data.avatar) : null };
@@ -101,7 +114,7 @@ export async function listIslands(query = '', limit = 24): Promise<PublicIsland[
   const { data, error } = await q;
   if (error) throw error;
   return (data ?? []).flatMap((row) => {
-    const island = (row.islands as unknown as Array<{ id: string; name: string; layout: unknown; revision: number; created_at: string }>)[0];
+    const island = firstOf(row.islands as unknown as IslandRow | IslandRow[]);
     const layout = asDoc(island?.layout);
     return island && layout ? [{ id: island.id, username: row.username, displayName: row.display_name, name: island.name, layout, revision: Number(island.revision), createdAt: island.created_at, avatar: row.avatar && typeof row.avatar === 'object' ? normalizeAvatar(row.avatar) : null }] : [];
   });
