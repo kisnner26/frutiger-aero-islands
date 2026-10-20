@@ -1,0 +1,168 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #3f9be0;
+  color: var(--tinta);
+  font-family: var(--fuente);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+p,
+ul,
+ol {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid #1b6fd1;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.9);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- disposición de la portada ---------- */
+.app {
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.main {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  height: 100%;
+  padding: var(--e-16) var(--e-12) 76px;
+  padding-top: max(var(--e-16), env(safe-area-inset-top));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ---------- escena de fondo ---------- */
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #5aaeea;
+}
+
+.scene__paper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.scene__island {
+  position: absolute;
+  left: 50%;
+  bottom: 70px;
+  width: min(150vw, 980px);
+  height: auto;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 10px 14px rgba(4, 60, 90, 0.25));
+  pointer-events: none;
+}
+
+/* ---------- cristal y textos ---------- */
+.glass-panel {
+  position: relative;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.55));
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  backdrop-filter: blur(16px) saturate(1.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  border-radius: 26px;
+  box-shadow: 0 14px 34px rgba(4, 80, 127, 0.3), 0 2px 0 rgba(255, 255, 255, 0.95) inset;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: var(--t-12);
+  letter-spacing: 0.2em;
+  color: var(--tinta-suave);
+}
+
+.lead {
+  font-size: var(--t-16);
+  line-height: 1.5;
+  font-weight: 600;
+  max-width: 46ch;
+}
+
+.status-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--e-8);
+}
+
+.status-list li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--e-12);
+  align-items: baseline;
+  font-size: var(--t-14);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.status-list__tag {
+  min-width: 76px;
+  padding: 2px var(--e-8);
+  border-radius: var(--radio-pildora);
+  text-align: center;
+  font-size: var(--t-12);
+  font-weight: 800;
+  background: var(--vegetacion);
+  color: #1f5a12;
+  border: 1px solid #5da82a;
+}
+
+.status-list__tag--pendiente {
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--tinta);
+  border-color: rgba(6, 74, 115, 0.35);
+}
+
+@media (min-width: 900px) {
+  .main {
+    padding: var(--e-32) var(--e-48) 80px;
+  }
+
+  .scene__island {
+    left: auto;
+    right: -2%;
+    transform: none;
+    width: min(62vw, 960px);
+    bottom: 64px;
+  }
+}

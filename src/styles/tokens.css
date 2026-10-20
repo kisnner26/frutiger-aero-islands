@@ -1,0 +1,48 @@
+:root {
+  /* color */
+  --tinta: #064a73;
+  --tinta-suave: #0d5f8f;
+  --oceano: #2b7ea6;
+  --agua: #5cc8ff;
+  --vegetacion: #b8ff6a;
+  --hoja: #2c9d3a;
+  --arena: #fbeab8;
+  --cielo-alto: #4aa9ee;
+  --cielo-bajo: #bfeaff;
+  --blanco: #ffffff;
+
+  /* vidrio */
+  --vidrio-a: rgba(255, 255, 255, 0.82);
+  --vidrio-b: rgba(255, 255, 255, 0.58);
+  --vidrio-borde: rgba(255, 255, 255, 0.95);
+  --sombra-azul: rgba(4, 80, 127, 0.34);
+
+  /* tipografía */
+  --fuente: 'Nunito', 'Segoe UI', 'Frutiger', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
+  --fuente-vista: 'Segoe UI', 'Frutiger', 'Helvetica Neue', system-ui, sans-serif;
+  --mono: ui-monospace, 'JetBrains Mono', Menlo, monospace;
+  --t-12: 12px;
+  --t-14: 14px;
+  --t-16: 16px;
+  --t-20: 20px;
+  --t-24: 24px;
+  --t-32: 32px;
+  --t-48: 48px;
+
+  /* espaciado */
+  --e-4: 4px;
+  --e-8: 8px;
+  --e-12: 12px;
+  --e-16: 16px;
+  --e-24: 24px;
+  --e-32: 32px;
+  --e-48: 48px;
+  --e-64: 64px;
+
+  /* forma y movimiento */
+  --radio-panel: 16px;
+  --radio-pildora: 999px;
+  --objetivo-tactil: 44px;
+  --t-rapido: 150ms;
+  --t-normal: 250ms;
+}
