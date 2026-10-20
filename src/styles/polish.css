@@ -580,3 +580,7 @@
 .landing__signal { align-self: end; justify-self: end; width: 190px; margin: 24px; background: rgba(4,72,128,.55); border-color: rgba(255,255,255,.55); }
 .landing__signal small { color: #fff; font-size: 11px; }
 @media (max-width: 650px) { .landing__signal { position: static; justify-self: start; width: auto; margin: 0 25px 24px; } .landing h1 { letter-spacing: -.04em; } }
+.landing { min-height: min(400px, calc(100svh - 180px)); width: min(860px, calc(100vw - 32px)); }
+.landing__copy { padding-block: clamp(26px, 4vw, 44px); }
+.landing h1 { font-size: clamp(46px, 6.5vw, 76px); }
+@media (min-width: 651px) { .landing__copy { padding-left: clamp(40px, 7vw, 84px); } }
