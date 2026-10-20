@@ -61,7 +61,7 @@ describe('cámara del mundo', () => {
   });
 
   it('acota zoom y centro', () => {
-    expect(clampWorldCamera({ cx: 1e6, cy: 0, zoom: 99 }).zoom).toBe(2.4);
+    expect(clampWorldCamera({ cx: 1e6, cy: 0, zoom: 99 }).zoom).toBe(6);
     expect(Math.hypot(clampWorldCamera({ cx: 1e6, cy: 1e6, zoom: 1 }).cx, clampWorldCamera({ cx: 1e6, cy: 1e6, zoom: 1 }).cy)).toBeLessThanOrEqual(760.001);
   });
 
@@ -79,7 +79,7 @@ describe('estado de la vista', () => {
     expect(parseWorldView(null)).toBeNull();
     expect(parseWorldView('{no')).toBeNull();
     expect(parseWorldView(JSON.stringify({ mode: 'x', cx: 0, cy: 0, zoom: 1 }))).toBeNull();
-    expect(parseWorldView(JSON.stringify({ mode: 'dentro', cx: 5000, cy: 0, zoom: 50, selectedId: 'mia' }))).toMatchObject({ mode: 'dentro', zoom: 2.4, selectedId: 'mia' });
+    expect(parseWorldView(JSON.stringify({ mode: 'dentro', cx: 5000, cy: 0, zoom: 50, selectedId: 'mia' }))).toMatchObject({ mode: 'dentro', zoom: 6, selectedId: 'mia' });
   });
 
   it('al salir de la isla se prepara entrar al archipiélago con mi isla seleccionada', () => {

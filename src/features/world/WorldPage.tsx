@@ -14,7 +14,6 @@ import { isSupabaseConfigured, myIsland } from '../../persistence/supabase';
 import { listWorldIslands, type RealIsland } from '../../persistence/world';
 import { buildArchipelago, loadMine } from '../../world/archipelago';
 import { findCountry, searchCountries } from '../../world/countries';
-import { countryAnchor } from '../../world/geoProjection';
 import { everyWhileVisible } from '../../persistence/fastcache';
 import { worldVisit } from '../../story/missions';
 import { TerritoryPanel, useTerritory } from './TerritoryPanel';
@@ -96,6 +95,7 @@ export function WorldPage() {
   const [expOpen, setExpOpen] = useState(false);
   const [gadgetsOpen, setGadgetsOpen] = useState(false);
   const [atlasOpen, setAtlasOpen] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
   const [conquestOpen, setConquestOpen] = useState(false);
   const [pickedCell, setPickedCell] = useState<CellRef | null>(null);
   const territory = useTerritory(sceneRef, conquestOpen);
@@ -111,12 +111,12 @@ export function WorldPage() {
   const focusedCountryPlayers = countryFocus ? islands.filter((island) => island.country === countryFocus) : [];
   const facts = countryFocus ? COUNTRY_FACTS.get(countryFocus) : undefined;
   const exploreCountry = (code: string) => {
-    const point = countryAnchor(code);
     sceneRef.current?.enter();
-    sceneRef.current?.focusPoint(point.x, point.y);
+    sceneRef.current?.focusCountry(code);
   };
   useEffect(() => {
     sceneRef.current?.markCountry(countryFocus);
+    if (!countryFocus) sceneRef.current?.focusCountry(null);
   }, [countryFocus]);
   const openCountry = (code: string) => {
     if (mode === 'lejos') {
@@ -126,9 +126,8 @@ export function WorldPage() {
       setAtlasOpen(false);
       return;
     }
-    const point = countryAnchor(code);
     sceneRef.current?.enter();
-    sceneRef.current?.focusPoint(point.x, point.y);
+    sceneRef.current?.focusCountry(code);
     setCountryFocus(code);
     setAtlasOpen(false);
   };
@@ -144,7 +143,10 @@ export function WorldPage() {
   const callbacks = useMemo(
     () => ({
       onSelect: (id: string | null) => setSelectedId(id),
-      onView: (v: ViewState) => saveWorldView(v),
+      onView: (v: ViewState) => {
+        saveWorldView(v);
+        setZoomed(v.zoom >= 1.8);
+      },
       onMode: (m: 'lejos' | 'dentro') => setMode(m),
       onCountry: (code: string) => setCountryFocus(code),
       onCell: (cx: number, cy: number) => setPickedCell({ cx, cy }),
@@ -374,11 +376,12 @@ export function WorldPage() {
           </>
         ) : (
           <>
-            <div className="world-zoom" role="group" aria-label="zoom">
-              <button type="button" aria-label="acercar" onClick={() => sceneRef.current?.zoomBy(1.3)}>+</button>
-              <button type="button" aria-label="alejar" onClick={() => sceneRef.current?.zoomBy(1 / 1.3)}>−</button>
-            </div>
             <button type="button" className="world-controls__wide" onClick={() => { sceneRef.current?.select('mia'); setSelectedId('mia'); sceneRef.current?.focus('mia'); }}>ir a mi isla</button>
+            {zoomed && (
+              <button type="button" className="world-controls__wide" onClick={() => { sceneRef.current?.focusCountry(null); setCountryFocus(null); sceneRef.current?.resetCamera(); }}>
+                ver todo el mundo
+              </button>
+            )}
           </>
         )}
       </nav>

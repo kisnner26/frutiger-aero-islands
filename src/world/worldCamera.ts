@@ -1,6 +1,6 @@
 export const BASIN_RADIUS = 1000;
 export const WORLD_MIN_ZOOM = 0.5;
-export const WORLD_MAX_ZOOM = 2.4;
+export const WORLD_MAX_ZOOM = 6;
 
 export interface WorldCamera {
   /** centro de la vista en coordenadas de la cuenca. */

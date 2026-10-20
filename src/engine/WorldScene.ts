@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Sprite, Texture, TilingSprite } from 'pixi.js';
+import { Application, Container, Graphics, Sprite, Text, Texture, TilingSprite } from 'pixi.js';
 import { CATALOG_MAP } from '../catalog/catalog';
 import { renderBasin, renderGlassFrame, renderHalo, renderPlanet, renderWorldSky } from '../art/planet';
 import { pencilSprite } from '../art/pencil';
@@ -117,6 +117,10 @@ export class WorldScene {
   private under = new Container();
   private routes = new Graphics();
   private countryMarkers = new Graphics();
+  private countryLabels = new Container();
+  private labelNodes: Array<{ code: string; x: number; y: number; text: Text }> = [];
+  private focusHalo = new Graphics();
+  private focusCode: string | null = null;
   private islandLayer = new Container();
   private overlay = new Container();
   private frame = new Sprite();
@@ -218,7 +222,7 @@ export class WorldScene {
     this.caustics.alpha = 0.13;
     this.caustics.tileScale.set(1.8);
     this.islandLayer.sortableChildren = true;
-    this.inner.addChild(this.basin, this.caustics, this.under, this.routes, this.territory, this.blight, this.countryMarkers, this.islandLayer, this.overlay);
+    this.inner.addChild(this.basin, this.caustics, this.under, this.routes, this.territory, this.blight, this.countryMarkers, this.focusHalo, this.countryLabels, this.islandLayer, this.overlay);
     this.frame.anchor.set(0.5);
     this.interior.addChild(this.inner, this.frame);
     this.interior.mask = this.mask;
@@ -558,6 +562,72 @@ export class WorldScene {
     this.renderNow();
   }
 
+  /** explorar un país: cámara cerca, halo con su nombre, y el resto de islas se atenúan para que cada zona tenga sentido. */
+  focusCountry(code: string | null) {
+    this.focusCode = code;
+    if (code && this.selectedId) {
+      this.selectedId = null;
+      this.cb.onSelect(null);
+      this.updateRings();
+    }
+    for (const n of this.nodes.values()) n.box.alpha = !code || n.data.country === code ? 1 : 0.28;
+    this.drawFocus();
+    if (code) {
+      const p = countryAnchor(code);
+      this.moveCamera({ cx: p.x, cy: p.y, zoom: 3.6 });
+    }
+    this.renderNow();
+  }
+
+  private drawFocus() {
+    const g = this.focusHalo;
+    g.clear();
+    if (!this.focusCode) return;
+    const p = countryAnchor(this.focusCode);
+    const has = [...this.nodes.values()].some((n) => n.data.country === this.focusCode);
+    g.circle(p.x, p.y, 130).fill({ color: 0xffffff, alpha: 0.1 }).stroke({ width: 3, color: 0xffffff, alpha: 0.75 });
+    g.circle(p.x, p.y, 92).stroke({ width: 2, color: 0x7fe0ff, alpha: 0.6 });
+    if (!has) {
+      // tierra libre: nadie ha construido aquí todavía
+      g.circle(p.x, p.y, 34).fill({ color: 0xbff4ff, alpha: 0.35 }).stroke({ width: 3, color: 0xffffff, alpha: 0.95 });
+      g.circle(p.x - 9, p.y - 10, 7).fill({ color: 0xffffff, alpha: 0.9 });
+    }
+  }
+
+  private buildLabels() {
+    if (this.labelNodes.length) return;
+    for (const c of COUNTRIES) {
+      const p = countryAnchor(c.code);
+      const text = new Text({ text: c.name, style: { fontFamily: 'system-ui, sans-serif', fontSize: 15, fontWeight: '800', fill: 0xffffff, stroke: { color: 0x0b4f86, width: 3 }, align: 'center' } });
+      text.anchor.set(0.5, 0);
+      text.position.set(p.x, p.y + 15);
+      text.resolution = 2;
+      this.countryLabels.addChild(text);
+      this.labelNodes.push({ code: c.code, x: p.x, y: p.y, text });
+    }
+  }
+
+  /** los nombres de países aparecen al acercarse y solo cerca del centro de la vista. */
+  private updateLabels() {
+    const z = this.cam.zoom;
+    const on = z >= 1.7 && this.mapMode === false;
+    this.countryLabels.visible = on;
+    if (!on) return;
+    this.buildLabels();
+    const alpha = smooth(1.7, 2.6, z);
+    const vp = this.vp();
+    const reach = (Math.max(vp.width, vp.height) / (worldFit(vp) * z)) * 0.62;
+    for (const l of this.labelNodes) {
+      const near = Math.hypot(l.x - this.cam.cx, l.y - this.cam.cy) <= reach;
+      l.text.visible = near;
+      if (near) {
+        const focus = l.code === this.focusCode;
+        l.text.alpha = focus ? 1 : alpha;
+        l.text.scale.set((focus ? 1.35 : 1) / Math.max(1, z * 0.7));
+      }
+    }
+  }
+
   resetCamera() {
     this.moveCamera({ ...DEFAULT_WORLD_CAMERA });
   }
@@ -628,6 +698,7 @@ export class WorldScene {
     this.frame.position.set(cx, cy);
     this.frame.alpha = smooth(0.6, 1, t);
 
+    this.updateLabels();
     const s = worldFit(this.vp()) * this.cam.zoom * lerp(0.4, 1, e);
     this.inner.scale.set(s);
     this.inner.position.set(cx - this.cam.cx * s, cy - this.cam.cy * s);
@@ -655,6 +726,7 @@ export class WorldScene {
       for (const n of this.nodes.values()) n.flag?.update(this.time);
       this.caustics.tilePosition.x += 6 * dt;
       this.caustics.tilePosition.y += 3 * dt;
+      if (this.focusCode && !this.reduced) this.focusHalo.alpha = 0.75 + Math.sin(this.time * 2.4) * 0.25;
       for (const sw of this.swimmers) {
         sw.x += sw.dir * sw.speed * dt;
         if (sw.x > 800) sw.dir = -1;
@@ -683,6 +755,12 @@ export class WorldScene {
   }
 
   private bind(canvas: HTMLCanvasElement) {
+    this.listen(canvas, 'dblclick', (e: MouseEvent) => {
+      if (this.t < 0.95) return;
+      this.cam = zoomWorldAt(this.cam, this.vp(), this.local(e as unknown as PointerEvent), this.cam.zoom * 1.9);
+      this.emitView();
+      this.renderNow();
+    });
     this.listen(canvas, 'pointerdown', (e: PointerEvent) => this.onDown(e));
     this.listen(canvas, 'pointermove', (e: PointerEvent) => this.onMove(e));
     this.listen(canvas, 'pointerup', (e: PointerEvent) => this.onUp(e));
@@ -817,7 +895,10 @@ export class WorldScene {
         return;
       }
       const country = this.countryAt(p);
-      if (country) this.cb.onCountry(country);
+      if (country) {
+        this.focusCountry(country);
+        this.cb.onCountry(country);
+      }
       else {
         this.selectedId = null;
         this.cb.onSelect(null);
