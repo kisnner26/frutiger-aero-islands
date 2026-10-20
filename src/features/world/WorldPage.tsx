@@ -110,6 +110,13 @@ export function WorldPage() {
     sceneRef.current?.markCountry(countryFocus);
   }, [countryFocus]);
   const openCountry = (code: string) => {
+    if (mode === 'lejos') {
+      sceneRef.current?.faceCountry(code);
+      sceneRef.current?.markCountry(code);
+      setCountryFocus(code);
+      setAtlasOpen(false);
+      return;
+    }
     const point = countryAnchor(code);
     sceneRef.current?.enter();
     sceneRef.current?.focusPoint(point.x, point.y);
@@ -146,6 +153,13 @@ export function WorldPage() {
           sc.select(null);
           setSelectedId(null);
         } else if (mode === 'dentro') sc.leave();
+        return;
+      }
+      if (mode === 'lejos') {
+        if (e.key === 'ArrowLeft') sc.spinPlanet(-12);
+        else if (e.key === 'ArrowRight') sc.spinPlanet(12);
+        else if (e.key === 'ArrowUp') sc.spinPlanet(0, 0.12);
+        else if (e.key === 'ArrowDown') sc.spinPlanet(0, -0.12);
         return;
       }
       if (mode !== 'dentro') return;
@@ -336,6 +350,34 @@ export function WorldPage() {
         {status}
         {selected ? `, seleccionada: ${selected.name}` : ''}
       </span>
+
+      <nav className="world-controls" aria-label="controles del mundo">
+        {mode === 'lejos' ? (
+          <>
+            <div className="world-pad" role="group" aria-label="girar el planeta">
+              <button type="button" aria-label="girar hacia arriba" onClick={() => sceneRef.current?.spinPlanet(0, 0.14)}>▴</button>
+              <button type="button" aria-label="girar a la izquierda" onClick={() => sceneRef.current?.spinPlanet(-14)}>◂</button>
+              <button type="button" aria-label="girar a la derecha" onClick={() => sceneRef.current?.spinPlanet(14)}>▸</button>
+              <button type="button" aria-label="girar hacia abajo" onClick={() => sceneRef.current?.spinPlanet(0, -0.14)}>▾</button>
+            </div>
+            <button type="button" className="world-controls__wide" disabled={!country} onClick={() => country && sceneRef.current?.faceCountry(country)}>ir a mi país</button>
+          </>
+        ) : (
+          <>
+            <div className="world-pad" role="group" aria-label="mover el mapa">
+              <button type="button" aria-label="mover hacia arriba" onClick={() => sceneRef.current?.pan(0, -90)}>▴</button>
+              <button type="button" aria-label="mover a la izquierda" onClick={() => sceneRef.current?.pan(-90, 0)}>◂</button>
+              <button type="button" aria-label="mover a la derecha" onClick={() => sceneRef.current?.pan(90, 0)}>▸</button>
+              <button type="button" aria-label="mover hacia abajo" onClick={() => sceneRef.current?.pan(0, 90)}>▾</button>
+            </div>
+            <div className="world-zoom" role="group" aria-label="zoom">
+              <button type="button" aria-label="acercar" onClick={() => sceneRef.current?.zoomBy(1.3)}>+</button>
+              <button type="button" aria-label="alejar" onClick={() => sceneRef.current?.zoomBy(1 / 1.3)}>−</button>
+            </div>
+            <button type="button" className="world-controls__wide" onClick={() => { sceneRef.current?.select('mia'); setSelectedId('mia'); sceneRef.current?.focus('mia'); }}>ir a mi isla</button>
+          </>
+        )}
+      </nav>
 
       <Taskbar tasks={[{ id: 'islas', label: 'islas', icon: <span className="mini-orb mini-orb--green" />, active: listOpen, onClick: () => setListOpen((v) => !v) }, { id: 'atlas', label: 'atlas', icon: <span className="mini-orb mini-orb--globe" />, active: atlasOpen, onClick: () => setAtlasOpen((v) => !v) },
         ...(isSupabaseConfigured ? [{ id: 'exp', label: 'expediciones', icon: <span className="mini-orb" />, active: expOpen, onClick: () => setExpOpen((v) => !v) }, { id: 'gadgets', label: 'gadgets', icon: <span className="mini-orb mini-orb--green" />, active: gadgetsOpen, onClick: () => setGadgetsOpen((v) => !v) }] : [])]} />

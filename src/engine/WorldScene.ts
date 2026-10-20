@@ -12,6 +12,8 @@ import type { WorldIsland } from '../world/archipelago';
 import type { WorldView } from '../world/worldState';
 import { COUNTRIES } from '../world/countries';
 import { countryAnchor } from '../world/geoProjection';
+import { OrbitalAccents, SeaTraffic } from './worldExtras';
+import { pencilSprite as pencilTex } from '../art/pencil';
 import { rendererResolution, tickerFrameLimit } from './devicePerformance';
 
 export interface WorldCallbacks {
@@ -64,6 +66,13 @@ export class WorldScene {
   private halo = new Sprite();
   private planet = new Sprite();
   private pin = new Graphics();
+  private accents = new OrbitalAccents();
+  private traffic: SeaTraffic | null = null;
+  private viewLon = -38;
+  private viewTilt = 0.36;
+  private spin: { x: number; y: number; lon: number; tilt: number; moved: boolean; last: number } | null = null;
+  private spinTween: { fromLon: number; toLon: number; fromTilt: number; toTilt: number; t: number } | null = null;
+  private hiTimer = 0;
   private pinCode: string | null = null;
   private interior = new Container();
   private inner = new Container();
@@ -121,7 +130,9 @@ export class WorldScene {
     this.app = app;
     try {
       const ids = [...new Set(islands.flatMap((i) => i.objects.map((o) => o.assetId)))];
-      const [assets, ...tex] = await Promise.all([loadLifeAssets(), ...ids.map(async (id) => Texture.from(await pencilSprite(CATALOG_MAP.get(id)!.assetPath)))]);
+      const base = import.meta.env.BASE_URL;
+      const [assets, boat, dolphin, ...tex] = await Promise.all([loadLifeAssets(), pencilTex(`${base}assets/decorations/velero.svg`), pencilTex(`${base}assets/decorations/delfin.svg`), ...ids.map(async (id) => Texture.from(await pencilSprite(CATALOG_MAP.get(id)!.assetPath)))]);
+      this.traffic = new SeaTraffic({ velero: Texture.from(boat), delfin: Texture.from(dolphin) });
       this.assets = assets;
       ids.forEach((id, i) => this.objTex.set(id, tex[i]));
       this.planet.texture = Texture.from(renderPlanet(720));
@@ -142,7 +153,11 @@ export class WorldScene {
 
     this.planet.anchor.set(0.5);
     this.halo.anchor.set(0.5);
-    this.far.addChild(this.halo, this.planet, this.pin);
+    this.far.sortableChildren = true;
+    this.halo.zIndex = -5;
+    this.planet.zIndex = 0;
+    this.pin.zIndex = 2;
+    this.far.addChild(this.halo, this.planet, this.pin, this.accents.root);
 
     this.basin.anchor.set(0.5);
     const basinR = this.basin.texture.width / 2 - 6;
@@ -160,6 +175,7 @@ export class WorldScene {
     app.stage.addChild(this.sky, this.far, this.interior, this.mask);
     this.sky.anchor.set(0);
 
+    if (this.traffic) this.under.addChild(this.traffic.root);
     this.buildCountryMarkers();
     this.buildIslands(islands);
     this.buildRoutes();
@@ -499,6 +515,19 @@ export class WorldScene {
       const step = dt / TRANSITION_SECONDS;
       this.t = this.target > this.t ? Math.min(1, this.t + step) : Math.max(0, this.t - step);
     }
+    if (this.spinTween) {
+      const st = this.spinTween;
+      st.t = Math.min(1, st.t + dt / 0.9);
+      const k = ease(st.t);
+      this.viewLon = lerp(st.fromLon, st.toLon, k);
+      this.viewTilt = lerp(st.fromTilt, st.toTilt, k);
+      if (st.t >= 1) {
+        this.spinTween = null;
+        this.requestPlanet(true);
+      } else this.requestPlanet(false);
+    }
+    this.accents.update(this.reduced ? 0 : this.time, this.planetRadius(), this.app.screen.width / 2, this.app.screen.height / 2);
+    if (this.traffic && this.t > 0.2) this.traffic.update(this.reduced ? 0 : this.time);
     if (this.camTween) {
       const tw = this.camTween;
       tw.t = Math.min(1, tw.t + dt / 0.55);
@@ -548,6 +577,7 @@ export class WorldScene {
       this.pointers.delete(e.pointerId);
       this.drag = null;
       this.pinch = null;
+      this.spin = null;
     });
     this.listen(
       canvas,
@@ -565,7 +595,8 @@ export class WorldScene {
 
   /* vista del planeta: misma proyección que renderPlanet (inclinación 0.36, lon central -38°) */
   private planetRadius() {
-    return this.planet.scale.x * (this.planet.texture.width / 2 - 8);
+    const tw = this.planet.texture.width;
+    return this.planet.scale.x * (tw / 2 - (tw * 8) / 720);
   }
 
   private planetCountryAt(p: { x: number; y: number }): string | null {
@@ -575,11 +606,11 @@ export class WorldScene {
     const r2 = dx * dx + dy * dy;
     if (r2 > 1) return null;
     const nz = Math.sqrt(1 - r2);
-    const tilt = 0.36;
+    const tilt = this.viewTilt;
     const Y2 = -dy * Math.cos(tilt) + nz * Math.sin(tilt);
     const Z2 = dy * Math.sin(tilt) + nz * Math.cos(tilt);
     const lat = Math.asin(Math.max(-1, Math.min(1, Y2)));
-    const lon = (-38 * Math.PI) / 180 + Math.atan2(dx, Z2);
+    const lon = (this.viewLon * Math.PI) / 180 + Math.atan2(dx, Z2);
     let best: { code: string; d: number } | null = null;
     for (const c of COUNTRIES) {
       const la = (c.lat * Math.PI) / 180;
@@ -590,15 +621,59 @@ export class WorldScene {
     return best?.code ?? null;
   }
 
+  private lastPreview = 0;
+
+  private drawPlanet(fast: boolean) {
+    const old = this.planet.texture;
+    this.planet.texture = Texture.from(renderPlanet(fast ? 300 : 720, this.viewLon, this.viewTilt, fast));
+    if (old !== Texture.EMPTY && old !== Texture.WHITE) old.destroy(true);
+    const planetPx = Math.min(this.app.screen.width, this.app.screen.height) * 0.8;
+    this.planet.scale.set(planetPx / this.planet.texture.width);
+    this.markCountry(this.pinCode);
+    this.renderNow();
+  }
+
+  /** vista previa rápida durante el giro y versión completa al soltar. */
+  private requestPlanet(final: boolean) {
+    window.clearTimeout(this.hiTimer);
+    const now = performance.now();
+    if (!final && now - this.lastPreview < 70) {
+      this.hiTimer = window.setTimeout(() => this.drawPlanet(false), 220);
+      return;
+    }
+    this.lastPreview = now;
+    this.drawPlanet(!final);
+    if (!final) this.hiTimer = window.setTimeout(() => this.drawPlanet(false), 220);
+  }
+
+  /** gira el planeta con los botones. */
+  spinPlanet(dLon: number, dTilt = 0) {
+    this.viewLon = ((((this.viewLon + dLon + 180) % 360) + 360) % 360) - 180;
+    this.viewTilt = Math.max(-0.35, Math.min(0.9, this.viewTilt + dTilt));
+    this.requestPlanet(false);
+  }
+
+  /** gira el planeta hasta dejar un país al frente. */
+  faceCountry(code: string) {
+    const c = COUNTRIES.find((x) => x.code === code);
+    if (!c) return;
+    let to = c.lon;
+    const from = this.viewLon;
+    while (to - from > 180) to -= 360;
+    while (to - from < -180) to += 360;
+    const toTilt = Math.max(-0.2, Math.min(0.8, (c.lat * Math.PI) / 180 * 0.8));
+    this.spinTween = { fromLon: from, toLon: to, fromTilt: this.viewTilt, toTilt, t: this.reduced ? 1 : 0 };
+  }
+
   /** marca un país sobre el planeta (si está en la cara visible) con un punto de cristal. */
   markCountry(code: string | null) {
     this.pinCode = code;
     this.pin.clear();
     const c = COUNTRIES.find((x) => x.code === code);
     if (!c) return;
-    const tilt = 0.36;
+    const tilt = this.viewTilt;
     const la = (c.lat * Math.PI) / 180;
-    const rel = (c.lon * Math.PI) / 180 - (-38 * Math.PI) / 180;
+    const rel = (c.lon * Math.PI) / 180 - (this.viewLon * Math.PI) / 180;
     const x = Math.cos(la) * Math.sin(rel);
     const yy = Math.sin(la);
     const z = Math.cos(la) * Math.cos(rel);
@@ -646,7 +721,10 @@ export class WorldScene {
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
     const p = this.local(e);
     this.pointers.set(e.pointerId, p);
-    if (this.t < 0.95 && this.target === 0) return;
+    if (this.target === 0 && this.t < 0.05) {
+      if (this.planetHit(p)) this.spin = { x: p.x, y: p.y, lon: this.viewLon, tilt: this.viewTilt, moved: false, last: 0 };
+      return;
+    }
     if (this.t < 0.95) return;
     if (this.pointers.size === 2) {
       const [a, b] = [...this.pointers.values()];
@@ -660,10 +738,22 @@ export class WorldScene {
   private onMove(e: PointerEvent) {
     const p = this.local(e);
     if (!this.pointers.has(e.pointerId)) {
-      this.app.canvas.style.cursor = this.target === 0 ? (this.planetHit(p) ? 'pointer' : 'default') : this.islandAt(p) || this.countryAt(p) ? 'pointer' : 'grab';
+      this.app.canvas.style.cursor = this.target === 0 ? (this.planetHit(p) ? 'grab' : 'default') : this.islandAt(p) || this.countryAt(p) ? 'pointer' : 'grab';
       return;
     }
     this.pointers.set(e.pointerId, p);
+    if (this.spin) {
+      const sp = this.spin;
+      if (!sp.moved && Math.hypot(p.x - sp.x, p.y - sp.y) < 6) return;
+      sp.moved = true;
+      this.spinTween = null;
+      const R = Math.max(1, this.planetRadius());
+      this.viewLon = ((((sp.lon - ((p.x - sp.x) / R) * 57 + 180) % 360) + 360) % 360) - 180;
+      this.viewTilt = Math.max(-0.35, Math.min(0.9, sp.tilt + ((p.y - sp.y) / R) * 0.9));
+      this.app.canvas.style.cursor = 'grabbing';
+      this.requestPlanet(false);
+      return;
+    }
     if (this.pinch && this.pointers.size >= 2) {
       const [a, b] = [...this.pointers.values()];
       const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
@@ -694,6 +784,14 @@ export class WorldScene {
     }
     const d = this.drag;
     this.drag = null;
+    if (this.spin) {
+      const moved = this.spin.moved;
+      this.spin = null;
+      if (moved) {
+        this.requestPlanet(true);
+        return;
+      }
+    }
     if (this.target === 0) {
       if (this.planetHit(p)) {
         const country = this.planetCountryAt(p);

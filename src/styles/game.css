@@ -750,3 +750,14 @@
 .world-country__players a { color: #0a6aa6; font-weight: 900; }
 .world-country__actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .win-world-country { top: 96px; }
+
+/* controles del mundo: cruceta y zoom de cristal, abajo a la izquierda */
+.world-controls { position: absolute; z-index: 22; left: 14px; bottom: 64px; display: grid; gap: 8px; justify-items: start; }
+.world-pad { display: grid; grid-template-columns: repeat(3, 40px); grid-template-areas: ". u ." "l . r" ". d ."; gap: 4px; }
+.world-pad button:nth-child(1) { grid-area: u; } .world-pad button:nth-child(2) { grid-area: l; } .world-pad button:nth-child(3) { grid-area: r; } .world-pad button:nth-child(4) { grid-area: d; }
+.world-zoom { display: flex; gap: 6px; }
+.world-pad button, .world-zoom button { width: 40px; height: 40px; border: 1px solid rgba(255,255,255,.9); border-radius: 50%; background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(150,215,240,.7) 55%, rgba(60,160,210,.75)); color: #0a5a90; font: 900 18px/1 var(--fuente, inherit); cursor: pointer; box-shadow: inset 0 1px #fff, 0 4px 10px rgba(0,80,140,.3); }
+.world-pad button:hover, .world-zoom button:hover { filter: brightness(1.08); }
+.world-controls__wide { min-height: 36px; padding: 0 16px; border: 1px solid rgba(255,255,255,.9); border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(150,215,240,.75)); color: #0a5a90; font: 900 12px var(--fuente, inherit); cursor: pointer; box-shadow: inset 0 1px #fff, 0 4px 10px rgba(0,80,140,.25); }
+.world-controls__wide:disabled { opacity: .5; cursor: default; }
+@media (max-width: 680px) { .world-controls { bottom: 62px; left: 8px; transform: scale(.88); transform-origin: bottom left; } }

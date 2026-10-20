@@ -78,15 +78,14 @@ function sampleMask(m: Uint8ClampedArray, lon: number, lat: number): number {
 const mix = (a: number, b: number, t: number) => a + (b - a) * Math.max(0, Math.min(1, t));
 
 /** planeta azul con continentes verdes, sombreado y atmósfera; cristal sutil en el borde. */
-export function renderPlanet(size = 720): HTMLCanvasElement {
+export function renderPlanet(size = 720, lonDeg = -38, tilt = 0.36, fast = false): HTMLCanvasElement {
   const mask = landMask();
   const c = makeCanvas(size, size);
   const ctx = c.getContext('2d', { willReadFrequently: true })!;
   const img = ctx.createImageData(size, size);
   const d = img.data;
-  const R = size / 2 - 8;
-  const tilt = 0.36;
-  const lon0 = (-38 * Math.PI) / 180;
+  const R = size / 2 - (size * 8) / 720;
+  const lon0 = (lonDeg * Math.PI) / 180;
   const ct = Math.cos(tilt);
   const st = Math.sin(tilt);
   const L = [-0.5, 0.56, 0.66];
@@ -160,6 +159,7 @@ export function renderPlanet(size = 720): HTMLCanvasElement {
     }
   }
   ctx.putImageData(img, 0, 0);
+  if (fast) return c; // vista previa mientras se gira: sin lápiz ni borde
   pencilize(c, { grain: 0.55, outline: false, edgeLines: false, angle: 38, seed: 4 });
 
   // rayado de lápiz suave dentro del disco
