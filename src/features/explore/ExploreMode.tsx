@@ -54,6 +54,7 @@ export function ExploreMode({ objects, level, avatar, onExit }: Props) {
   exitRef.current = onExit;
   const stick = useRef({ x: 0, y: 0 });
   const [hint, setHint] = useState(true);
+  const touch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -367,7 +368,7 @@ export function ExploreMode({ objects, level, avatar, onExit }: Props) {
         <button type="button" onClick={() => setView((v) => (v === 'primera' ? 'tercera' : 'primera'))}>cambiar vista</button>
         <button type="button" onClick={onExit}>salir</button>
       </div>
-      {hint && <p className="explore__hint">w a s d para caminar · q e o flechas para girar · arrastra para mirar · v cambia la vista · esc sale</p>}
+      {hint && <p className="explore__hint">{touch ? 'usa la palanca para caminar y arrastra para mirar' : 'w a s d para caminar · q e o flechas para girar · arrastra para mirar · v cambia la vista · esc sale'}</p>}
       <div
         ref={padRef}
         className="explore__pad"

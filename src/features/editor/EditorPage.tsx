@@ -15,6 +15,7 @@ import { AeroWindow } from '../../ui/AeroWindow';
 import { Balloon } from '../../ui/Balloon';
 import { Taskbar } from '../../ui/Taskbar';
 import { ExploreMode } from '../explore/ExploreMode';
+import { useExclusiveWindows } from '../../ui/useExclusiveWindows';
 import { Prologue, prologueSeen } from '../../story/Prologue';
 import { MissionsPanel } from '../../story/MissionsPanel';
 import { nextMission, worldVisit } from '../../story/missions';
@@ -275,6 +276,17 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
     });
   const patchWin = (key: 'catalog' | 'objects' | 'workshop' | 'daily', v: Partial<{ open: boolean; min: boolean }>) => setWin((w) => ({ ...w, [key]: { ...w[key], ...v } }));
 
+  useExclusiveWindows(
+    { catalogo: win.catalog.open && !win.catalog.min, objetos: win.objects.open && !win.objects.min, laboratorio: win.workshop.open && !win.workshop.min, marea: win.daily.open && !win.daily.min, misiones: missionsOpen },
+    {
+      catalogo: () => setWin((w) => ({ ...w, catalog: { ...w.catalog, min: true } })),
+      objetos: () => setWin((w) => ({ ...w, objects: { ...w.objects, min: true } })),
+      laboratorio: () => setWin((w) => ({ ...w, workshop: { ...w.workshop, min: true } })),
+      marea: () => setWin((w) => ({ ...w, daily: { ...w.daily, min: true } })),
+      misiones: () => setMissionsOpen(false),
+    },
+  );
+
   const orbIcon = <span className="mini-orb" />;
   const hasSel = !!selected;
 
@@ -370,6 +382,8 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
       <Taskbar
         tasks={[
           { id: 'catalog', label: 'decoraciones', icon: <span className="mini-orb" />, active: win.catalog.open && !win.catalog.min, onClick: () => toggleWin('catalog') },
+          { id: 'missions', label: 'misiones', icon: <span className="mini-orb" />, active: missionsOpen, onClick: () => setMissionsOpen((v) => !v) },
+          { id: 'explore', label: 'caminar', icon: <span className="mini-orb mini-orb--green" />, active: exploring, onClick: () => setExploring(true) },
           {
             id: 'mundo',
             label: 'mundo',
@@ -382,8 +396,6 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
           },
           { id: 'workshop', label: 'laboratorio', icon: <span className="mini-orb mini-orb--green" />, active: win.workshop.open && !win.workshop.min, onClick: () => toggleWin('workshop') },
           { id: 'daily', label: 'marea diaria', icon: <span className="mini-orb mini-orb--globe" />, active: win.daily.open && !win.daily.min, onClick: () => toggleWin('daily') },
-          { id: 'missions', label: 'misiones', icon: <span className="mini-orb" />, active: missionsOpen, onClick: () => setMissionsOpen((v) => !v) },
-          { id: 'explore', label: 'caminar', icon: <span className="mini-orb mini-orb--green" />, active: exploring, onClick: () => setExploring(true) },
           { id: 'objects', label: 'objetos', icon: <span className="mini-orb mini-orb--green" />, active: win.objects.open && !win.objects.min, onClick: () => toggleWin('objects') },
         ]}
       />

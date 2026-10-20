@@ -15,6 +15,7 @@ import { listWorldIslands, type RealIsland } from '../../persistence/world';
 import { buildArchipelago, loadMine } from '../../world/archipelago';
 import { findCountry, searchCountries } from '../../world/countries';
 import { everyWhileVisible } from '../../persistence/fastcache';
+import { useExclusiveWindows } from '../../ui/useExclusiveWindows';
 import { worldVisit } from '../../story/missions';
 import { LeaderboardPanel } from './LeaderboardPanel';
 import { TerritoryPanel, useTerritory } from './TerritoryPanel';
@@ -105,6 +106,10 @@ export function WorldPage() {
   if (import.meta.env.DEV) (window as unknown as { __world?: unknown }).__world = sceneRef; // solo para pruebas en desarrollo
   const [atlasQuery, setAtlasQuery] = useState('');
   const [countryFocus, setCountryFocus] = useState<string | null>(null);
+  useExclusiveWindows(
+    { lista: listOpen, expediciones: expOpen, gadgets: gadgetsOpen, atlas: atlasOpen, conquista: conquestOpen, ranking: leaderOpen, pais: Boolean(countryFocus) },
+    { lista: () => setListOpen(false), expediciones: () => setExpOpen(false), gadgets: () => setGadgetsOpen(false), atlas: () => setAtlasOpen(false), conquista: () => { setConquestOpen(false); setPickedCell(null); }, ranking: () => setLeaderOpen(false), pais: () => setCountryFocus(null) },
+  );
   const selected = islands.find((i) => i.id === selectedId) ?? null;
   const forecast = useMemo(() => aeroForecast(country), [country]);
   const onlineTotal = Object.values(presence).reduce((total, count) => total + count, 0);

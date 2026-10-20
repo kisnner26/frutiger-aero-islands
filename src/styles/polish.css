@@ -632,3 +632,45 @@
 .taskbar__tasks::-webkit-scrollbar { display: none; }
 .task { flex: none; }
 .taskbar__tray { flex: none; }
+
+/* ===== teléfono: ventanas como hojas inferiores, botones táctiles y sin zoom accidental ===== */
+@media (max-width: 680px) {
+  .win-territory, .win-leader, .win-missions, .win-world-atlas, .win-world-list, .win-world-country, .win-world-card,
+  .win-objects, .win-workshop, .win-daily, .win-report {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    top: auto !important;
+    bottom: calc(62px + env(safe-area-inset-bottom)) !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: 58svh !important;
+    transform: none !important;
+    margin: 0 !important;
+  }
+  .win-report { top: 50% !important; bottom: auto !important; transform: translateY(-50%) !important; max-height: 80svh !important; }
+  .win-territory .aero-window__body, .win-leader .aero-window__body, .win-missions .aero-window__body, .win-world-atlas .aero-window__body,
+  .win-world-list .aero-window__body, .win-world-country .aero-window__body { max-height: calc(58svh - 44px); overflow-y: auto; }
+  .win-territory .territory, .win-leader .leader, .win-missions .missions { max-height: none; }
+
+  /* el texto largo del encabezado del mundo estorba en pantallas pequeñas */
+  .world-hud__hint { display: none; }
+  .world-hud__note { font-size: 11px; }
+
+  /* objetivos táctiles de al menos 44 px */
+  .vista-button, .world-controls__wide, .report-btn, .tile-tabs button, .leader__tabs button, .territory__tabs button,
+  .prologue__skip, .account__link, .explore__bar button, .world-radar__actions button { min-height: 44px; }
+  .territory__tabs button, .leader__tabs button, .tile-tabs button { padding: 0 16px; }
+  .report-btn { bottom: calc(112px + env(safe-area-inset-bottom)); }
+
+  /* ios amplía la página si un campo tiene menos de 16 px */
+  input, select, textarea { font-size: 16px !important; }
+}
+
+/* toques rápidos sin retraso ni resaltado, y sin tirar para recargar en medio de una partida */
+button, a, [role='button'], .tile, .task { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.game, .explore, .world { overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+@media (max-width: 680px) {
+  .taskbar__tasks { scroll-snap-type: x proximity; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent); padding-right: 18px; }
+  .task { scroll-snap-align: start; }
+}
