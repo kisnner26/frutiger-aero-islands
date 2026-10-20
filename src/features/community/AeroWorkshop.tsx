@@ -3,6 +3,7 @@ import { sfx } from '../../audio/sfx';
 import { readableSupabaseError } from '../../persistence/supabase';
 import { claimAeroCycle, craftAeroRecipe, getAeroResources, listAeroRecipes, type AeroRecipe, type AeroResources } from '../../persistence/workshop';
 import './workshop.css';
+import { AeroLoader } from '../../ui/AeroLoader';
 
 const EMPTY: AeroResources = { water: 0, crystals: 0, leaves: 0, lastCycleAt: null };
 
@@ -63,7 +64,7 @@ export function AeroWorkshop({ level, onOpenArcade }: { level: number; onOpenArc
         return <article key={recipe.id} className={locked ? 'is-locked' : ''}><div className={`workshop__recipe-icon workshop__recipe-icon--${recipe.outputKind}`} aria-hidden="true" /><div><strong>{recipe.name}</strong><small>{recipe.description}</small><em>{recipe.waterCost} agua · {recipe.crystalCost} cristal · {recipe.leafCost} hojas</em></div>{locked ? <span className="workshop__lock">nivel {recipe.unlockLevel}</span> : <button type="button" disabled={!ready || working !== null} onClick={() => void craft(recipe)}>{working === recipe.id ? 'creando...' : ready ? 'crear' : 'faltan recursos'}</button>}</article>;
       })}
     </div>
-    {!recipes && !message && <p className="workshop__message" role="status">cargando recetas...</p>}
+    {!recipes && !message && <AeroLoader variant="inline" text="cargando recetas..." />}
     {message && <p className="workshop__message" role="status">{message}</p>}
   </section>;
 }

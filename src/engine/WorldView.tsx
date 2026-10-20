@@ -3,6 +3,7 @@ import type { WorldIsland } from '../world/archipelago';
 import type { WorldView as WorldViewState } from '../world/worldState';
 import { veil } from '../ui/veilStore';
 import { WorldScene, type WorldCallbacks } from './WorldScene';
+import { AeroLoader } from '../ui/AeroLoader';
 
 interface Props {
   islands: WorldIsland[];
@@ -62,11 +63,7 @@ export function WorldView({ islands, initial, callbacks, controlRef }: Props) {
   return (
     <div className="scene-view">
       <div ref={hostRef} className="scene-view__host" />
-      {status === 'cargando' && (
-        <p className="scene-view__msg" role="status">
-          preparando el mundo...
-        </p>
-      )}
+      {status === 'cargando' && <AeroLoader variant="scene" text="preparando el mundo..." detail="desplegando el atlas interior..." />}
       {status === 'error' && (
         <div className="scene-view__msg" role="alert">
           <p>no se pudo cargar el mundo.</p>

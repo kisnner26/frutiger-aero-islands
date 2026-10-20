@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { IslandScene, type SceneCallbacks, type SceneProps } from './IslandScene';
 import { veil } from '../ui/veilStore';
 import { sceneBridge } from './sceneBridge';
+import { AeroLoader } from '../ui/AeroLoader';
 
 interface SceneViewProps {
   scene: SceneProps;
@@ -75,11 +76,7 @@ export function SceneView({ scene, callbacks, controlRef }: SceneViewProps) {
   return (
     <div className="scene-view">
       <div ref={hostRef} className="scene-view__host" />
-      {status === 'cargando' && (
-        <p className="scene-view__msg" role="status">
-          cargando la isla...
-        </p>
-      )}
+      {status === 'cargando' && <AeroLoader variant="scene" text="cargando la isla..." detail="acomodando tu jardín y sus reflejos..." />}
       {status === 'error' && (
         <div className="scene-view__msg" role="alert">
           <p>no se pudo cargar la isla.</p>

@@ -10,6 +10,7 @@ import { AccountPanel } from '../features/community/AccountPanel';
 import { useSession } from '../persistence/session';
 import { sceneBridge } from '../engine/sceneBridge';
 import { Veil } from '../ui/Veil';
+import { AeroLoader } from '../ui/AeroLoader';
 import { veil } from '../ui/veilStore';
 
 const TITULOS: Record<Route, string> = {
@@ -27,7 +28,7 @@ const TITULOS: Record<Route, string> = {
 /** la cuenta muestra el formulario solo si no hay sesión; con sesión muestra la cuenta. */
 function Cuenta() {
   const session = useSession();
-  if (session.status === 'cargando') return <p className="scene-view__msg" role="status">comprobando tu sesión...</p>;
+  if (session.status === 'cargando') return <AeroLoader variant="page" text="comprobando tu sesión..." detail="verificando la llave de tu archipiélago..." />;
   return session.status === 'con-sesion' ? <AccountPanel session={session} /> : <AuthPage />;
 }
 
@@ -37,11 +38,11 @@ const AvatarEditor = lazy(() => import('../features/avatar/AvatarEditor').then((
 const ExplorePage = lazy(() => import('../features/community/ExplorePage').then((m) => ({ default: m.ExplorePage })));
 const MyIslandPage = lazy(() => import('../features/community/IslandPages').then((m) => ({ default: m.MyIslandPage })));
 const VisitIslandPage = lazy(() => import('../features/community/IslandPages').then((m) => ({ default: m.VisitIslandPage })));
-const LoadingRoute = ({ text }: { text: string }) => <p className="scene-view__msg" role="status">{text}</p>;
+const LoadingRoute = ({ text }: { text: string }) => <AeroLoader variant="page" text={text} />;
 
 function Inicio() {
   const session = useSession();
-  if (session.status === 'cargando') return <div className="app"><Backdrop /><main className="main"><p className="scene-view__msg" role="status">preparando tu archipiélago...</p></main></div>;
+  if (session.status === 'cargando') return <div className="app"><Backdrop /><main className="main"><AeroLoader text="preparando tu archipiélago..." detail="la marea está conectando tu cuenta..." /></main></div>;
   const signed = session.status === 'con-sesion';
   return (
     <div className={`landing${signed ? ' landing--member' : ''}`}>
@@ -93,7 +94,7 @@ function Introduccion() {
 function AccessGate({ children }: { children: ReactNode }) {
   const session = useSession();
   if (session.status === 'con-sesion') return <>{children}</>;
-  if (session.status === 'cargando') return <p className="scene-view__msg" role="status">comprobando tu cuenta...</p>;
+  if (session.status === 'cargando') return <AeroLoader variant="page" text="comprobando tu cuenta..." detail="abriendo una ruta segura al archipiélago..." />;
   return <div className="app"><Backdrop /><main className="main"><section className="access-gate" aria-labelledby="access-title"><span className="mini-orb" aria-hidden="true" /><p>archipiélago online</p><h1 id="access-title">entra para jugar</h1><span>tu isla, personaje y progreso están ligados a una cuenta.</span><a className="vista-button vista-button--primary" href={routeHref('auth')}>crear cuenta o entrar</a><a className="landing__text-link" href={routeHref('inicio')}>volver a la bienvenida</a></section></main></div>;
 }
 
@@ -142,12 +143,12 @@ function Routes() {
 
   if (route === 'auth') return <div className="app"><Backdrop /><main className="main"><Cuenta /></main>{session.status === 'con-sesion' && <Taskbar />}</div>;
   if (route === 'personaje') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text="abriendo el personaje..." />}><AvatarEditor /></Suspense></main><Taskbar /></div></AccessGate>;
-  if (route === 'arcade') return <AccessGate><Suspense fallback={<p className="scene-view__msg" role="status">abriendo el arcade...</p>}><ArcadePage onExit={() => { window.location.hash = routeHref('mundo'); }} /></Suspense></AccessGate>;
+  if (route === 'arcade') return <AccessGate><Suspense fallback={<AeroLoader variant="scene" text="abriendo el arcade..." detail="preparando desafíos sobre el agua..." />}><ArcadePage onExit={() => { window.location.hash = routeHref('mundo'); }} /></Suspense></AccessGate>;
   if (route === 'explorar') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text="buscando islas..." />}><ExplorePage /></Suspense></main><Taskbar /></div></AccessGate>;
   if (route === 'visita' && routeState.username) return <AccessGate><Suspense fallback={<LoadingRoute text="visitando isla..." />}><VisitIslandPage username={routeState.username} /></Suspense></AccessGate>;
   if (route === 'mundo') {
     return (
-      <AccessGate><Suspense fallback={<p className="scene-view__msg" role="status">preparando el mundo...</p>}><WorldPage /></Suspense></AccessGate>
+      <AccessGate><Suspense fallback={<AeroLoader variant="scene" text="preparando el mundo..." detail="trazando rutas y señales del atlas..." />}><WorldPage /></Suspense></AccessGate>
     );
   }
 

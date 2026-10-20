@@ -6,8 +6,9 @@ import { touchIslandPresence } from '../../persistence/community';
 import { IslandSocialControls } from './IslandSocialControls';
 import { AeroWindow } from '../../ui/AeroWindow';
 import { EditorPage } from '../editor/EditorPage';
+import { AeroLoader } from '../../ui/AeroLoader';
 
-function Loading({ text }: { text: string }) { return <p className="scene-view__msg" role="status">{text}</p>; }
+function Loading({ text }: { text: string }) { return <AeroLoader variant="scene" text={text} detail="la marea está preparando la visita..." />; }
 
 export function MyIslandPage() {
   const [state, setState] = useState<'cargando' | 'local' | 'perfil' | 'listo' | 'error'>('cargando');
