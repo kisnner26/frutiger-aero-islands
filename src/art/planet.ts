@@ -392,3 +392,75 @@ export function renderGlassFrame(w: number, h: number, dpr: number): HTMLCanvasE
   arc(Math.PI * 0.06, Math.PI * 0.3, R * 0.97, 0.22, 6 * dpr);
   return c;
 }
+
+/** mapa equirectangular del planeta (sin sombreado: la luz la pone la escena 3d). */
+export function renderPlanetMap(w = 1536, h = 768): HTMLCanvasElement {
+  const mask = landMask();
+  const c = makeCanvas(w, h);
+  const ctx = c.getContext('2d', { willReadFrequently: true })!;
+  const img = ctx.createImageData(w, h);
+  const d = img.data;
+  for (let y = 0; y < h; y++) {
+    const lat = (0.5 - (y + 0.5) / h) * Math.PI;
+    const latd = (lat * 180) / Math.PI;
+    for (let x = 0; x < w; x++) {
+      const lon = ((x + 0.5) / w - 0.5) * Math.PI * 2;
+      const lond = (lon * 180) / Math.PI;
+      const land = sampleMask(mask, lon, lat);
+      const near = (sampleMask(mask, lon + 0.03, lat) + sampleMask(mask, lon - 0.03, lat) + sampleMask(mask, lon, lat + 0.03) + sampleMask(mask, lon, lat - 0.03)) / 4;
+      const n1 = vnoise(lon * 5 + 3, lat * 5, 2);
+      const n2 = vnoise(lon * 14, lat * 14 + 7, 5);
+      let r: number, g: number, b: number;
+      if (land > 0.5) {
+        const dry = Math.max(0, 1 - Math.abs(latd - 24) / 9) * (lond > -18 && lond < 58 ? 1 : 0) * (n1 > 0.4 ? 1 : 0.35);
+        r = mix(52, 142, n1 * 0.8 + n2 * 0.3);
+        g = mix(124, 194, n1 * 0.8 + n2 * 0.3);
+        b = mix(52, 86, n1);
+        r = mix(r, 214, dry);
+        g = mix(g, 190, dry);
+        b = mix(b, 120, dry);
+        const snow = Math.max(0, (Math.abs(latd) - 62) / 14);
+        r = mix(r, 236, snow);
+        g = mix(g, 244, snow);
+        b = mix(b, 250, snow);
+      } else {
+        const coast = near * 2.4;
+        r = mix(16, 54, n1 * 0.9 + coast);
+        g = mix(88, 178, n1 * 0.9 + coast);
+        b = mix(176, 232, n1 * 0.7 + coast * 0.6);
+      }
+      const o = (y * w + x) * 4;
+      d[o] = r;
+      d[o + 1] = g;
+      d[o + 2] = b;
+      d[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  const box = { x: 0, y: 0, w, h };
+  hatch(ctx, box, { color: '#0a3f86', alpha: 0.05, angle: 28, spacing: w / 420, width: w / 900, seed: 21, len: w / 30 });
+  hatch(ctx, box, { color: '#d8f4ff', alpha: 0.05, angle: 112, spacing: w / 300, width: w / 800, seed: 22, len: w / 34, skip: 0.3 });
+  paperGrain(c, 0.25, 11);
+  return c;
+}
+
+/** capa de nubes suaves para la esfera. */
+export function renderCloudMap(w = 1024, h = 512): HTMLCanvasElement {
+  const c = makeCanvas(w, h);
+  const ctx = c.getContext('2d')!;
+  const r = rng(77);
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 90; i++) {
+    const x = r() * w;
+    const y = h * (0.12 + r() * 0.76);
+    const len = w * (0.03 + r() * 0.07);
+    ctx.strokeStyle = '#ffffff';
+    ctx.globalAlpha = 0.22 + r() * 0.34;
+    ctx.lineWidth = h / 120 + r() * h / 80;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.bezierCurveTo(x + len * 0.3, y - h * 0.012, x + len * 0.7, y + h * 0.012, x + len, y);
+    ctx.stroke();
+  }
+  return c;
+}
