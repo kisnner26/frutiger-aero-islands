@@ -58,10 +58,10 @@ function Inicio() {
       <section className="landing__copy" aria-labelledby="titulo-vista">
         <h1 id="titulo-vista" tabIndex={-1} data-vista-titulo>{signed ? 'tu isla está lista.' : 'un mundo de islas, hecho por personas.'}</h1>
         <p>{signed ? `vuelve a ${session.username ? `@${session.username}` : 'tu isla'} y continúa donde lo dejaste.` : 'crea una cuenta para diseñar tu isla, guardar cada objeto y visitar a otros jugadores.'}</p>
-        <nav className="landing__actions" aria-label={signed ? 'continuar jugando' : 'empezar'}>
+      </section>
+      <nav className="landing__actions" aria-label={signed ? 'continuar jugando' : 'empezar'}>
           {signed ? <><a className="vista-button vista-button--primary" href={routeHref('isla')} onClick={() => { sfx.click(); if (music.wantsMusic()) void music.play(); }}>continuar en mi isla</a><a className="landing__text-link" href={routeHref('mundo')}>ir al mundo</a></> : <><a className="vista-button vista-button--primary" href={routeHref('auth')}>crear cuenta o entrar</a><a className="landing__text-link" href={routeHref('introduccion')}>cómo funciona</a></>}
         </nav>
-      </section>
       <ul className="landing__facts" aria-label="qué incluye">
         <li><strong>en tu cuenta</strong><small>isla y avatar guardados</small></li>
         <li><strong>visitas públicas</strong><small>otros te encuentran</small></li>
