@@ -10,6 +10,9 @@ export interface SessionInfo {
 let state: SessionInfo = { status: supabase ? 'cargando' : 'sin-sesion', email: null, username: null };
 const listeners = new Set<() => void>();
 let started = false;
+let resolvedUserId: string | null = null;
+let pendingApply: { userId: string | null; promise: Promise<void> } | null = null;
+let applyGeneration = 0;
 
 function set(next: SessionInfo) {
   state = next;
@@ -26,17 +29,36 @@ async function loadUsername(userId: string): Promise<string | null> {
   }
 }
 
-async function apply(session: { user: { id: string; email?: string | null } } | null) {
+async function applySession(session: { user: { id: string; email?: string | null } } | null, generation: number) {
   if (!session) {
+    resolvedUserId = null;
     void import('../avatar/store').then((m) => m.avatarStore.setAccount(null)).catch(() => undefined);
-    return set({ status: 'sin-sesion', email: null, username: null });
+    set({ status: 'sin-sesion', email: null, username: null });
+    return;
+  }
+  if (resolvedUserId === session.user.id && state.status === 'con-sesion') {
+    if (state.email !== (session.user.email ?? null)) set({ ...state, email: session.user.email ?? null });
+    return;
   }
   set({ status: 'con-sesion', email: session.user.email ?? null, username: state.username });
   const username = await loadUsername(session.user.id);
+  if (generation !== applyGeneration) return;
+  resolvedUserId = session.user.id;
   set({ status: 'con-sesion', email: session.user.email ?? null, username });
   // el país del perfil es la fuente de verdad cuando existe
   void import('./country').then((m) => m.syncCountry()).catch(() => undefined);
   void import('../avatar/store').then((m) => m.avatarStore.setAccount(session.user.id)).then(() => import('./avatar')).then((m) => m.syncAvatar()).catch(() => undefined);
+}
+
+function apply(session: { user: { id: string; email?: string | null } } | null): Promise<void> {
+  const userId = session?.user.id ?? null;
+  if (pendingApply?.userId === userId) return pendingApply.promise;
+  const generation = ++applyGeneration;
+  const promise = applySession(session, generation).finally(() => {
+    if (pendingApply?.promise === promise) pendingApply = null;
+  });
+  pendingApply = { userId, promise };
+  return promise;
 }
 
 function start() {

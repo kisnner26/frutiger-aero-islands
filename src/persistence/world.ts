@@ -19,10 +19,42 @@ interface Row {
   islands: Array<{ id: string; layout: { objects?: PlacedObject[]; maxLevel?: number } | null; created_at: string }>;
 }
 
+interface SummaryRow {
+  island_id: string;
+  username: string;
+  display_name: string;
+  country_code: string | null;
+  objects: PlacedObject[] | null;
+  level: number;
+  created_at: string;
+}
+
+function mapSummary(row: SummaryRow): RealIsland | null {
+  if (!Array.isArray(row.objects)) return null;
+  return {
+    id: row.island_id,
+    username: row.username,
+    displayName: row.display_name,
+    country: row.country_code,
+    objects: row.objects,
+    level: Math.max(1, Number(row.level) || 1),
+    createdAt: row.created_at,
+  };
+}
+
 /** islas de jugadores reales (cuentas con perfil e isla), de la más antigua a la más reciente. no se inventa ninguna. */
 export async function listWorldIslands(limit = 32): Promise<RealIsland[]> {
   if (!supabase) return [];
-  const query = (cols: string) => supabase!.from('profiles').select(cols).limit(limit);
+  const safeLimit = Math.max(1, Math.min(48, Math.floor(limit)));
+  const summary = await supabase.rpc('world_island_summaries', { p_limit: safeLimit });
+  if (!summary.error) {
+    return ((summary.data ?? []) as SummaryRow[])
+      .map(mapSummary)
+      .filter((island): island is RealIsland => island !== null);
+  }
+
+  // compatibilidad mientras se aplica la migración nueva en un proyecto existente.
+  const query = (cols: string) => supabase!.from('profiles').select(cols).limit(safeLimit);
   let res = await query('username,display_name,country_code,islands!inner(id,layout,created_at)');
   if (res.error) res = await query('username,display_name,islands!inner(id,layout,created_at)'); // sin la columna de país
   if (res.error) throw res.error;
