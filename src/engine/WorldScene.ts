@@ -12,6 +12,7 @@ import type { WorldIsland } from '../world/archipelago';
 import type { WorldView } from '../world/worldState';
 import { COUNTRIES } from '../world/countries';
 import { countryAnchor } from '../world/geoProjection';
+import { rendererResolution, tickerFrameLimit } from './devicePerformance';
 
 export interface WorldCallbacks {
   onSelect(id: string | null): void;
@@ -110,7 +111,7 @@ export class WorldScene {
 
   private async init(host: HTMLElement, islands: WorldIsland[], initial: WorldView | null) {
     const app = new Application();
-    await app.init({ resizeTo: host, backgroundAlpha: 0, antialias: true, autoDensity: true, resolution: Math.min(window.devicePixelRatio || 1, 2) });
+    await app.init({ resizeTo: host, backgroundAlpha: 0, antialias: true, autoDensity: true, resolution: rendererResolution(1.5) });
     if (this.destroyed) {
       app.destroy(true, { children: true });
       return;
@@ -181,6 +182,7 @@ export class WorldScene {
     this.observer.observe(host);
     this.listen(document, 'visibilitychange', () => this.syncRunning());
     app.ticker.add((tk) => this.update(tk.deltaMS / 1000));
+    app.ticker.maxFPS = tickerFrameLimit();
     this.syncRunning();
     this.updateRings();
     this.renderNow();

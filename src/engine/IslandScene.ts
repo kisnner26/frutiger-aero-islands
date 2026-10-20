@@ -1,5 +1,5 @@
 import { Application, Container, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
-import { CATALOG, CATALOG_MAP } from '../catalog/catalog';
+import { CATALOG_MAP } from '../catalog/catalog';
 import { ERROR_TEXT, clampToWorld, landTier, validateObject } from '../domain/geometry';
 import type { CatalogItem, PlacedObject } from '../domain/island';
 import { glassBubble } from '../art/aero';
@@ -11,6 +11,7 @@ import { loadImage } from '../art/pencil';
 import { avatarDataUrl } from '../avatar/svg';
 import { sameAvatar, type AvatarSpec } from '../avatar/model';
 import { DEFAULT_CAMERA, clampCamera, fitScale, screenToScene, zoomAt, type Camera } from './camera';
+import { rendererResolution, tickerFrameLimit } from './devicePerformance';
 import { K, TILT, project, unproject } from './projection';
 
 export interface SceneCallbacks {
@@ -108,6 +109,7 @@ export class IslandScene {
   private fx = new Container();
   private ghost = new Sprite();
   private textures = new Map<string, Texture>();
+  private textureLoads = new Map<string, Promise<Texture>>();
   private bubbleTex!: Texture;
   private goldTex!: Texture;
   private entries = new Map<string, Entry>();
@@ -149,7 +151,7 @@ export class IslandScene {
       backgroundAlpha: 0,
       antialias: true,
       autoDensity: true,
-      resolution: Math.min(window.devicePixelRatio || 1, 2),
+      resolution: rendererResolution(),
     });
     if (this.destroyed) {
       app.destroy(true, { children: true });
@@ -157,18 +159,16 @@ export class IslandScene {
     }
     this.app = app;
     try {
-      const [leaf, butterfly, lifeAssets, ...items] = await Promise.all([
+      const [leaf, butterfly, lifeAssets] = await Promise.all([
         loadTexture(LEAF_URL, 128, { grain: 0.6 }),
         loadTexture(BUTTERFLY_URL, 192, { grain: 0.6 }),
         loadLifeAssets(),
-        ...CATALOG.map((c) => loadTexture(c.assetPath)),
       ]);
       this.bubbleTex = Texture.from(glassBubble(160, { seed: 3 }));
       this.goldTex = Texture.from(glassBubble(160, { seed: 4, tint: [255, 200, 90] }));
       this.life = new AeroLife(lifeAssets);
       this.leafTex = leaf;
       this.butterflyTex = butterfly;
-      CATALOG.forEach((c, i) => this.textures.set(c.id, items[i]));
     } catch (e) {
       app.destroy(true, { children: true });
       throw new Error('no se pudieron cargar las texturas');
@@ -202,6 +202,7 @@ export class IslandScene {
     app.ticker.add((t) => {
       this.update(t.deltaMS / 1000);
     });
+    app.ticker.maxFPS = tickerFrameLimit();
     if (!this.reduced) {
       this.camera = { ...this.camera, zoom: 0.68 };
       this.intro = -0.35;
@@ -269,6 +270,37 @@ export class IslandScene {
     if (placingChanged) this.endGhost();
     this.syncObjects();
     this.renderNow();
+    const assets = new Set(props.objects.map((object) => object.assetId));
+    if (props.placing) assets.add(props.placing);
+    void Promise.all([...assets].map((id) => this.ensureTexture(id)))
+      .then(() => {
+        if (this.destroyed) return;
+        this.syncObjects();
+        this.renderNow();
+      })
+      .catch(() => undefined);
+  }
+
+  /** Carga solo decoraciones visibles o seleccionadas; el catálogo completo ya no bloquea la entrada. */
+  private ensureTexture(id: string): Promise<Texture | undefined> {
+    const ready = this.textures.get(id);
+    if (ready) return Promise.resolve(ready);
+    const pending = this.textureLoads.get(id);
+    if (pending) return pending;
+    const item = CATALOG_MAP.get(id);
+    if (!item) return Promise.resolve(undefined);
+    const request = loadTexture(item.assetPath)
+      .then((texture) => {
+        if (!this.destroyed) this.textures.set(id, texture);
+        this.textureLoads.delete(id);
+        return texture;
+      })
+      .catch((error) => {
+        this.textureLoads.delete(id);
+        throw error;
+      });
+    this.textureLoads.set(id, request);
+    return request;
   }
 
   getZoom(): number {
