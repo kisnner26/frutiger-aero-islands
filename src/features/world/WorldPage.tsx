@@ -155,6 +155,8 @@ export function WorldPage() {
   const focusedCountryPlayers = countryFocus ? islands.filter((island) => island.country === countryFocus) : [];
   const facts = countryFocus ? COUNTRY_FACTS.get(countryFocus) : undefined;
   const exploreCountry = (code: string) => {
+    sceneRef.current?.select(null);
+    setSelectedId(null);
     sceneRef.current?.enter();
     sceneRef.current?.focusCountry(code);
   };
@@ -163,6 +165,8 @@ export function WorldPage() {
     if (!countryFocus) sceneRef.current?.focusCountry(null);
   }, [countryFocus]);
   const openCountry = (code: string) => {
+    sceneRef.current?.select(null);
+    setSelectedId(null);
     if (mode === 'lejos') {
       sceneRef.current?.faceCountry(code);
       sceneRef.current?.markCountry(code);
@@ -192,7 +196,7 @@ export function WorldPage() {
         setZoomed(v.zoom >= 1.8);
       },
       onMode: (m: 'lejos' | 'dentro') => setMode(m),
-      onCountry: (code: string) => setCountryFocus(code),
+      onCountry: (code: string) => { setSelectedId(null); setCountryFocus(code); },
       onCell: (cx: number, cy: number) => setPickedCell({ cx, cy }),
     }),
     [],
@@ -286,7 +290,7 @@ export function WorldPage() {
         )}
       </header>
 
-      <aside className={`world-radar world-radar--${mode}`} aria-label="radar del archipiélago">
+      {!focusedCountry && !selected && <aside className={`world-radar world-radar--${mode}`} aria-label="radar del archipiélago">
         <header><span className={`world-radar__weather world-radar__weather--${forecast.tone}`} aria-hidden="true" /><div><p>radar aero</p><strong>{forecast.label}</strong><small>{forecast.detail}</small></div></header>
         <div className="world-radar__metrics"><span><b>{others.length + 1}</b> islas</span><span><b>{onlineTotal}</b> en línea</span><span><b>{Math.max(0, others.length)}</b> rutas</span></div>
         <div className="world-radar__actions">
@@ -294,7 +298,7 @@ export function WorldPage() {
           <button type="button" onClick={() => setAtlasOpen(true)}>atlas de países</button>
           <button type="button" onClick={() => phoneBus.open('radio')}>radio</button>
         </div>
-      </aside>
+      </aside>}
 
       {mode === 'lejos' && (
         <div className="world-enter">
@@ -376,7 +380,7 @@ export function WorldPage() {
               {mode === 'lejos' ? (
                 <button type="button" className="vista-button vista-button--primary" onClick={() => exploreCountry(focusedCountry.code)}>explorar la zona</button>
               ) : focusedCountryPlayers.length > 0 ? (
-                <button type="button" className="vista-button vista-button--primary" onClick={() => { const first = focusedCountryPlayers[0]; setCountryFocus(null); sceneRef.current?.select(first.id); setSelectedId(first.id); sceneRef.current?.focus(first.id, 2.4); }}>
+                <button type="button" className="vista-button vista-button--primary" onClick={() => { const first = focusedCountryPlayers[0]; setCountryFocus(null); sceneRef.current?.select(first.id); setSelectedId(first.id); sceneRef.current?.focus(first.id); }}>
                   ver {focusedCountryPlayers.length === 1 ? 'la isla' : 'las islas'}
                 </button>
               ) : (
