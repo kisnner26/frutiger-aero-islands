@@ -3,7 +3,7 @@ import { CATALOG_MAP } from '../src/catalog/catalog';
 import { isLand } from '../src/art/planet';
 import { validateObject } from '../src/domain/geometry';
 import { BASIN_RADIUS, DEFAULT_WORLD_CAMERA, clampWorldCamera, screenToWorld, worldToScreen, zoomWorldAt } from '../src/world/worldCamera';
-import { EXAMPLE_LAYOUTS, buildArchipelago, minePosition } from '../src/world/archipelago';
+import { buildArchipelago, minePosition } from '../src/world/archipelago';
 import { countryAnchor } from '../src/world/geoProjection';
 import { parseWorldView, prepareFromIsland } from '../src/world/worldState';
 
@@ -21,25 +21,23 @@ describe('continentes', () => {
 });
 
 describe('archipiélago', () => {
-  it('las islas de ejemplo usan solo objetos válidos del catálogo', () => {
-    for (const e of EXAMPLE_LAYOUTS) {
-      const world = buildArchipelago({ objects: [], level: 1 }).find((i) => i.id === e.id)!;
-      expect(world).toBeDefined();
-      for (const o of world.objects) expect(validateObject(CATALOG_MAP.get(o.assetId), o)).toBeNull();
-    }
+  it('sin jugadores no existe ninguna isla inventada', () => {
+    expect(buildArchipelago(null)).toEqual([]);
+    expect(buildArchipelago({ objects: [], level: 1 }).map((i) => i.id)).toEqual(['mia']);
   });
 
-  it('incluye mi isla con mis objetos y marca los ejemplos como tales', () => {
+  it('incluye mi isla y las de jugadores reales con su usuario', () => {
     const mine = { objects: [{ id: 'a', assetId: 'palmera', x: 500, y: 500, scale: 1, rotation: 0 }], level: 3 };
-    const list = buildArchipelago(mine);
+    const other = { id: 'x1', username: 'ana', displayName: 'ana', country: 'es', objects: mine.objects, level: 2, createdAt: '2026-01-01' };
+    const list = buildArchipelago(mine, [other], 'ni');
     expect(list[0]).toMatchObject({ id: 'mia', kind: 'mia', level: 3 });
-    expect(list[0].objects).toEqual(mine.objects);
-    expect(list.slice(1).every((i) => i.kind === 'ejemplo' && i.level === null)).toBe(true);
+    expect(list[1]).toMatchObject({ id: 'x1', kind: 'jugador', name: '@ana', username: 'ana', country: 'es' });
+    for (const o of list.flatMap((i) => i.objects)) expect(validateObject(CATALOG_MAP.get(o.assetId), o)).toBeNull();
   });
 
   it('las islas caben dentro de la cuenca y cada una queda en la zona de su país', () => {
-    for (const i of buildArchipelago({ objects: [], level: 1 }, 'ni')) expect(Math.hypot(i.x, i.y)).toBeLessThan(BASIN_RADIUS * 0.9);
-    const list = buildArchipelago({ objects: [], level: 1 }, 'ni');
+    for (const i of buildArchipelago({ objects: [], level: 1 }, [], 'ni')) expect(Math.hypot(i.x, i.y)).toBeLessThan(BASIN_RADIUS * 0.9);
+    const list = buildArchipelago({ objects: [], level: 1 }, [], 'ni');
     expect(list[0]).toMatchObject({ id: 'mia', country: 'ni', ...countryAnchor('ni') });
     expect(minePosition('ni')).toEqual(countryAnchor('ni'));
   });

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { sfx } from '../../audio/sfx';
-import { routeHref } from '../../app/useHashRoute';
+import { islandHref, routeHref } from '../../app/useHashRoute';
 import type { WorldScene } from '../../engine/WorldScene';
 import { WorldView } from '../../engine/WorldView';
 import { AeroWindow } from '../../ui/AeroWindow';
 import { Taskbar } from '../../ui/Taskbar';
 import { syncCountry } from '../../persistence/country';
 import { isSupabaseConfigured, myIsland } from '../../persistence/supabase';
+import { listWorldIslands, type RealIsland } from '../../persistence/world';
 import { buildArchipelago, loadMine } from '../../world/archipelago';
 import { findCountry } from '../../world/countries';
 import { countryStore, useCountry } from '../../world/country';
@@ -19,12 +20,14 @@ export function WorldPage() {
   const mine = useRef(loadMine());
   const [remoteMine, setRemoteMine] = useState(false);
   const [mineTick, setMineTick] = useState(0);
+  const [others, setOthers] = useState<RealIsland[]>([]);
+  const [loaded, setLoaded] = useState(!isSupabaseConfigured);
   const country = useCountry();
   const sceneRef = useRef<WorldScene | null>(null);
   const initial = useRef<ViewState | null>(null);
   const prevCountry = useRef(country);
   const islands = useMemo(() => {
-    const list = buildArchipelago(mine.current, country);
+    const list = buildArchipelago(mine.current, others, country);
     if (prevCountry.current !== country) {
       // al cambiar de país la vista se recentra en la nueva zona de mi isla
       const me = list.find((i) => i.id === 'mia');
@@ -32,10 +35,10 @@ export function WorldPage() {
       prevCountry.current = country;
     }
     return list;
-  }, [country, mineTick]);
+  }, [country, mineTick, others]);
   if (initial.current === null) {
     const saved = loadWorldView();
-    const me = buildArchipelago(mine.current, countryStore.get()).find((i) => i.id === 'mia');
+    const me = buildArchipelago(mine.current, [], countryStore.get()).find((i) => i.id === 'mia');
     initial.current = saved ?? { mode: 'lejos', cx: me?.x ?? 0, cy: me?.y ?? 0, zoom: 1, selectedId: null };
   }
   const [changeCountry, setChangeCountry] = useState(false);
@@ -44,14 +47,21 @@ export function WorldPage() {
     if (!isSupabaseConfigured) return;
     let alive = true;
     // con cuenta, mi isla en el mundo es la guardada en la nube, no el borrador del dispositivo
-    myIsland()
+    let myName: string | null = null;
+    const mineDone = myIsland()
       .then((i) => {
         if (!alive || !i) return;
+        myName = i.username;
         mine.current = { objects: i.layout.objects, level: i.layout.maxLevel };
         setRemoteMine(true);
         setMineTick((n) => n + 1);
       })
       .catch(() => undefined);
+    // solo personas registradas: las islas de otros jugadores vienen de la red, nunca se inventan
+    Promise.all([listWorldIslands(), mineDone])
+      .then(([list]) => alive && setOthers(list.filter((o) => o.username !== myName)))
+      .catch(() => undefined)
+      .finally(() => alive && setLoaded(true));
     return () => {
       alive = false;
     };
@@ -134,7 +144,11 @@ export function WorldPage() {
           <strong>mundo</strong>
           <span className="world-hud__hint">{mode === 'lejos' ? 'toca el planeta para entrar' : 'arrastra para moverte y toca una isla'}</span>
         </div>
-        <p className="world-hud__note">las islas de ejemplo son dibujos del prototipo, no jugadores.</p>
+        {loaded && (
+          <p className="world-hud__note">
+            {others.length === 0 ? 'aún no hay otros exploradores. comparte el enlace y sé de los primeros.' : `${others.length + 1} islas de jugadores reales`}
+          </p>
+        )}
       </header>
 
       {mode === 'lejos' && (
@@ -152,7 +166,7 @@ export function WorldPage() {
               <li key={i.id}>
                 <button type="button" aria-pressed={i.id === selectedId} onClick={() => choose(i.id)}>
                   <strong>{i.name}</strong>
-                  <small>{i.kind === 'mia' ? (remoteMine ? 'tuya, guardada en tu cuenta' : 'tuya, guardada en este dispositivo') : 'ejemplo del prototipo'}</small>
+                  <small>{i.kind === 'mia' ? (remoteMine ? 'tuya, guardada en tu cuenta' : 'tuya, guardada en este dispositivo') : `@${i.username}`}</small>
                 </button>
               </li>
             ))}
@@ -180,9 +194,18 @@ export function WorldPage() {
                 </a>
               </>
             ) : (
-              <p>
-                dibujo del prototipo para evaluar la composición del archipiélago. no pertenece a ningún jugador. zona de ejemplo: {findCountry(selected.country)?.name ?? 'sin zona'}.
-              </p>
+              <>
+                <p>
+                  {selected.objects.length} objetos · nivel {selected.level}
+                </p>
+                <p className="world-card__zone">
+                  <FlagBadge code={selected.country} width={34} />
+                  {findCountry(selected.country) ? `zona: ${findCountry(selected.country)!.name}` : 'zona: mar abierto'}
+                </p>
+                <a className="vista-button vista-button--primary" href={islandHref(selected.username!)}>
+                  visitar
+                </a>
+              </>
             )}
           </div>
         </AeroWindow>
