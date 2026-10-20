@@ -9,3 +9,46 @@
 .auth-vista__main label { display: grid; gap: 5px; color: #154e77; font-size: 12px; font-weight: 900; }.auth-vista__main label small { color: #6a879b; font-size: 10px; font-weight: 600; }.auth-vista__main input { min-height: 42px; padding: 0 12px; border: 1px solid #8fb8d1; border-radius: 4px; background: linear-gradient(#fff, #f0f8fc); color: #07395f; box-shadow: inset 0 1px 2px rgba(0,68,111,.13), 0 1px #fff; font: 600 14px var(--fuente-vista); }.auth-vista__main input:focus { border-color: #0a83c6; outline: 3px solid rgba(78,183,230,.2); }.auth-vista__status { margin: 0; padding: 9px 11px; border: 1px solid #80be8c; border-radius: 4px; background: #e4f4e8; color: #255d35; font-size: 12px; font-weight: 700; }.auth-vista__status--error { border-color: #d6a5a2; background: #fae9e8; color: #8b2a25; }.auth-vista__actions { display: flex; align-items: center; gap: 14px; }.auth-vista__submit { display: flex; align-items: center; gap: 15px; min-height: 43px; padding: 0 8px 0 15px; border: 1px solid #0570aa; border-radius: 5px; background: linear-gradient(#4cc6f1 0, #158fc8 47%, #0871ad 52%, #1594d1); color: #fff; font: 800 13px var(--fuente-vista); text-shadow: 0 1px rgba(0,47,91,.7); cursor: pointer; box-shadow: inset 0 1px rgba(255,255,255,.6), 0 2px 4px rgba(0,71,124,.22); }.auth-vista__submit:hover:not(:disabled) { filter: brightness(1.08); }.auth-vista__submit:disabled { opacity: .6; cursor: wait; }.auth-vista__submit i { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid rgba(255,255,255,.56); border-radius: 50%; background: rgba(255,255,255,.18); font-size: 25px; font-style: normal; line-height: 1; }.auth-vista__link { border: 0; background: transparent; color: #0e679e; font: 800 11px var(--fuente-vista); text-decoration: underline; cursor: pointer; }.auth-vista__footer { display: flex; justify-content: space-between; gap: 15px; padding-top: 4px; color: #668096; font-size: 10px; font-weight: 700; }.auth-vista__footer a { color: #116b9f; }
 @media (max-width: 650px) { .auth-window { width: min(100vw - 16px, 560px); }.auth-vista { display: block; min-height: 0; }.auth-vista__rail { min-height: 156px; padding: 18px; }.auth-vista__caption, .auth-vista__signal { display: none; }.auth-vista__nav { display: flex; margin-top: 17px; overflow-x: auto; }.auth-vista__nav button { display: block; min-width: 105px; min-height: 48px; }.auth-vista__nav i { float: left; margin-right: 7px; }.auth-vista__nav small { display: none; }.auth-vista__main { padding: 27px 20px 21px; }.auth-vista__device { flex-basis: 76px; height: 91px; border-width: 4px; }.auth-vista__device i { height: 36px; }.auth-vista__device em { font-size: 11px; }.auth-vista__header h1 { font-size: 32px; }.auth-vista__footer { display: grid; }.auth-vista__actions { align-items: flex-start; flex-direction: column; gap: 9px; } }
 @media (prefers-reduced-motion: reduce) { .auth-vista * { transition: none !important; } }
+
+/* respuesta física: lo que cambia de modo entra, los controles confirman intención. */
+@media (prefers-reduced-motion: no-preference) {
+  .auth-window { animation: auth-window-arrive 380ms cubic-bezier(.2, .9, .25, 1.12) both; }
+  .auth-vista__rail::after { animation: auth-orb-drift 5.5s ease-in-out infinite; }
+  .auth-vista__device i { animation: auth-device-glow 2.8s ease-in-out infinite; }
+  .auth-vista__header { animation: auth-content-swap 190ms ease-out both; }
+  .auth-vista__nav button { transition: transform 140ms ease, background 140ms ease, border-color 140ms ease; }
+  .auth-vista__nav button:hover { transform: translateX(3px); }
+  .auth-vista__nav button.is-active i { animation: auth-icon-pop 240ms cubic-bezier(.2, 1.5, .5, 1) both; }
+  .auth-vista__main label { transition: transform 140ms ease; }
+  .auth-vista__main label:focus-within { transform: translateX(3px); }
+  .auth-vista__status { animation: auth-status-arrive 220ms ease-out both; }
+  .auth-vista__submit { transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease; }
+  .auth-vista__submit:active:not(:disabled) { transform: translateY(2px); box-shadow: inset 0 1px rgba(0, 33, 75, .34); }
+}
+@keyframes auth-window-arrive { from { opacity: 0; transform: perspective(800px) translateY(18px) scale(.975); } to { opacity: 1; transform: none; } }
+@keyframes auth-orb-drift { 50% { transform: translate(-7px, 10px) scale(1.06); } }
+@keyframes auth-device-glow { 50% { box-shadow: inset 0 0 23px rgba(232,255,255,1), 0 0 13px rgba(66,190,238,.35); } }
+@keyframes auth-content-swap { from { opacity: .25; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes auth-icon-pop { from { transform: scale(.72); } to { transform: scale(1); } }
+@keyframes auth-status-arrive { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: none; } }
+
+/* microinteracciones para la versión compacta del centro de cuenta. */
+@media (prefers-reduced-motion: no-preference) {
+  .logon__card { animation: logon-arrive 420ms cubic-bezier(.2,.9,.22,1.12) both; }
+  .logon__avatar { animation: logon-float 4.6s ease-in-out infinite; }
+  .logon__tabs button { transition: transform 150ms ease, background 150ms ease, color 150ms ease, box-shadow 150ms ease; }
+  .logon__tabs button:hover { transform: translateY(-2px); }
+  .logon__tabs button.is-active { animation: logon-tab-select 240ms cubic-bezier(.2,1.4,.4,1) both; }
+  .logon__field { transition: transform 150ms ease; }
+  .logon__field:focus-within { transform: translateX(3px); }
+  .logon__field > div { transition: box-shadow 150ms ease, border-color 150ms ease; }
+  .logon__field:focus-within > div { box-shadow: 0 0 0 3px rgba(67,196,241,.24); }
+  .logon__status { animation: logon-message 230ms ease-out both; }
+  .logon__submit { transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease; }
+  .logon__submit:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.06); }
+  .logon__submit:active:not(:disabled) { transform: translateY(2px); }
+}
+@keyframes logon-arrive { from { opacity: 0; transform: perspective(800px) translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes logon-float { 50% { transform: translateY(-5px); } }
+@keyframes logon-tab-select { from { transform: scale(.9); } to { transform: scale(1); } }
+@keyframes logon-message { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: none; } }
