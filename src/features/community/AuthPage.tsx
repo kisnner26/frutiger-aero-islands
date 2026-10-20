@@ -7,6 +7,17 @@ import './login.css';
 
 type AuthMode = 'entrar' | 'registro' | 'recuperar';
 
+/** evita que un paso que no responde deje el botón en "conectando..." para siempre. */
+function withTimeout<T>(task: PromiseLike<T>, ms: number, message: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(message)), ms);
+    Promise.resolve(task).then(
+      (v) => { window.clearTimeout(timer); resolve(v); },
+      (e) => { window.clearTimeout(timer); reject(e); },
+    );
+  });
+}
+
 const usernameOk = (value: string) => /^[a-z][a-z0-9_]{2,23}$/.test(value);
 const registrationPasswordOk = (value: string) => value.length >= 12;
 const copy: Record<AuthMode, { title: string; description: string; action: string }> = {
@@ -29,12 +40,13 @@ export function AuthPage() {
         const normalizedUsername = username.toLowerCase();
         if (!usernameOk(normalizedUsername)) throw new Error('tu usuario debe tener de 3 a 24 caracteres: letras, números o guion bajo.');
         if (!registrationPasswordOk(password)) throw new Error('tu clave debe tener al menos 12 caracteres.');
-        const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { pending_username: normalizedUsername }, emailRedirectTo: `${window.location.origin}${window.location.pathname}#/auth` } });
+        setStatus({ text: 'creando tu cuenta...' });
+        const { data, error } = await withTimeout(supabase.auth.signUp({ email, password, options: { data: { pending_username: normalizedUsername }, emailRedirectTo: `${window.location.origin}${window.location.pathname}#/auth` } }), 25_000, 'el servidor tardó demasiado en crear la cuenta. revisa tu conexión y vuelve a intentarlo (si ya se creó, usa "conectar").');
         if (error) throw error;
-        if (data.session) { await completeProfile(normalizedUsername); sfx.coin(); window.location.hash = routeHref('isla'); return; }
+        if (data.session) { setStatus({ text: 'preparando tu isla...' }); await withTimeout(completeProfile(normalizedUsername), 25_000, 'tu cuenta se creó pero tu isla tardó en prepararse. usa "conectar" para entrar.'); sfx.coin(); window.location.hash = routeHref('isla'); return; }
         sfx.coin(); setStatus({ text: 'cuenta creada. confirma el correo y vuelve a conectar tu isla.' });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) throw error; sfx.coin(); window.location.hash = routeHref('isla');
+        setStatus({ text: 'conectando...' }); const { error } = await withTimeout(supabase.auth.signInWithPassword({ email, password }), 25_000, 'el servidor tardó demasiado en responder. vuelve a intentarlo.'); if (error) throw error; sfx.coin(); window.location.hash = routeHref('isla');
       }
     } catch (error) { sfx.error(); setStatus({ text: readableSupabaseError(error), error: true }); } finally { setBusy(false); }
   };

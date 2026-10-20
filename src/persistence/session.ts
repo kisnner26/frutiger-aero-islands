@@ -77,7 +77,10 @@ function start() {
   if (!supabase) return;
   started = true;
   void supabase.auth.getSession().then(({ data }) => apply(data.session));
-  supabase.auth.onAuthStateChange((_event, session) => void apply(session));
+  // se difiere un instante: llamar al servidor dentro de este aviso puede quedarse esperando el candado de la propia autenticación
+  supabase.auth.onAuthStateChange((_event, session) => {
+    window.setTimeout(() => void apply(session), 0);
+  });
 }
 
 /** estado de la sesión compartido por toda la aplicación (portada, menú de inicio, cuenta). */
