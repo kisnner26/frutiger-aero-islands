@@ -11,6 +11,7 @@ import { MyIslandPage, VisitIslandPage } from '../features/community/IslandPages
 import { AccountPanel } from '../features/community/AccountPanel';
 import { useSession } from '../persistence/session';
 import { sceneBridge } from '../engine/sceneBridge';
+import { AvatarEditor } from '../features/avatar/AvatarEditor';
 import { Veil } from '../ui/Veil';
 import { veil } from '../ui/veilStore';
 
@@ -18,6 +19,7 @@ const TITULOS: Record<Route, string> = {
   inicio: 'frutiger aero islands',
   introduccion: 'cómo se juega | frutiger aero islands',
   mundo: 'mundo | frutiger aero islands',
+  personaje: 'mi personaje | frutiger aero islands',
   isla: 'tu isla | frutiger aero islands',
   auth: 'cuenta | frutiger aero islands',
   explorar: 'explorar | frutiger aero islands',
@@ -33,7 +35,7 @@ function Cuenta() {
 
 const WorldPage = lazy(() => import('../features/world/WorldPage').then((m) => ({ default: m.WorldPage })));
 
-function Channel({ href, label, hint, tone, onClick }: { href: string; label: string; hint: string; tone: 'isla' | 'info' | 'inicio' | 'mundo' | 'explorar' | 'cuenta'; onClick?: () => void }) {
+function Channel({ href, label, hint, tone, onClick }: { href: string; label: string; hint: string; tone: 'isla' | 'info' | 'inicio' | 'mundo' | 'explorar' | 'cuenta' | 'personaje'; onClick?: () => void }) {
   return (
     <a className={`channel channel--${tone}`} href={href} onClick={onClick}>
       <span className="channel__art" aria-hidden="true">
@@ -62,6 +64,7 @@ function Inicio() {
         <nav className="channels" aria-label="canales">
           <Channel href={routeHref('isla')} label="mi isla" hint="jugar ahora" tone="isla" onClick={play} />
           <Channel href={routeHref('mundo')} label="mundo" hint="ver el planeta" tone="mundo" />
+          <Channel href={routeHref('personaje')} label="personaje" hint="cara, pelo y ropa" tone="personaje" />
           <Channel href={routeHref('explorar')} label="explorar" hint="ver islas" tone="explorar" />
           <Channel href={routeHref('auth')} label={session.status === 'con-sesion' ? 'mi cuenta' : 'cuenta'} hint={session.status === 'con-sesion' ? (session.username ? `@${session.username}` : 'sesión iniciada') : 'entrar o crear'} tone="cuenta" />
           <Channel href={routeHref('introduccion')} label="cómo se juega" hint="introducción" tone="info" />
@@ -152,6 +155,7 @@ function Routes() {
   }, [route]);
 
   if (route === 'auth') return <div className="app"><Backdrop /><main className="main"><Cuenta /></main><Taskbar /></div>;
+  if (route === 'personaje') return <div className="app"><Backdrop /><main className="main"><AvatarEditor /></main><Taskbar /></div>;
   if (route === 'explorar') return <div className="app"><Backdrop /><main className="main"><ExplorePage /></main><Taskbar /></div>;
   if (route === 'visita' && routeState.username) return <VisitIslandPage username={routeState.username} />;
   if (route === 'mundo') {

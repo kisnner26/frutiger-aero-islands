@@ -6,6 +6,7 @@ import { signOut, useSession } from '../persistence/session';
 import { minePosition } from '../world/archipelago';
 import { countryStore, useCountry } from '../world/country';
 import { FlagBadge } from '../world/FlagBadge';
+import { AvatarImg } from '../avatar/AvatarFace';
 import { prepareFromIsland } from '../world/worldState';
 
 const PhonePanel = lazy(() => import('../features/phone/PhonePanel'));
@@ -42,7 +43,7 @@ function StartMenu({ onClose }: { onClose: () => void }) {
   const current = parseHash(window.location.hash).route;
   const loggedIn = session.status === 'con-sesion';
   const who = loggedIn ? (session.username ? `@${session.username}` : session.email ?? 'sesión iniciada') : 'invitado';
-  const link = (route: 'isla' | 'mundo' | 'explorar' | 'inicio' | 'introduccion', ico: string, title: string, hint: string, onClick?: () => void) => (
+  const link = (route: 'isla' | 'mundo' | 'explorar' | 'inicio' | 'introduccion' | 'personaje', ico: string, title: string, hint: string, onClick?: () => void) => (
     <a role="menuitem" className="start-menu__item" href={routeHref(route)} aria-current={current === route ? 'page' : undefined} onClick={() => { onClick?.(); onClose(); }}>
       <span className={`start-menu__ico start-menu__ico--${ico}`} aria-hidden="true" />
       <span>
@@ -54,7 +55,9 @@ function StartMenu({ onClose }: { onClose: () => void }) {
   return (
     <div className="start-menu" role="menu" aria-label="menú de inicio">
       <header className="start-menu__head">
-        <span className="start-menu__avatar" aria-hidden="true" />
+        <span className="start-menu__avatar" aria-hidden="true">
+          <AvatarImg crop="cabeza" />
+        </span>
         <span className="start-menu__who">
           <strong>{who}</strong>
           <small>{loggedIn ? 'sesión iniciada' : 'jugando en este dispositivo'}</small>
@@ -67,6 +70,7 @@ function StartMenu({ onClose }: { onClose: () => void }) {
           {link('mundo', 'mundo', 'mundo', 'el planeta y las islas', () => {
             if (current === 'isla') prepareFromIsland(minePosition(countryStore.get()));
           })}
+          {link('personaje', 'personaje', 'mi personaje', 'cara, pelo y ropa')}
           {link('explorar', 'explorar', 'explorar', 'islas de la comunidad')}
           {link('inicio', 'inicio', 'bienvenida', 'pantalla de inicio')}
           {link('introduccion', 'info', 'cómo se juega', 'introducción')}

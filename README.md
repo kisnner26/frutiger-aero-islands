@@ -27,6 +27,8 @@ música: radio generativa original en el teléfono de la bandeja (véase [radio]
 | menú de inicio | | ![menú de inicio](docs/capturas/isla-menu-inicio-1440x900.png) |
 | mundo (planeta) | ![mundo móvil](docs/capturas/mundo-lejos-390x844.png) | ![mundo escritorio](docs/capturas/mundo-lejos-1440x900.png) |
 | mundo (archipiélago) | ![archipiélago móvil](docs/capturas/mundo-mi-isla-390x844.png) | ![archipiélago escritorio](docs/capturas/mundo-mi-isla-1440x900.png) |
+| personaje | ![personaje móvil](docs/capturas/avatar-editor-cara-390x844.png) | ![personaje escritorio](docs/capturas/avatar-editor-cara-1440x900.png) |
+| personaje en la isla | ![isla móvil](docs/capturas/avatar-isla-390x844.png) | ![isla escritorio](docs/capturas/avatar-isla-1440x900.png) |
 | elegir país | ![país móvil](docs/capturas/pais-pregunta-390x844.png) | ![país escritorio](docs/capturas/pais-pregunta-1440x900.png) |
 | mundo por países | ![mundo móvil](docs/capturas/mundo-zona-390x844.png) | ![mundo escritorio](docs/capturas/mundo-zona-1440x900.png) |
 | transición al abrir la isla | ![velo móvil](docs/capturas/transicion-velo-390x844.png) | ![velo escritorio](docs/capturas/transicion-velo-1440x900.png) |
@@ -43,6 +45,7 @@ la captura de la isla usa un borrador local de muestra (14 objetos) cargado solo
 - [recursos y autoría](docs/ASSETS.md)
 - [radio y teléfono](docs/RADIO.md)
 - [auditoría y plan de integración](docs/INTEGRATION_PLAN.md)
+- [personaje](docs/AVATAR.md)
 - [cámara y álbum](docs/CAMARA_ALBUM.md)
 - [país, zonas y banderas](docs/WORLD_COUNTRIES.md)
 - [flujos y su lógica](docs/FLUJOS.md)

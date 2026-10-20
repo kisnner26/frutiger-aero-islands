@@ -33,6 +33,7 @@ async function apply(session: { user: { id: string; email?: string | null } } | 
   set({ status: 'con-sesion', email: session.user.email ?? null, username });
   // el país del perfil es la fuente de verdad cuando existe
   void import('./country').then((m) => m.syncCountry()).catch(() => undefined);
+  void import('./avatar').then((m) => m.syncAvatar()).catch(() => undefined);
 }
 
 function start() {

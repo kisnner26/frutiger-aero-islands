@@ -6,6 +6,7 @@ import { findCountry } from '../../world/countries';
 import { useCountry } from '../../world/country';
 import { CountryGate } from '../../world/CountryPicker';
 import { FlagBadge } from '../../world/FlagBadge';
+import { AvatarImg } from '../../avatar/AvatarFace';
 
 /** cuenta con sesión iniciada: qué cuenta es, a dónde ir y cómo salir. */
 export function AccountPanel({ session }: { session: SessionInfo }) {
@@ -23,7 +24,9 @@ export function AccountPanel({ session }: { session: SessionInfo }) {
   return (
     <AeroWindow className="win-account" title="mi cuenta" icon={<span className="mini-orb mini-orb--green" />}>
       <section className="account" aria-labelledby="titulo-vista">
-        <span className="account__avatar" aria-hidden="true" />
+        <a className="account__avatar account__avatar--face" href={routeHref('personaje')} aria-label="editar mi personaje">
+          <AvatarImg crop="cabeza" />
+        </a>
         <h1 id="titulo-vista" tabIndex={-1} className="account__name">
           {name}
         </h1>

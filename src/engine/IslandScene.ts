@@ -7,6 +7,9 @@ import { pencilSprite } from '../art/pencil';
 import { GROUND_HALF, renderGround } from '../art/scenery';
 import { AeroLife, loadLifeAssets } from './aeroLife';
 import { WavingFlag } from './flag';
+import { loadImage } from '../art/pencil';
+import { avatarDataUrl } from '../avatar/svg';
+import { sameAvatar, type AvatarSpec } from '../avatar/model';
 import { DEFAULT_CAMERA, clampCamera, fitScale, screenToScene, zoomAt, type Camera } from './camera';
 import { K, TILT, project, unproject } from './projection';
 
@@ -26,6 +29,8 @@ export interface SceneProps {
   placing: string | null;
   /** país elegido: se planta su bandera en la isla. */
   country?: string | null;
+  /** personaje que habita la isla (solo en la isla propia). */
+  avatar?: AvatarSpec | null;
 }
 
 interface Entry {
@@ -84,6 +89,9 @@ export class IslandScene {
   private root = new Container();
   private ground = new Sprite();
   private flag: WavingFlag | null = null;
+  private avatarSprite: Sprite | null = null;
+  private avatarSpec: AvatarSpec | null = null;
+  private avatarToken = 0;
   private flagCode: string | null = null;
   private life!: AeroLife;
   private lastSize = { w: 0, h: 0 };
@@ -253,6 +261,7 @@ export class IslandScene {
     this.props = props;
     if (!this.app) return;
     this.syncFlag();
+    void this.syncAvatar();
     if (placingChanged) this.endGhost();
     this.syncObjects();
     this.renderNow();
@@ -422,6 +431,42 @@ export class IslandScene {
     s.scale.set(rotation % 2 ? -k : k, k);
   }
 
+  /** el personaje se dibuja a partir de su svg y descansa de pie en la isla, con una respiración suave. */
+  private async syncAvatar() {
+    const spec = this.props.avatar ?? null;
+    if (spec && this.avatarSpec && sameAvatar(spec, this.avatarSpec)) return;
+    if (!spec && !this.avatarSpec) return;
+    this.avatarSpec = spec;
+    const token = ++this.avatarToken;
+    if (!spec) {
+      this.avatarSprite?.destroy();
+      this.avatarSprite = null;
+      this.renderNow();
+      return;
+    }
+    try {
+      const img = await loadImage(avatarDataUrl(spec, 'completo'));
+      if (token !== this.avatarToken || this.destroyed) return;
+      const c = document.createElement('canvas');
+      c.width = 256;
+      c.height = Math.round(256 * (200 / 120));
+      c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
+      this.avatarSprite?.destroy();
+      const sp = new Sprite(Texture.from(c));
+      sp.anchor.set(0.5, 0.95);
+      const k = 150 / c.height;
+      sp.scale.set(k);
+      const p = project(590, 610);
+      sp.position.set(p.x, p.y);
+      sp.zIndex = p.y + 0.4;
+      this.objLayer.addChild(sp);
+      this.avatarSprite = sp;
+      this.renderNow();
+    } catch {
+      /* el personaje es decorativo: si no se puede dibujar, la isla sigue */
+    }
+  }
+
   /** planta la bandera del país elegido en el borde trasero izquierdo de la isla. */
   private syncFlag() {
     const code = this.props.country ?? null;
@@ -478,7 +523,14 @@ export class IslandScene {
       this.cb.onZoom(this.camera.zoom);
     }
     this.life.update(dt, this.reduced);
-    if (!this.reduced) this.flag?.update(this.time);
+    if (!this.reduced) {
+      this.flag?.update(this.time);
+      const a = this.avatarSprite;
+      if (a) {
+        const k = 150 / (a.texture.height || 1);
+        a.scale.set(k * (1 + Math.sin(this.time * 1.6) * 0.008), k * (1 + Math.sin(this.time * 1.6 + 0.4) * 0.016));
+      }
+    }
     if (!this.reduced) {
       for (const e of this.entries.values()) {
         if (e.item.placementZone === 'water' && !(this.drag && this.drag.id === e.obj.id && this.drag.moved)) {

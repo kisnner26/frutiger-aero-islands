@@ -18,6 +18,9 @@ import { minePosition } from '../../world/archipelago';
 import { CountryGate } from '../../world/CountryPicker';
 import { countryStore, useCountry } from '../../world/country';
 import { FlagBadge } from '../../world/FlagBadge';
+import { routeHref } from '../../app/useHashRoute';
+import { AvatarImg } from '../../avatar/AvatarFace';
+import { useAvatar } from '../../avatar/store';
 import { prepareFromIsland } from '../../world/worldState';
 import { createState, editorReducer, newObjectId, type Doc } from './commands';
 import { DecorationCatalog } from './DecorationCatalog';
@@ -66,6 +69,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
   const doc = state.doc;
   const cameraOn = useSyncExternalStore(phoneBus.subscribe, phoneBus.cameraMode);
   const country = useCountry();
+  const avatar = useAvatar();
 
   /* primera visita local: el recuerdo de creación se registra al instante (con la fecha real) y la captura se añade cuando la escena está lista.
      el trabajo no depende del ciclo de montaje: así tampoco se duplica ni se pierde con el doble montaje de desarrollo. */
@@ -238,7 +242,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
     return () => window.removeEventListener('keydown', onKey);
   }, [state.selectedId, editable]);
 
-  const sceneProps = useMemo(() => ({ objects: doc.objects, selectedId: state.selectedId, placing, country: editable ? country : null }), [doc.objects, state.selectedId, placing, country, editable]);
+  const sceneProps = useMemo(() => ({ objects: doc.objects, selectedId: state.selectedId, placing, country: editable ? country : null, avatar: editable ? avatar : null }), [doc.objects, state.selectedId, placing, country, editable, avatar]);
   const saveText = saveStatus === 'cuota' ? 'sin espacio en este dispositivo' : saveStatus === 'error' || saveStatus === 'remoto-error' ? 'no se pudo guardar en la nube' : saveStatus === 'pendiente' ? 'guardando...' : saveRemote ? 'guardado en la nube' : 'guardado en este dispositivo';
   const placingItem = placing ? CATALOG_MAP.get(placing) : null;
 
@@ -260,7 +264,13 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
 
       <header className="hud">
         <div className="hud__bar glass-panel">
-          <span className="hud__avatar" aria-hidden="true" />
+          {editable ? (
+            <a className="hud__avatar hud__avatar--face" href={routeHref('personaje')} aria-label="editar mi personaje">
+              <AvatarImg crop="cabeza" />
+            </a>
+          ) : (
+            <span className="hud__avatar" aria-hidden="true" />
+          )}
           {editable && country && <FlagBadge code={country} width={40} />}
           <div className="hud__who">
             <strong>{ownerLabel}</strong>

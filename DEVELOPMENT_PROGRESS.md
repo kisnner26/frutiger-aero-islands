@@ -165,6 +165,10 @@ véase docs/WORLD_COUNTRIES.md. selector de país con búsqueda y banderas (137 
 ## coordinación con la otra sesión
 el directorio lo comparte otra sesión que mantiene comunidad y cuentas (AuthPage, IslandPages, supabase). cambios míos en archivos suyos: IslandPages.tsx (modo local sin supabase), App.tsx (rutas, velo, canales) y un envoltorio `Cuenta` que decide entre el formulario y el panel; no toqué AuthPage.tsx ni supabase.ts.
 
+## personaje: primera entrega (editor, guardado y presencia en la isla)
+
+véase docs/AVATAR.md. editor completo con vista previa y confirmación, 20 campos de personalización, guardado local validado, personaje en la isla, cabecera, menú y cuenta, migración remota escrita sin aplicar. verificado en chrome (escritorio y móvil): editar, guardar, recarga, confirmación al salir, personaje en la isla y en el menú; pruebas de modelo, svg de todas las opciones y migración (7). **pendiente**: movimiento por la isla, animaciones (saludar, sentarse, teléfono), visitas, conjuntos, tienda; y aplicar/verificar la migración de avatar.
+
 ## pendiente
 
 - revisión de los paquetes 01 a 03 por el orquestador y del arte por el usuario.
