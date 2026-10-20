@@ -47,20 +47,26 @@ function Inicio() {
   return (
     <div className={`landing${signed ? ' landing--member' : ''}`}>
       <div className="landing__sky" aria-hidden="true"><i /><i /><i /></div>
+      <header className="landing__bar">
+        <p className="landing__eyebrow">frutiger aero islands</p>
+        <aside className="landing__signal" aria-label="estado de la comunidad">
+          <span className="landing__dot" aria-hidden="true" />
+          <strong>{signed ? 'conectado' : 'acceso protegido'}</strong>
+          <small>{signed ? 'guardado en la nube' : 'inicia sesión para entrar'}</small>
+        </aside>
+      </header>
       <section className="landing__copy" aria-labelledby="titulo-vista">
-        <p className="landing__eyebrow">frutiger aero islands · online</p>
         <h1 id="titulo-vista" tabIndex={-1} data-vista-titulo>{signed ? 'tu isla está lista.' : 'un mundo de islas, hecho por personas.'}</h1>
         <p>{signed ? `vuelve a ${session.username ? `@${session.username}` : 'tu isla'} y continúa donde lo dejaste.` : 'crea una cuenta para diseñar tu isla, guardar cada objeto y visitar a otros jugadores.'}</p>
         <nav className="landing__actions" aria-label={signed ? 'continuar jugando' : 'empezar'}>
           {signed ? <><a className="vista-button vista-button--primary" href={routeHref('isla')} onClick={() => { sfx.click(); if (music.wantsMusic()) void music.play(); }}>continuar en mi isla</a><a className="landing__text-link" href={routeHref('mundo')}>ir al mundo</a></> : <><a className="vista-button vista-button--primary" href={routeHref('auth')}>crear cuenta o entrar</a><a className="landing__text-link" href={routeHref('introduccion')}>cómo funciona</a></>}
         </nav>
-        <p className="landing__trust">guardado en tu cuenta · visitas públicas · progreso sincronizado</p>
       </section>
-      <aside className="landing__signal" aria-label="estado de la comunidad">
-        <span className="mini-orb" aria-hidden="true" />
-        <strong>{signed ? 'conectado' : 'acceso protegido'}</strong>
-        <small>{signed ? 'tu progreso se guarda en la nube' : 'inicia sesión para entrar al archipiélago'}</small>
-      </aside>
+      <ul className="landing__facts" aria-label="qué incluye">
+        <li><strong>en tu cuenta</strong><small>isla y avatar guardados</small></li>
+        <li><strong>visitas públicas</strong><small>otros te encuentran</small></li>
+        <li><strong>sincronizado</strong><small>mismo progreso en todo</small></li>
+      </ul>
     </div>
   );
 }
