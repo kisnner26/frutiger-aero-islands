@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Doc } from '../editor/commands';
 import { routeHref } from '../../app/useHashRoute';
 import { completeProfile, currentSession, getIsland, isSupabaseConfigured, myIsland, readableSupabaseError, saveIsland, type PublicIsland } from '../../persistence/supabase';
@@ -7,20 +7,20 @@ import { IslandSocialControls } from './IslandSocialControls';
 import { AeroWindow } from '../../ui/AeroWindow';
 import { EditorPage } from '../editor/EditorPage';
 import { AeroLoader } from '../../ui/AeroLoader';
+import { createLatestQueue } from '../../persistence/latestQueue';
 
 function Loading({ text }: { text: string }) { return <AeroLoader variant="scene" text={text} detail="la marea está preparando la visita..." />; }
 
 export function MyIslandPage() {
   const [state, setState] = useState<'cargando' | 'local' | 'perfil' | 'listo' | 'error'>('cargando');
-  const [island, setIsland] = useState<PublicIsland | null>(null); const [username, setUsername] = useState(''); const [message, setMessage] = useState(''); const revision = useRef(0); const saveQueue = useRef(Promise.resolve());
+  const [island, setIsland] = useState<PublicIsland | null>(null); const [username, setUsername] = useState(''); const [message, setMessage] = useState(''); const revision = useRef(0);
   useEffect(() => { let alive = true; (async () => { if (!isSupabaseConfigured) { setState('local'); return; } const session = await currentSession(); if (!session) { window.location.hash = routeHref('auth'); return; } const existing = await myIsland(); if (!alive) return; if (existing) { revision.current = existing.revision; setIsland(existing); setState('listo'); void touchIslandPresence(existing.id).catch(() => undefined); } else setState('perfil'); })().catch(() => alive && setState('error')); return () => { alive = false; }; }, []);
   const create = async (e: React.FormEvent) => { e.preventDefault(); try { const result = await completeProfile(username); revision.current = result.revision; setIsland(result); setState('listo'); } catch (error) { setMessage(readableSupabaseError(error, 'no se pudo crear tu isla.')); } };
-  const remoteSave = useCallback((doc: Doc) => {
-    if (!island) return Promise.resolve();
-    const write = async () => { revision.current = await saveIsland(island.id, revision.current, doc); };
-    const queued = saveQueue.current.then(write);
-    saveQueue.current = queued.catch(() => undefined);
-    return queued;
+  const remoteSave = useMemo(() => {
+    if (!island) return async (_doc: Doc) => undefined;
+    return createLatestQueue(async (doc: Doc) => {
+      revision.current = await saveIsland(island.id, revision.current, doc);
+    });
   }, [island]);
   useEffect(() => {
     if (!island) return;
