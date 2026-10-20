@@ -1,6 +1,6 @@
 import { Application, Container, Graphics, Sprite, Texture, TilingSprite } from 'pixi.js';
 import { CATALOG_MAP } from '../catalog/catalog';
-import { renderBasin, renderGlassFrame, renderHalo, renderWorldSky } from '../art/planet';
+import { renderBasin, renderGlassFrame, renderHalo, renderPlanet, renderWorldSky } from '../art/planet';
 import { pencilSprite } from '../art/pencil';
 import { GROUND_HALF, renderGround } from '../art/scenery';
 import { landTier } from '../domain/geometry';
@@ -156,7 +156,6 @@ export class WorldScene {
       this.globe.reduced = this.reduced;
     } catch {
       // sin webgl: planeta plano de reserva
-      const { renderPlanet } = await import('../art/planet');
       this.planet.texture = Texture.from(renderPlanet(720));
       this.planet.visible = true;
     }
