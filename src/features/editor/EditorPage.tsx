@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncE
 import { sfx } from '../../audio/sfx';
 import { CATALOG, CATALOG_MAP } from '../../catalog/catalog';
 import { computeCharm, progressForLevel, LEVEL_UP_BONUS } from '../../domain/charm';
-import { LAND_TIERS, clampToWorld } from '../../domain/geometry';
+import { LAND_TIERS, clampToWorld, nextExpansionLevel } from '../../domain/geometry';
 import type { IslandScene, SceneCallbacks } from '../../engine/IslandScene';
 import { SceneView } from '../../engine/SceneView';
 import { localRepository, quarantineCorrupt, type SaveResult } from '../../persistence/localDraft';
@@ -292,7 +292,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
             <strong>{doc.brillos}</strong>
           </div>
           <div className="hud__level">
-            <span className="hud__lvl">nivel {progress.level}</span>
+            <span className="hud__lvl" title={nextExpansionLevel(progress.level) ? `tu isla crece en el nivel ${nextExpansionLevel(progress.level)}` : undefined}>nivel {progress.level}</span>
             <div className="vista-bar" role="progressbar" aria-label="progreso de nivel" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.ratio * 100)}>
               <span style={{ width: `${progress.ratio * 100}%` }} />
             </div>
