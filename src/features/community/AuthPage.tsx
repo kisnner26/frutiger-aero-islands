@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { completeProfile, isSupabaseConfigured, supabase } from '../../persistence/supabase';
+import { completeProfile, isSupabaseConfigured, readableSupabaseError, supabase } from '../../persistence/supabase';
 import { AeroWindow } from '../../ui/AeroWindow';
 import { routeHref } from '../../app/useHashRoute';
 
@@ -59,7 +59,7 @@ export function AuthPage() {
         window.location.hash = routeHref('isla');
       }
     } catch (error) {
-      setStatus({ text: error instanceof Error ? error.message : 'no se pudo completar la operación.', error: true });
+      setStatus({ text: readableSupabaseError(error), error: true });
     } finally {
       setBusy(false);
     }

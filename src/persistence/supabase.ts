@@ -17,6 +17,17 @@ export interface PublicIsland {
   createdAt: string;
 }
 
+export function readableSupabaseError(error: unknown, fallback = 'no se pudo completar la operación.'): string {
+  if (error instanceof Error && error.message) return error.message;
+  if (error && typeof error === 'object') {
+    const value = error as { message?: unknown; details?: unknown; hint?: unknown };
+    for (const candidate of [value.message, value.details, value.hint]) {
+      if (typeof candidate === 'string' && candidate.trim()) return candidate;
+    }
+  }
+  return fallback;
+}
+
 function asDoc(layout: unknown): Doc | null {
   if (!layout || typeof layout !== 'object') return null;
   const d = layout as Partial<Doc>;

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Doc } from '../editor/commands';
 import { routeHref } from '../../app/useHashRoute';
-import { completeProfile, currentSession, getIsland, isSupabaseConfigured, myIsland, saveIsland, type PublicIsland } from '../../persistence/supabase';
+import { completeProfile, currentSession, getIsland, isSupabaseConfigured, myIsland, readableSupabaseError, saveIsland, type PublicIsland } from '../../persistence/supabase';
 import { AeroWindow } from '../../ui/AeroWindow';
 import { EditorPage } from '../editor/EditorPage';
 
@@ -11,7 +11,7 @@ export function MyIslandPage() {
   const [state, setState] = useState<'cargando' | 'local' | 'perfil' | 'listo' | 'error'>('cargando');
   const [island, setIsland] = useState<PublicIsland | null>(null); const [username, setUsername] = useState(''); const [message, setMessage] = useState(''); const revision = useRef(0);
   useEffect(() => { let alive = true; (async () => { if (!isSupabaseConfigured) { setState('local'); return; } const session = await currentSession(); if (!session) { window.location.hash = routeHref('auth'); return; } const existing = await myIsland(); if (!alive) return; if (existing) { revision.current = existing.revision; setIsland(existing); setState('listo'); } else setState('perfil'); })().catch(() => alive && setState('error')); return () => { alive = false; }; }, []);
-  const create = async (e: React.FormEvent) => { e.preventDefault(); try { const result = await completeProfile(username); revision.current = result.revision; setIsland(result); setState('listo'); } catch (e) { setMessage(e instanceof Error ? e.message : 'no se pudo crear tu isla.'); } };
+  const create = async (e: React.FormEvent) => { e.preventDefault(); try { const result = await completeProfile(username); revision.current = result.revision; setIsland(result); setState('listo'); } catch (error) { setMessage(readableSupabaseError(error, 'no se pudo crear tu isla.')); } };
   const remoteSave = useCallback(async (doc: Doc) => { if (!island) return; revision.current = await saveIsland(island.id, revision.current, doc); }, [island]);
   if (state === 'cargando') return <Loading text="abriendo tu isla..." />;
   if (state === 'local') return <EditorPage />;
