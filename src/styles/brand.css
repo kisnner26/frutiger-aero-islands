@@ -1,0 +1,48 @@
+/* ===== marca frutiger aero: logo, atmósfera y tipografía luminosa ===== */
+.brand { display: inline-flex; align-items: center; gap: 14px; }
+.brand-orb { flex: none; filter: drop-shadow(0 6px 10px rgba(0, 60, 130, .45)); }
+.brand__words { display: grid; text-align: left; line-height: .95; }
+.brand__top { font: 300 clamp(26px, 5.2vw, 38px)/1 'Segoe UI', 'Frutiger', 'Helvetica Neue', Arial, sans-serif; letter-spacing: -.01em; color: #fff; text-shadow: 0 2px 10px rgba(0, 70, 150, .7), 0 0 2px rgba(0, 50, 120, .6); }
+.brand__bottom { font: 800 clamp(13px, 2.4vw, 17px)/1.2 'Segoe UI', 'Frutiger', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .42em; text-transform: uppercase; margin-top: 4px; background: linear-gradient(180deg, #f4ffd0, #98e04a 60%, #4ab038); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 3px rgba(0, 70, 30, .55)); }
+.brand--compact .brand__top { font-size: 22px; }
+.brand--compact .brand__bottom { font-size: 10px; letter-spacing: .34em; }
+
+.brand-era { margin: 6px 0 0; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 8px rgba(0, 70, 140, .8); }
+.brand-era span { display: block; margin-top: 2px; font-weight: 600; letter-spacing: .06em; text-transform: none; opacity: .9; }
+
+/* atmósfera: auroras de windows 7, destello solar y bokeh */
+.brand-atmo { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.brand-atmo__aurora { position: absolute; left: -20%; width: 140%; height: 38%; border-radius: 50%; filter: blur(46px); opacity: .55; mix-blend-mode: screen; }
+.brand-atmo__aurora--a { top: 6%; background: linear-gradient(90deg, rgba(120, 255, 230, 0), rgba(120, 255, 220, .9), rgba(90, 190, 255, .8), rgba(90, 190, 255, 0)); transform: rotate(-8deg); }
+.brand-atmo__aurora--b { top: 28%; background: linear-gradient(90deg, rgba(190, 255, 120, 0), rgba(190, 255, 120, .75), rgba(110, 230, 255, .7), rgba(110, 230, 255, 0)); transform: rotate(6deg); opacity: .4; }
+.brand-atmo__flare { position: absolute; top: -14%; left: -8%; width: 70vmax; height: 70vmax; background: radial-gradient(circle at 50% 50%, rgba(255, 255, 240, .85) 0, rgba(255, 250, 200, .35) 16%, rgba(255, 250, 200, 0) 46%); }
+.brand-atmo__bokeh { position: absolute; border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .8), rgba(255, 255, 255, .15) 55%, rgba(255, 255, 255, 0) 70%); border: 1px solid rgba(255, 255, 255, .35); }
+.brand-atmo__bokeh:nth-of-type(4) { width: 60px; height: 60px; left: 8%; top: 62%; }
+.brand-atmo__bokeh:nth-of-type(5) { width: 110px; height: 110px; left: 78%; top: 18%; opacity: .6; }
+.brand-atmo__bokeh:nth-of-type(6) { width: 34px; height: 34px; left: 22%; top: 28%; }
+.brand-atmo__bokeh:nth-of-type(7) { width: 84px; height: 84px; left: 88%; top: 66%; opacity: .7; }
+.brand-atmo__bokeh:nth-of-type(8) { width: 46px; height: 46px; left: 52%; top: 86%; }
+.brand-atmo__bokeh:nth-of-type(9) { width: 140px; height: 140px; left: 62%; top: 46%; opacity: .35; }
+.brand-atmo__bokeh:nth-of-type(10) { width: 28px; height: 28px; left: 36%; top: 12%; }
+.brand-atmo__bokeh:nth-of-type(11) { width: 70px; height: 70px; left: 4%; top: 36%; opacity: .5; }
+.brand-atmo__bokeh:nth-of-type(12) { width: 52px; height: 52px; left: 92%; top: 40%; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .brand-atmo__aurora--a { animation: brand-aurora 18s ease-in-out infinite alternate; }
+  .brand-atmo__aurora--b { animation: brand-aurora 24s ease-in-out infinite alternate-reverse; }
+  .brand-atmo__bokeh { animation: brand-bokeh 14s ease-in-out infinite alternate; }
+  .brand-atmo__bokeh:nth-of-type(odd) { animation-duration: 19s; }
+  @keyframes brand-aurora { to { transform: translateX(6%) rotate(-3deg) scale(1.06); } }
+  @keyframes brand-bokeh { to { transform: translateY(-26px) scale(1.08); } }
+}
+
+/* titulares con brillo de cristal */
+.landing h1, .logon h1 { text-shadow: 0 3px 0 rgba(30, 110, 200, .55), 0 0 28px rgba(140, 230, 255, .7); }
+.landing__bar { gap: 10px; }
+.landing__bar .brand { margin-bottom: 4px; }
+.landing__eyebrow { display: none; }
+.logon .brand { justify-content: center; margin: 4px auto 8px; }
+.logon__brand { display: none; }
+.landing > :not(.brand-atmo) { position: relative; z-index: 1; }
+.brand-atmo__flare { background: radial-gradient(circle at 50% 50%, rgba(255, 255, 240, .6) 0, rgba(255, 250, 200, .22) 16%, rgba(255, 250, 200, 0) 44%); }
+.brand-atmo__aurora { opacity: .4; }

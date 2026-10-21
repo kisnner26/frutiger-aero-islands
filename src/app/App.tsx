@@ -18,6 +18,7 @@ import { touchMyPresence } from '../persistence/presence';
 import { restorationStore, useRestoration } from '../world/restorationStore';
 import { tr, lang, setLang } from '../i18n';
 import { awardSoles } from '../persistence/soles';
+import { AeroAtmosphere, Brand, EraStrip } from '../ui/Brand';
 
 const TITULOS: Record<Route, string> = {
   inicio: 'frutiger aero islands',
@@ -63,9 +64,10 @@ function Inicio() {
   const signed = session.status === 'con-sesion';
   return (
     <div className={`landing${signed ? ' landing--member' : ''}`}>
+      <AeroAtmosphere />
       <div className="landing__sky" aria-hidden="true"><i /><i /><i /></div>
       <header className="landing__bar">
-        <p className="landing__eyebrow">frutiger aero islands</p>
+        <Brand />
         <aside className="landing__signal" aria-label={tr('estado de la comunidad', 'community status')}>
           <span className="landing__dot" aria-hidden="true" />
           <strong>{signed ? tr('conectado', 'connected') : tr('acceso protegido', 'protected access')}</strong>
@@ -74,6 +76,7 @@ function Inicio() {
       </header>
       <section className="landing__copy" aria-labelledby="titulo-vista">
         <h1 id="titulo-vista" tabIndex={-1} data-vista-titulo>{signed ? tr('tu isla está lista.', 'your island is ready.') : tr('un mundo de islas, hecho por personas.', 'a world of islands, made by people.')}</h1>
+        <EraStrip />
         <p>{signed ? `${tr('vuelve a', 'go back to')} ${session.username ? `@${session.username}` : tr('tu isla', 'your island')} ${tr('y continúa donde lo dejaste.', 'and pick up where you left off.')}` : tr('crea una cuenta para diseñar tu isla, guardar cada objeto y visitar a otros jugadores.', 'create an account to design your island, save every object and visit other players. or try it first, no account needed.')}</p>
       </section>
       <nav className="landing__actions" aria-label={signed ? tr('continuar jugando', 'keep playing') : tr('empezar', 'get started')}>

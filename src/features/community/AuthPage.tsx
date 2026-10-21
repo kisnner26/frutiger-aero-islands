@@ -5,6 +5,7 @@ import { sfx } from '../../audio/sfx';
 import './auth.css';
 import './login.css';
 import { tr, lang } from '../../i18n';
+import { Brand } from '../../ui/Brand';
 
 type AuthMode = 'entrar' | 'registro' | 'recuperar';
 
@@ -74,6 +75,7 @@ export function AuthPage() {
           </svg>
         </div>
         <p className="logon__brand">frutiger aero islands</p>
+        <Brand compact />
         <h1 id="titulo-vista" tabIndex={-1}>
           {text.title}
         </h1>

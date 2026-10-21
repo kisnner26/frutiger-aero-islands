@@ -7,6 +7,7 @@ import './styles/aero.css';
 import './styles/game.css';
 import './styles/phone.css';
 import './styles/polish.css';
+import './styles/brand.css';
 import './features/avatar/avatar.css';
 
 createRoot(document.getElementById('root')!).render(
