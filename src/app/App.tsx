@@ -16,26 +16,27 @@ import { prefetchWorld } from '../persistence/prefetch';
 import { everyWhileVisible } from '../persistence/fastcache';
 import { touchMyPresence } from '../persistence/presence';
 import { restorationStore, useRestoration } from '../world/restorationStore';
+import { tr, lang, setLang } from '../i18n';
 
 const TITULOS: Record<Route, string> = {
   inicio: 'frutiger aero islands',
-  introduccion: 'cómo se juega | frutiger aero islands',
-  mundo: 'mundo | frutiger aero islands',
-  personaje: 'mi personaje | frutiger aero islands',
+  introduccion: `${tr('cómo se juega', 'how to play')} | frutiger aero islands`,
+  mundo: `${tr('mundo', 'world')} | frutiger aero islands`,
+  personaje: `${tr('mi personaje', 'my character')} | frutiger aero islands`,
   arcade: 'arcade | frutiger aero islands',
-  reglas: 'reglas y privacidad | frutiger aero islands',
+  reglas: `${tr('reglas y privacidad', 'rules and privacy')} | frutiger aero islands`,
   ranking: 'ranking | frutiger aero islands',
-  probar: 'probar sin cuenta | frutiger aero islands',
-  isla: 'tu isla | frutiger aero islands',
-  auth: 'cuenta | frutiger aero islands',
-  explorar: 'explorar | frutiger aero islands',
-  visita: 'visita | frutiger aero islands',
+  probar: `${tr('probar sin cuenta', 'try without an account')} | frutiger aero islands`,
+  isla: `${tr('tu isla', 'your island')} | frutiger aero islands`,
+  auth: `${tr('cuenta', 'account')} | frutiger aero islands`,
+  explorar: `${tr('explorar', 'explore')} | frutiger aero islands`,
+  visita: `${tr('visita', 'visit')} | frutiger aero islands`,
 };
 
 /** la cuenta muestra el formulario solo si no hay sesión; con sesión muestra la cuenta. */
 function Cuenta() {
   const session = useSession();
-  if (session.status === 'cargando') return <AeroLoader variant="page" text="comprobando tu sesión..." detail="verificando la llave de tu archipiélago..." />;
+  if (session.status === 'cargando') return <AeroLoader variant="page" text={tr('comprobando tu sesión...', 'checking your session...')} detail={tr('verificando la llave de tu archipiélago...', 'verifying the key to your archipelago...')} />;
   return session.status === 'con-sesion' ? <AccountPanel session={session} /> : <AuthPage />;
 }
 
@@ -57,32 +58,32 @@ function Inicio() {
   useEffect(() => {
     if (session.status === 'con-sesion') prefetchWorld();
   }, [session.status]);
-  if (session.status === 'cargando') return <div className="app"><Backdrop /><main className="main"><AeroLoader text="preparando tu archipiélago..." detail="la marea está conectando tu cuenta..." /></main></div>;
+  if (session.status === 'cargando') return <div className="app"><Backdrop /><main className="main"><AeroLoader text={tr('preparando tu archipiélago...', 'preparing your archipelago...')} detail={tr('la marea está conectando tu cuenta...', 'the tide is connecting your account...')} /></main></div>;
   const signed = session.status === 'con-sesion';
   return (
     <div className={`landing${signed ? ' landing--member' : ''}`}>
       <div className="landing__sky" aria-hidden="true"><i /><i /><i /></div>
       <header className="landing__bar">
         <p className="landing__eyebrow">frutiger aero islands</p>
-        <aside className="landing__signal" aria-label="estado de la comunidad">
+        <aside className="landing__signal" aria-label={tr('estado de la comunidad', 'community status')}>
           <span className="landing__dot" aria-hidden="true" />
-          <strong>{signed ? 'conectado' : 'acceso protegido'}</strong>
-          <small>{signed ? `planeta restaurado ${planet.toFixed(planet < 10 ? 1 : 0)}%` : 'inicia sesión para entrar'}</small>
+          <strong>{signed ? tr('conectado', 'connected') : tr('acceso protegido', 'protected access')}</strong>
+          <small>{signed ? `${tr('planeta restaurado', 'planet restored')} ${planet.toFixed(planet < 10 ? 1 : 0)}%` : tr('inicia sesión para entrar', 'sign in to enter')}</small>
         </aside>
       </header>
       <section className="landing__copy" aria-labelledby="titulo-vista">
-        <h1 id="titulo-vista" tabIndex={-1} data-vista-titulo>{signed ? 'tu isla está lista.' : 'un mundo de islas, hecho por personas.'}</h1>
-        <p>{signed ? `vuelve a ${session.username ? `@${session.username}` : 'tu isla'} y continúa donde lo dejaste.` : 'crea una cuenta para diseñar tu isla, guardar cada objeto y visitar a otros jugadores.'}</p>
+        <h1 id="titulo-vista" tabIndex={-1} data-vista-titulo>{signed ? tr('tu isla está lista.', 'your island is ready.') : tr('un mundo de islas, hecho por personas.', 'a world of islands, made by people.')}</h1>
+        <p>{signed ? `${tr('vuelve a', 'go back to')} ${session.username ? `@${session.username}` : tr('tu isla', 'your island')} ${tr('y continúa donde lo dejaste.', 'and pick up where you left off.')}` : tr('crea una cuenta para diseñar tu isla, guardar cada objeto y visitar a otros jugadores.', 'create an account to design your island, save every object and visit other players. or try it first, no account needed.')}</p>
       </section>
-      <nav className="landing__actions" aria-label={signed ? 'continuar jugando' : 'empezar'}>
-          {signed ? <><a className="vista-button vista-button--primary" href={routeHref('isla')} onClick={() => { sfx.click(); if (music.wantsMusic()) void music.play(); }}>continuar en mi isla</a><a className="landing__text-link" href={routeHref('mundo')}>ir al mundo</a></> : <><a className="vista-button vista-button--primary" href={routeHref('auth')}>crear cuenta o entrar</a><a className="vista-button" href={routeHref('probar')}>probar sin cuenta</a><a className="landing__text-link" href={routeHref('introduccion')}>cómo funciona</a></>}
+      <nav className="landing__actions" aria-label={signed ? tr('continuar jugando', 'keep playing') : tr('empezar', 'get started')}>
+          {signed ? <><a className="vista-button vista-button--primary" href={routeHref('isla')} onClick={() => { sfx.click(); if (music.wantsMusic()) void music.play(); }}>{tr('continuar en mi isla', 'continue to my island')}</a><a className="landing__text-link" href={routeHref('mundo')}>{tr('ir al mundo', 'go to the world')}</a></> : <><a className="vista-button vista-button--primary" href={routeHref('auth')}>{tr('crear cuenta o entrar', 'sign up or sign in')}</a><a className="vista-button" href={routeHref('probar')}>{tr('probar sin cuenta', 'try without an account')}</a><a className="landing__text-link" href={routeHref('introduccion')}>{tr('cómo funciona', 'how it works')}</a></>}
         </nav>
-      <ul className="landing__facts" aria-label="qué incluye">
-        <li><strong>en tu cuenta</strong><small>isla y avatar guardados</small></li>
-        <li><strong>visitas públicas</strong><small>otros te encuentran</small></li>
-        <li><strong>sincronizado</strong><small>mismo progreso en todo</small></li>
+      <ul className="landing__facts" aria-label={tr('qué incluye', 'what is included')}>
+        <li><strong>{tr('en tu cuenta', 'in your account')}</strong><small>{tr('isla y avatar guardados', 'island and avatar saved')}</small></li>
+        <li><strong>{tr('visitas públicas', 'public visits')}</strong><small>{tr('otros te encuentran', 'others can find you')}</small></li>
+        <li><strong>{tr('sincronizado', 'synced')}</strong><small>{tr('mismo progreso en todo', 'same progress everywhere')}</small></li>
       </ul>
-      <p className="footer-links"><a href={routeHref('reglas')}>reglas y privacidad</a><span>beta</span></p>
+      <p className="footer-links"><a href={routeHref('reglas')}>{tr('reglas y privacidad', 'rules and privacy')}</a><span>beta</span><button type="button" className="landing__text-link" lang={lang === 'es' ? 'en' : 'es'} onClick={() => setLang(lang === 'es' ? 'en' : 'es')}>{lang === 'es' ? 'English' : 'Español'}</button></p>
     </div>
   );
 }
@@ -90,24 +91,24 @@ function Inicio() {
 function Introduccion() {
   const session = useSession();
   return (
-    <AeroWindow className="win-welcome" title="cómo se juega" icon={<span className="mini-orb mini-orb--green" />}>
+    <AeroWindow className="win-welcome" title={tr('cómo se juega', 'how to play')} icon={<span className="mini-orb mini-orb--green" />}>
       <div className="welcome">
         <h1 id="titulo-vista" className="welcome__title welcome__title--sm" tabIndex={-1} data-vista-titulo>
-          así funciona tu isla
+          {tr('así funciona tu isla', 'how your island works')}
         </h1>
         <ol className="steps">
           <li>
-            <strong>gana brillos.</strong> revienta burbujas (las doradas valen más), atrapa la mariposa y el pez que salta.
+            <strong>{tr('gana brillos.', 'earn sparkles.')}</strong> {tr('revienta burbujas (las doradas valen más), atrapa la mariposa y el pez que salta.', 'pop bubbles (the golden ones are worth more), catch the butterfly and the jumping fish.')}
           </li>
           <li>
-            <strong>decora.</strong> compra palmeras, árboles, flores, rocas, cristales, fuentes, pabellones y peces; muévelos, gíralos y cambia su tamaño.
+            <strong>{tr('decora.', 'decorate.')}</strong> {tr('compra palmeras, árboles, flores, rocas, cristales, fuentes, pabellones y peces; muévelos, gíralos y cambia su tamaño.', 'buy palm trees, trees, flowers, rocks, crystals, fountains, pavilions and fish; move them, rotate them and resize them.')}
           </li>
           <li>
-            <strong>sube de nivel.</strong> la variedad y la armonía entre objetos cercanos suben el encanto; cada nivel desbloquea decoraciones nuevas.
+            <strong>{tr('sube de nivel.', 'level up.')}</strong> {tr('la variedad y la armonía entre objetos cercanos suben el encanto; cada nivel desbloquea decoraciones nuevas.', 'variety and harmony between nearby objects raise the charm; every level unlocks new decorations.')}
           </li>
         </ol>
-        <p className="welcome__note">tu isla, avatar y decoraciones pertenecen a tu cuenta. cada modificación se guarda en la nube.</p>
-        <nav className="intro-actions" aria-label="siguientes pasos"><a className="vista-button vista-button--primary" href={routeHref(session.status === 'con-sesion' ? 'isla' : 'auth')}>{session.status === 'con-sesion' ? 'ir a mi isla' : 'crear cuenta o entrar'}</a><a className="landing__text-link" href={routeHref('inicio')}>volver</a></nav>
+        <p className="welcome__note">{tr('tu isla, avatar y decoraciones pertenecen a tu cuenta. cada modificación se guarda en la nube.', 'your island, avatar and decorations belong to your account. every change is saved to the cloud.')}</p>
+        <nav className="intro-actions" aria-label={tr('siguientes pasos', 'next steps')}><a className="vista-button vista-button--primary" href={routeHref(session.status === 'con-sesion' ? 'isla' : 'auth')}>{session.status === 'con-sesion' ? tr('ir a mi isla', 'go to my island') : tr('crear cuenta o entrar', 'sign up or sign in')}</a><a className="landing__text-link" href={routeHref('inicio')}>{tr('volver', 'back')}</a></nav>
       </div>
     </AeroWindow>
   );
@@ -116,8 +117,8 @@ function Introduccion() {
 function AccessGate({ children }: { children: ReactNode }) {
   const session = useSession();
   if (session.status === 'con-sesion') return <>{children}</>;
-  if (session.status === 'cargando') return <AeroLoader variant="page" text="comprobando tu cuenta..." detail="abriendo una ruta segura al archipiélago..." />;
-  return <div className="app"><Backdrop /><main className="main"><section className="access-gate" aria-labelledby="access-title"><span className="mini-orb" aria-hidden="true" /><p>archipiélago online</p><h1 id="access-title">entra para jugar</h1><span>tu isla, personaje y progreso están ligados a una cuenta.</span><a className="vista-button vista-button--primary" href={routeHref('auth')}>crear cuenta o entrar</a><a className="landing__text-link" href={routeHref('inicio')}>volver a la bienvenida</a></section></main></div>;
+  if (session.status === 'cargando') return <AeroLoader variant="page" text={tr('comprobando tu cuenta...', 'checking your account...')} detail={tr('abriendo una ruta segura al archipiélago...', 'opening a secure route to the archipelago...')} />;
+  return <div className="app"><Backdrop /><main className="main"><section className="access-gate" aria-labelledby="access-title"><span className="mini-orb" aria-hidden="true" /><p>{tr('archipiélago online', 'online archipelago')}</p><h1 id="access-title">{tr('entra para jugar', 'sign in to play')}</h1><span>{tr('tu isla, personaje y progreso están ligados a una cuenta.', 'your island, character and progress are tied to an account.')}</span><a className="vista-button vista-button--primary" href={routeHref('auth')}>{tr('crear cuenta o entrar', 'sign up or sign in')}</a><a className="vista-button" href={routeHref('probar')}>{tr('probar sin cuenta', 'try without an account')}</a><a className="landing__text-link" href={routeHref('inicio')}>{tr('volver a la bienvenida', 'back to the welcome screen')}</a></section></main></div>;
 }
 
 function Routes() {
@@ -148,15 +149,15 @@ function Routes() {
     if (before === route) return;
     let timer = 0;
     if (route === 'isla') {
-      veil.show('abriendo tu isla');
+      veil.show(tr('abriendo tu isla', 'opening your island'));
       timer = window.setTimeout(() => !sceneBridge.get() && veil.hide(), 4000);
     } else if (route === 'mundo') {
-      veil.show(before === 'isla' ? 'viajando al mundo' : 'abriendo el mundo');
+      veil.show(before === 'isla' ? tr('viajando al mundo', 'traveling to the world') : tr('abriendo el mundo', 'opening the world'));
     } else if (route === 'visita') {
-      veil.show(routeState.username ? `viajando a la isla de @${routeState.username}` : 'visitando una isla', 'viaje');
+      veil.show(routeState.username ? `${tr('viajando a la isla de', 'traveling to the island of')} @${routeState.username}` : tr('visitando una isla', 'visiting an island'), 'viaje');
       timer = window.setTimeout(() => !sceneBridge.get() && veil.hide(), 4000);
     } else if (before === 'isla' || before === 'mundo' || before === 'visita') {
-      veil.show('volviendo');
+      veil.show(tr('volviendo', 'going back'));
       timer = window.setTimeout(() => veil.hide(), 200);
     }
     return () => window.clearTimeout(timer);
@@ -171,25 +172,25 @@ function Routes() {
     document.querySelector<HTMLElement>('[data-vista-titulo]')?.focus();
   }, [route]);
 
-  if (route === 'ranking') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text="abriendo el ranking..." />}><RankingPage /></Suspense></main><Taskbar /></div></AccessGate>;
-  if (route === 'reglas') return <div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text="abriendo las reglas..." />}><RulesPage /></Suspense></main></div>;
+  if (route === 'ranking') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text={tr('abriendo el ranking...', 'opening the ranking...')} />}><RankingPage /></Suspense></main><Taskbar /></div></AccessGate>;
+  if (route === 'reglas') return <div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text={tr('abriendo las reglas...', 'opening the rules...')} />}><RulesPage /></Suspense></main></div>;
   if (route === 'auth') return <div className="app"><Backdrop /><main className="main"><Cuenta /></main>{session.status === 'con-sesion' && <Taskbar />}</div>;
-  if (route === 'personaje') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text="abriendo el personaje..." />}><AvatarEditor /></Suspense></main><Taskbar /></div></AccessGate>;
-  if (route === 'arcade') return <AccessGate><Suspense fallback={<AeroLoader variant="scene" text="abriendo el arcade..." detail="preparando desafíos sobre el agua..." />}><ArcadePage onExit={() => { window.location.hash = routeHref('mundo'); }} /></Suspense></AccessGate>;
-  if (route === 'explorar') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text="buscando islas..." />}><ExplorePage /></Suspense></main><Taskbar /></div></AccessGate>;
-  if (route === 'visita' && routeState.username) return <AccessGate><Suspense fallback={<LoadingRoute text="visitando isla..." />}><VisitIslandPage username={routeState.username} /></Suspense></AccessGate>;
+  if (route === 'personaje') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text={tr('abriendo el personaje...', 'opening the character editor...')} />}><AvatarEditor /></Suspense></main><Taskbar /></div></AccessGate>;
+  if (route === 'arcade') return <AccessGate><Suspense fallback={<AeroLoader variant="scene" text={tr('abriendo el arcade...', 'opening the arcade...')} detail={tr('preparando desafíos sobre el agua...', 'getting challenges ready on the water...')} />}><ArcadePage onExit={() => { window.location.hash = routeHref('mundo'); }} /></Suspense></AccessGate>;
+  if (route === 'explorar') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text={tr('buscando islas...', 'looking for islands...')} />}><ExplorePage /></Suspense></main><Taskbar /></div></AccessGate>;
+  if (route === 'visita' && routeState.username) return <AccessGate><Suspense fallback={<LoadingRoute text={tr('visitando isla...', 'visiting island...')} />}><VisitIslandPage username={routeState.username} /></Suspense></AccessGate>;
   if (route === 'mundo') {
     return (
-      <AccessGate><Suspense fallback={<AeroLoader variant="scene" text="preparando el mundo..." detail="trazando rutas y señales del atlas..." />}><WorldPage /></Suspense></AccessGate>
+      <AccessGate><Suspense fallback={<AeroLoader variant="scene" text={tr('preparando el mundo...', 'preparing the world...')} detail={tr('trazando rutas y señales del atlas...', 'plotting routes and atlas signals...')} />}><WorldPage /></Suspense></AccessGate>
     );
   }
 
   /* modo prueba: la isla funciona sin cuenta y se guarda solo en este dispositivo */
-  if (route === 'probar') return <Suspense fallback={<LoadingRoute text="cargando la isla..." />}><EditorPage demo /></Suspense>;
+  if (route === 'probar') return <Suspense fallback={<LoadingRoute text={tr('cargando la isla...', 'loading the island...')} />}><EditorPage demo /></Suspense>;
 
   if (route === 'isla') {
     return (
-      <AccessGate><Suspense fallback={<LoadingRoute text="cargando la isla..." />}><MyIslandPage /></Suspense></AccessGate>
+      <AccessGate><Suspense fallback={<LoadingRoute text={tr('cargando la isla...', 'loading the island...')} />}><MyIslandPage /></Suspense></AccessGate>
     );
   }
 

@@ -37,6 +37,7 @@ import { EditorToolbar } from './EditorToolbar';
 import { ObjectInspector } from './ObjectInspector';
 import { AeroWorkshop } from '../community/AeroWorkshop';
 import { DailyTide } from '../community/DailyTide';
+import { tr } from '../../i18n';
 
 interface Float {
   id: number;
@@ -62,7 +63,7 @@ function init(initialDoc?: Doc) {
   return { state: createState(), recovered: false, corrupt: false, fresh: true };
 }
 
-export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla', saveRemote, ownerAvatar, demo = false }: { initialDoc?: Doc; editable?: boolean; ownerLabel?: string; saveRemote?: (doc: Doc) => Promise<void>; ownerAvatar?: AvatarSpec | null; demo?: boolean }) {
+export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu isla', 'your island'), saveRemote, ownerAvatar, demo = false }: { initialDoc?: Doc; editable?: boolean; ownerLabel?: string; saveRemote?: (doc: Doc) => Promise<void>; ownerAvatar?: AvatarSpec | null; demo?: boolean }) {
   const boot = useRef<ReturnType<typeof init> | null>(null);
   if (boot.current === null) boot.current = init(initialDoc);
   const [state, dispatch] = useReducer(editorReducer, boot.current.state);
@@ -76,7 +77,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
   const [combo, setCombo] = useState(0);
   const [win, setWin] = useState({ catalog: { open: true, min: false }, objects: { open: false, min: false }, workshop: { open: false, min: false }, daily: { open: false, min: false } });
   const [toast, setToast] = useState<{ id: number; text: string; tone: 'error' | 'info' } | null>(
-    boot.current.corrupt ? { id: -1, text: 'el borrador guardado estaba dañado; se empezó una isla nueva', tone: 'error' } : null,
+    boot.current.corrupt ? { id: -1, text: tr('el borrador guardado estaba dañado; se empezó una isla nueva', 'the saved draft was damaged; a new island was started'), tone: 'error' } : null,
   );
   const [saveStatus, setSaveStatus] = useState<SaveResult | 'pendiente' | 'remoto-error'>('ok');
   const sceneRef = useRef<IslandScene | null>(null);
@@ -96,7 +97,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
     creationStarted = true;
     void (async () => {
       try {
-        const memory = await addMemory({ kind: 'creacion', text: 'empezaste tu isla' }, { unique: true });
+        const memory = await addMemory({ kind: 'creacion', text: tr('empezaste tu isla', 'you started your island') }, { unique: true });
         if (!memory) return;
         for (let i = 0; i < 20 && !sceneBridge.get(); i++) await new Promise((r) => setTimeout(r, 300));
         await new Promise((r) => setTimeout(r, 1800));
@@ -161,7 +162,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
     sfx.levelUp();
     const unlocked = CATALOG.filter((c) => c.unlockLevel === state.levelUp!.level).map((c) => c.name);
     const grew = LAND_TIERS.some((t, i) => i > 0 && t.minLevel === state.levelUp!.level);
-    setToast({ id: state.levelUp.id, tone: 'info', text: `nivel ${state.levelUp.level}: +${LEVEL_UP_BONUS} brillos${unlocked.length ? `. desbloqueas ${unlocked.join(', ')}` : ''}${grew ? '. tu isla se hizo más grande' : ''}` });
+    setToast({ id: state.levelUp.id, tone: 'info', text: `${tr('nivel', 'level')} ${state.levelUp.level}: +${LEVEL_UP_BONUS} ${tr('brillos', 'sparkles')}${unlocked.length ? `. ${tr('desbloqueas', 'you unlock')} ${unlocked.join(', ')}` : ''}${grew ? `. ${tr('tu isla se hizo más grande', 'your island grew bigger')}` : ''}` });
   }, [state.levelUp]);
 
   useEffect(() => {
@@ -189,7 +190,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
     const item = CATALOG_MAP.get(selected.assetId);
     if (!item) return;
     const next = Math.round(Math.min(item.maxScale, Math.max(item.minScale, selected.scale + delta)) * 100) / 100;
-    if (next === selected.scale) setToast({ id: Date.now(), tone: 'error', text: 'la escala ya está en el límite' });
+    if (next === selected.scale) setToast({ id: Date.now(), tone: 'error', text: tr('la escala ya está en el límite', 'the scale is already at its limit') });
     else dispatch({ type: 'patch', id: selected.id, patch: { scale: next } });
   };
 
@@ -268,7 +269,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
   }, [state.selectedId, editable]);
 
   const sceneProps = useMemo(() => ({ objects: doc.objects, level: doc.maxLevel, selectedId: state.selectedId, placing, country: editable ? country : null, avatar: editable ? avatar : ownerAvatar ?? null }), [doc.objects, doc.maxLevel, state.selectedId, placing, country, editable, avatar, ownerAvatar]);
-  const saveText = saveStatus === 'cuota' ? 'sin espacio en este dispositivo' : saveStatus === 'error' || saveStatus === 'remoto-error' ? 'no se pudo guardar en la nube' : saveStatus === 'pendiente' ? 'guardando...' : saveRemote ? 'guardado en la nube' : 'guardado en este dispositivo';
+  const saveText = saveStatus === 'cuota' ? tr('sin espacio en este dispositivo', 'no space left on this device') : saveStatus === 'error' || saveStatus === 'remoto-error' ? tr('no se pudo guardar en la nube', 'could not save to the cloud') : saveStatus === 'pendiente' ? tr('guardando...', 'saving...') : saveRemote ? tr('guardado en la nube', 'saved to the cloud') : tr('guardado en este dispositivo', 'saved on this device');
   const placingItem = placing ? CATALOG_MAP.get(placing) : null;
 
   const toggleWin = (key: 'catalog' | 'objects' | 'workshop' | 'daily') =>
@@ -302,7 +303,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
       <header className="hud">
         <div className="hud__bar glass-panel">
           {editable ? (
-            <a className="hud__avatar hud__avatar--face" href={routeHref('personaje')} aria-label="editar mi personaje">
+            <a className="hud__avatar hud__avatar--face" href={routeHref('personaje')} aria-label={tr('editar mi personaje', 'edit my character')}>
               <AvatarImg crop="cabeza" />
             </a>
           ) : (
@@ -311,23 +312,23 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
           {editable && country && <FlagBadge code={country} width={40} />}
           <div className="hud__who">
             <strong>{ownerLabel}</strong>
-            <span>{editable ? (saveRemote ? 'cuenta conectada' : 'modo local') : 'visita'}</span>
+            <span>{editable ? (saveRemote ? tr('cuenta conectada', 'account connected') : tr('modo local', 'local mode')) : tr('visita', 'visit')}</span>
           </div>
-          <div className="hud__coins" aria-label={`${doc.brillos} brillos`}>
+          <div className="hud__coins" aria-label={`${doc.brillos} ${tr('brillos', 'sparkles')}`}>
             <span className="hud__orb" aria-hidden="true" />
             <strong>{doc.brillos}</strong>
           </div>
           <div className="hud__level">
-            <span className="hud__lvl" title={nextExpansionLevel(progress.level) ? `tu isla crece en el nivel ${nextExpansionLevel(progress.level)}` : undefined}>nivel {progress.level}</span>
-            <div className="vista-bar" role="progressbar" aria-label="progreso de nivel" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.ratio * 100)}>
+            <span className="hud__lvl" title={nextExpansionLevel(progress.level) ? `${tr('tu isla crece en el nivel', 'your island grows at level')} ${nextExpansionLevel(progress.level)}` : undefined}>{tr('nivel', 'level')} {progress.level}</span>
+            <div className="vista-bar" role="progressbar" aria-label={tr('progreso de nivel', 'level progress')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.ratio * 100)}>
               <span style={{ width: `${progress.ratio * 100}%` }} />
             </div>
-            <span className="hud__charm">encanto {charm}{progress.next !== null ? ` / ${progress.next}` : ''}</span>
+            <span className="hud__charm">{tr('encanto', 'charm')} {charm}{progress.next !== null ? ` / ${progress.next}` : ''}</span>
           </div>
         </div>
         <p className="hud__hint">
-          {placingItem ? `toca la isla para colocar: ${placingItem.name}. esc para terminar.` : mission ? `misión: ${mission.mission.text} (${mission.value}/${mission.mission.goal})` : 'revienta burbujas, atrapa la mariposa y el pez saltarín; decora tu isla.'}
-          {combo > 1 && <span className="hud__combo"> combo x{combo}</span>}
+          {placingItem ? `${tr('toca la isla para colocar', 'tap the island to place')}: ${placingItem.name}. ${tr('esc para terminar.', 'esc to finish.')}` : mission ? `${tr('misión', 'mission')}: ${mission.mission.text} (${mission.value}/${mission.mission.goal})` : tr('revienta burbujas, atrapa la mariposa y el pez saltarín; decora tu isla.', 'pop bubbles, catch the butterfly and the jumping fish; decorate your island.')}
+          {combo > 1 && <span className="hud__combo"> {tr('combo', 'combo')} x{combo}</span>}
         </p>
       </header>
 
@@ -340,13 +341,13 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
       </div>
 
       {editable && win.objects.open && (
-        <AeroWindow className="win-objects" title="objetos de la isla" icon={orbIcon} collapsed={win.objects.min} onMinimize={() => patchWin('objects', { min: !win.objects.min })} onClose={() => patchWin('objects', { open: false })}>
+        <AeroWindow className="win-objects" title={tr('objetos de la isla', 'island objects')} icon={orbIcon} collapsed={win.objects.min} onMinimize={() => patchWin('objects', { min: !win.objects.min })} onClose={() => patchWin('objects', { open: false })}>
           <ObjectInspector objects={doc.objects} selectedId={state.selectedId} onSelect={(id) => dispatch({ type: 'select', id })} onPatch={(id, patch) => dispatch({ type: 'patch', id, patch })} />
         </AeroWindow>
       )}
 
       {editable && win.catalog.open && (
-        <AeroWindow className="win-catalog" title="decoraciones" icon={orbIcon} collapsed={win.catalog.min} onMinimize={() => patchWin('catalog', { min: !win.catalog.min })} onClose={() => patchWin('catalog', { open: false })}>
+        <AeroWindow className="win-catalog" title={tr('decoraciones', 'decorations')} icon={orbIcon} collapsed={win.catalog.min} onMinimize={() => patchWin('catalog', { min: !win.catalog.min })} onClose={() => patchWin('catalog', { open: false })}>
           <div className="catalog-bar">
             <EditorToolbar
               canUndo={state.undo.length > 0}
@@ -368,30 +369,30 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
       )}
 
       {editable && win.workshop.open && (
-        <AeroWindow className="win-workshop" title="laboratorio aero" icon={<span className="mini-orb mini-orb--green" />} collapsed={win.workshop.min} onMinimize={() => patchWin('workshop', { min: !win.workshop.min })} onClose={() => patchWin('workshop', { open: false })}>
+        <AeroWindow className="win-workshop" title={tr('laboratorio aero', 'aero lab')} icon={<span className="mini-orb mini-orb--green" />} collapsed={win.workshop.min} onMinimize={() => patchWin('workshop', { min: !win.workshop.min })} onClose={() => patchWin('workshop', { open: false })}>
           <AeroWorkshop level={doc.maxLevel} onOpenArcade={() => { window.location.hash = routeHref('arcade'); }} />
         </AeroWindow>
       )}
 
       {editable && win.daily.open && (
-        <AeroWindow className="win-daily" title="marea diaria" icon={<span className="mini-orb mini-orb--globe" />} collapsed={win.daily.min} onMinimize={() => patchWin('daily', { min: !win.daily.min })} onClose={() => patchWin('daily', { open: false })}>
+        <AeroWindow className="win-daily" title={tr('marea diaria', 'daily tide')} icon={<span className="mini-orb mini-orb--globe" />} collapsed={win.daily.min} onMinimize={() => patchWin('daily', { min: !win.daily.min })} onClose={() => patchWin('daily', { open: false })}>
           <DailyTide />
         </AeroWindow>
       )}
 
       <div className="balloon-region" aria-live="polite">
-        {toast && <Balloon key={toast.id} tone={toast.tone} text={toast.text} title={toast.tone === 'info' && state.levelUp && toast.id === state.levelUp.id ? `nivel ${state.levelUp.level}` : undefined} />}
+        {toast && <Balloon key={toast.id} tone={toast.tone} text={toast.text} title={toast.tone === 'info' && state.levelUp && toast.id === state.levelUp.id ? `${tr('nivel', 'level')} ${state.levelUp.level}` : undefined} />}
       </div>
 
       <Taskbar
         tasks={[
-          { id: 'catalog', label: 'decoraciones', icon: <span className="mini-orb" />, active: win.catalog.open && !win.catalog.min, onClick: () => toggleWin('catalog') },
-          { id: 'missions', label: 'misiones', icon: <span className="mini-orb" />, active: missionsOpen, onClick: () => setMissionsOpen((v) => !v) },
+          { id: 'catalog', label: tr('decoraciones', 'decorations'), icon: <span className="mini-orb" />, active: win.catalog.open && !win.catalog.min, onClick: () => toggleWin('catalog') },
+          { id: 'missions', label: tr('misiones', 'missions'), icon: <span className="mini-orb" />, active: missionsOpen, onClick: () => setMissionsOpen((v) => !v) },
           { id: 'ranking', label: 'ranking', icon: <span className="mini-orb" />, active: rankOpen, onClick: () => setRankOpen((v) => !v) },
-          { id: 'explore', label: 'caminar', icon: <span className="mini-orb mini-orb--green" />, active: exploring, onClick: () => setExploring(true) },
+          { id: 'explore', label: tr('caminar', 'walk'), icon: <span className="mini-orb mini-orb--green" />, active: exploring, onClick: () => setExploring(true) },
           {
             id: 'mundo',
-            label: 'mundo',
+            label: tr('mundo', 'world'),
             icon: <span className="mini-orb mini-orb--globe" />,
             active: false,
             onClick: () => {
@@ -399,19 +400,19 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
               window.location.hash = '#/mundo';
             },
           },
-          { id: 'workshop', label: 'laboratorio', icon: <span className="mini-orb mini-orb--green" />, active: win.workshop.open && !win.workshop.min, onClick: () => toggleWin('workshop') },
-          { id: 'daily', label: 'marea diaria', icon: <span className="mini-orb mini-orb--globe" />, active: win.daily.open && !win.daily.min, onClick: () => toggleWin('daily') },
-          { id: 'objects', label: 'objetos', icon: <span className="mini-orb mini-orb--green" />, active: win.objects.open && !win.objects.min, onClick: () => toggleWin('objects') },
+          { id: 'workshop', label: tr('laboratorio', 'lab'), icon: <span className="mini-orb mini-orb--green" />, active: win.workshop.open && !win.workshop.min, onClick: () => toggleWin('workshop') },
+          { id: 'daily', label: tr('marea diaria', 'daily tide'), icon: <span className="mini-orb mini-orb--globe" />, active: win.daily.open && !win.daily.min, onClick: () => toggleWin('daily') },
+          { id: 'objects', label: tr('objetos', 'objects'), icon: <span className="mini-orb mini-orb--green" />, active: win.objects.open && !win.objects.min, onClick: () => toggleWin('objects') },
         ]}
       />
       {prologue && <Prologue onDone={() => setPrologue(false)} />}
       {missionsOpen && (
-        <AeroWindow className="win-missions" title="misiones del faro" icon={orbIcon} onClose={() => setMissionsOpen(false)}>
+        <AeroWindow className="win-missions" title={tr('misiones del faro', 'beacon missions')} icon={orbIcon} onClose={() => setMissionsOpen(false)}>
           <MissionsPanel ctx={{ objects: doc.objects, level: doc.maxLevel, country, visitedWorld: worldVisit.get() }} />
         </AeroWindow>
       )}
       {rankOpen && (
-        <AeroWindow className="win-leader" title="ranking · top 100" icon={orbIcon} onClose={() => setRankOpen(false)}>
+        <AeroWindow className="win-leader" title={tr('ranking · top 100', 'ranking · top 100')} icon={orbIcon} onClose={() => setRankOpen(false)}>
           <LeaderboardPanel />
         </AeroWindow>
       )}
@@ -420,7 +421,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
       <CameraOverlay />
       {editable && !demo && <CountryGate />}
       <span className="sr-only" aria-live="polite">
-        {selected ? `seleccionado: ${CATALOG_MAP.get(selected.assetId)?.name}` : ''}
+        {selected ? `${tr('seleccionado', 'selected')}: ${CATALOG_MAP.get(selected.assetId)?.name}` : ''}
       </span>
     </div>
   );

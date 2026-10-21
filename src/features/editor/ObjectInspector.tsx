@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CATALOG_MAP } from '../../catalog/catalog';
 import type { PlacedObject } from '../../domain/island';
+import { tr } from '../../i18n';
 
 interface FieldProps {
   label: string;
@@ -56,11 +57,11 @@ export function ObjectInspector({ objects, selectedId, onSelect, onPatch }: Prop
   const item = selected ? CATALOG_MAP.get(selected.assetId) : undefined;
   return (
     <div className="inspector">
-      <h2 className="inspector__title">objetos de la isla</h2>
+      <h2 className="inspector__title">{tr('objetos de la isla', 'island objects')}</h2>
       {objects.length === 0 ? (
-        <p className="inspector__empty">la isla está vacía: elige una decoración para colocarla.</p>
+        <p className="inspector__empty">{tr('la isla está vacía: elige una decoración para colocarla.', 'the island is empty: pick a decoration to place it.')}</p>
       ) : (
-        <ul className="inspector__list" aria-label="objetos colocados">
+        <ul className="inspector__list" aria-label={tr('objetos colocados', 'placed objects')}>
           {objects.map((o, i) => (
             <li key={o.id}>
               <button type="button" aria-pressed={o.id === selectedId} onClick={() => onSelect(o.id === selectedId ? null : o.id)}>
@@ -71,23 +72,23 @@ export function ObjectInspector({ objects, selectedId, onSelect, onPatch }: Prop
         </ul>
       )}
       {selected && item ? (
-        <form className="inspector__form" onSubmit={(e) => e.preventDefault()} aria-label={`propiedades de ${item.name}`}>
-          <NumberField label="posición x" value={selected.x} min={0} max={1000} step={1} onCommit={(v) => onPatch(selected.id, { x: Math.round(v) })} />
-          <NumberField label="posición y" value={selected.y} min={0} max={1000} step={1} onCommit={(v) => onPatch(selected.id, { y: Math.round(v) })} />
-          <NumberField label="escala" value={selected.scale} min={item.minScale} max={item.maxScale} step={0.1} onCommit={(v) => onPatch(selected.id, { scale: Math.round(v * 100) / 100 })} />
+        <form className="inspector__form" onSubmit={(e) => e.preventDefault()} aria-label={`${tr('propiedades de', 'properties of')} ${item.name}`}>
+          <NumberField label={tr('posición x', 'position x')} value={selected.x} min={0} max={1000} step={1} onCommit={(v) => onPatch(selected.id, { x: Math.round(v) })} />
+          <NumberField label={tr('posición y', 'position y')} value={selected.y} min={0} max={1000} step={1} onCommit={(v) => onPatch(selected.id, { y: Math.round(v) })} />
+          <NumberField label={tr('escala', 'scale')} value={selected.scale} min={item.minScale} max={item.maxScale} step={0.1} onCommit={(v) => onPatch(selected.id, { scale: Math.round(v * 100) / 100 })} />
           <label className="field">
-            <span>orientación</span>
+            <span>{tr('orientación', 'orientation')}</span>
             <select value={selected.rotation} onChange={(e) => onPatch(selected.id, { rotation: Number(e.target.value) })}>
               {item.orientations.map((o) => (
                 <option key={o} value={o}>
-                  {o === 0 ? 'normal' : 'espejo'}
+                  {o === 0 ? tr('normal', 'normal') : tr('espejo', 'mirrored')}
                 </option>
               ))}
             </select>
           </label>
         </form>
       ) : (
-        objects.length > 0 && <p className="inspector__empty">elige un objeto para editar su posición, escala y orientación.</p>
+        objects.length > 0 && <p className="inspector__empty">{tr('elige un objeto para editar su posición, escala y orientación.', 'pick an object to edit its position, scale and orientation.')}</p>
       )}
     </div>
   );

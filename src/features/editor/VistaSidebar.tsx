@@ -4,6 +4,7 @@ import { loadTop100 } from '../../persistence/leaderboard';
 import { isSupabaseConfigured } from '../../persistence/supabase';
 import { MILESTONES, nextMilestone } from '../../story/lore';
 import { useRestoration } from '../../world/restorationStore';
+import { tr } from '../../i18n';
 
 const KEY = 'frutiger-aero-islands:barra-lateral';
 
@@ -20,7 +21,7 @@ function Clock() {
     <line x1="50" y1="50" x2={50 + Math.sin((deg * Math.PI) / 180) * len} y2={50 - Math.cos((deg * Math.PI) / 180) * len} stroke={color} strokeWidth={w} strokeLinecap="round" />
   );
   return (
-    <svg viewBox="0 0 100 100" className="vsb__clock" role="img" aria-label={`reloj, ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`}>
+    <svg viewBox="0 0 100 100" className="vsb__clock" role="img" aria-label={`${tr('reloj', 'clock')}, ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`}>
       <defs>
         <radialGradient id="vsb-face" cx=".35" cy=".3" r=".9"><stop offset="0" stopColor="#ffffff" /><stop offset="1" stopColor="#bfe4f6" /></radialGradient>
       </defs>
@@ -71,8 +72,8 @@ export function VistaSidebar({ mission }: { mission: string | null }) {
   const span = (next?.percent ?? 100) - prev;
   const ratio = next ? Math.min(1, (planet - prev) / span) : 1;
   return (
-    <aside className={`vsb${open ? '' : ' is-closed'}`} aria-label="barra lateral">
-      <button type="button" className="vsb__tab" onClick={toggle} aria-expanded={open} aria-label={open ? 'ocultar la barra lateral' : 'mostrar la barra lateral'}>
+    <aside className={`vsb${open ? '' : ' is-closed'}`} aria-label={tr('barra lateral', 'sidebar')}>
+      <button type="button" className="vsb__tab" onClick={toggle} aria-expanded={open} aria-label={open ? tr('ocultar la barra lateral', 'hide the sidebar') : tr('mostrar la barra lateral', 'show the sidebar')}>
         {open ? '›' : '‹'}
       </button>
       {open && (
@@ -81,23 +82,23 @@ export function VistaSidebar({ mission }: { mission: string | null }) {
             <Clock />
           </section>
           <section className="vsb__gadget">
-            <h3>planeta</h3>
-            <strong>{planet.toFixed(planet < 10 ? 1 : 0)}% restaurado</strong>
+            <h3>{tr('planeta', 'planet')}</h3>
+            <strong>{planet.toFixed(planet < 10 ? 1 : 0)}% {tr('restaurado', 'restored')}</strong>
             <i className="vsb__bar" aria-hidden="true"><b style={{ width: `${ratio * 100}%` }} /></i>
-            <small>{next ? `próximo regalo a ${next.percent}%: ${next.reward}` : 'el planeta brilla otra vez'}</small>
-            <a href={routeHref('mundo')}>ir a restaurar</a>
+            <small>{next ? `${tr('próximo regalo a', 'next gift at')} ${next.percent}%: ${next.reward}` : tr('el planeta brilla otra vez', 'the planet shines again')}</small>
+            <a href={routeHref('mundo')}>{tr('ir a restaurar', 'go restore it')}</a>
           </section>
           {mission && (
             <section className="vsb__gadget">
-              <h3>tu misión</h3>
+              <h3>{tr('tu misión', 'your mission')}</h3>
               <small>{mission}</small>
             </section>
           )}
           {isSupabaseConfigured && (
             <section className="vsb__gadget">
-              <h3>mejores de la semana</h3>
+              <h3>{tr('mejores de la semana', 'best of the week')}</h3>
               {top.length === 0 ? (
-                <small>todavía nadie suma puntos</small>
+                <small>{tr('todavía nadie suma puntos', 'nobody has scored yet')}</small>
               ) : (
                 <ol>
                   {top.map((t) => (
@@ -108,7 +109,7 @@ export function VistaSidebar({ mission }: { mission: string | null }) {
                   ))}
                 </ol>
               )}
-              <a href={routeHref('ranking')}>ver el top 100</a>
+              <a href={routeHref('ranking')}>{tr('ver el top 100', 'see the top 100')}</a>
             </section>
           )}
         </div>

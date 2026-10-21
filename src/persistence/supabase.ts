@@ -2,6 +2,7 @@ import { createClient, type Session, type SupabaseClient } from '@supabase/supab
 import type { Doc } from '../features/editor/commands';
 import { invalidate } from './fastcache';
 import { normalizeAvatar, type AvatarSpec } from '../avatar/model';
+import { tr } from '../i18n';
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
@@ -33,7 +34,7 @@ export function firstOf<T>(value: T | T[] | null | undefined): T | undefined {
   return Array.isArray(value) ? value[0] : (value ?? undefined);
 }
 
-export function readableSupabaseError(error: unknown, fallback = 'no se pudo completar la operación.'): string {
+export function readableSupabaseError(error: unknown, fallback = tr('no se pudo completar la operación.', 'the operation could not be completed.')): string {
   if (error instanceof Error && error.message) return error.message;
   if (error && typeof error === 'object') {
     const value = error as { message?: unknown; details?: unknown; hint?: unknown };
@@ -58,7 +59,7 @@ export async function currentSession(): Promise<Session | null> {
 }
 
 export async function completeProfile(username: string, displayName?: string): Promise<PublicIsland> {
-  if (!supabase) throw new Error('supabase no está configurado');
+  if (!supabase) throw new Error(tr('supabase no está configurado', 'supabase is not configured'));
   const { data, error } = await supabase.rpc('complete_profile', { p_username: username, p_display_name: displayName || null });
   if (error) throw error;
   invalidate('perfil:');
@@ -80,13 +81,13 @@ export async function myIsland(): Promise<PublicIsland | null> {
   if (error) throw error;
   if (!data) return null;
   const layout = asDoc(data.layout);
-  if (!layout) throw new Error('el diseño remoto no es válido');
+  if (!layout) throw new Error(tr('el diseño remoto no es válido', 'the remote layout is not valid'));
   const p = data.profiles as unknown as { username: string; display_name: string; avatar?: unknown };
   return { id: data.id, username: p.username, displayName: p.display_name, name: data.name, layout, revision: Number(data.revision), createdAt: data.created_at, avatar: p.avatar && typeof p.avatar === 'object' ? normalizeAvatar(p.avatar) : null };
 }
 
 export async function saveIsland(id: string, revision: number, layout: Doc): Promise<number> {
-  if (!supabase) throw new Error('supabase no está configurado');
+  if (!supabase) throw new Error(tr('supabase no está configurado', 'supabase is not configured'));
   const { data, error } = await supabase.rpc('save_island', { p_island_id: id, p_expected_revision: revision, p_layout: layout });
   if (error) throw error;
   return Number(data?.[0]?.revision);

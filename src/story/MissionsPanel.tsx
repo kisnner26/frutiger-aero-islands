@@ -2,6 +2,7 @@ import { MILESTONES, nextMilestone } from './lore';
 import { missionStatus, type MissionContext } from './missions';
 import { useRestoration } from '../world/restorationStore';
 import './story.css';
+import { tr } from '../i18n';
 
 /** aero te guía: misiones del faro y progreso comunitario del planeta. */
 export function MissionsPanel({ ctx }: { ctx: MissionContext }) {
@@ -15,8 +16,8 @@ export function MissionsPanel({ ctx }: { ctx: MissionContext }) {
         <span className="missions__orb" aria-hidden="true" />
         <p>
           {done === list.length
-            ? 'tu faro brilla con fuerza. ahora ayuda a restaurar el planeta con la gente de la comunidad.'
-            : 'soy aero. si enciendes tu faro paso a paso, el planeta lo notará.'}
+            ? tr('tu faro brilla con fuerza. ahora ayuda a restaurar el planeta con la gente de la comunidad.', 'your beacon shines bright. now help restore the planet with the community.')
+            : tr('soy aero. si enciendes tu faro paso a paso, el planeta lo notará.', 'i am aero. if you light your beacon step by step, the planet will notice.')}
         </p>
       </header>
       <ul className="missions__list">
@@ -32,9 +33,9 @@ export function MissionsPanel({ ctx }: { ctx: MissionContext }) {
           </li>
         ))}
       </ul>
-      <section className="missions__world" aria-label="progreso del planeta">
-        <strong>planeta restaurado · {percent.toFixed(percent < 10 ? 1 : 0)}%</strong>
-        <small>{next ? `próximo regalo para todos a ${next.percent}%: ${next.reward}` : 'el planeta brilla otra vez'}</small>
+      <section className="missions__world" aria-label={tr('progreso del planeta', 'planet progress')}>
+        <strong>{tr('planeta restaurado', 'planet restored')} · {percent.toFixed(percent < 10 ? 1 : 0)}%</strong>
+        <small>{next ? `${tr('próximo regalo para todos a', 'next gift for everyone at')} ${next.percent}%: ${next.reward}` : tr('el planeta brilla otra vez', 'the planet shines again')}</small>
         <ol>
           {MILESTONES.map((m) => (
             <li key={m.percent} className={percent >= m.percent ? 'is-done' : ''}>

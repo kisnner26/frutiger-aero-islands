@@ -1,4 +1,5 @@
 import { MAX_OBJECTS, WORLD_SIZE, type CatalogItem, type PlacedObject } from './island';
+import { tr } from '../i18n';
 
 export const CENTER = { x: 500, y: 500 } as const;
 
@@ -97,12 +98,12 @@ export function validatePlacement(
 }
 
 export const ERROR_TEXT: Record<PlacementError, string> = {
-  'fuera-de-zona': 'ese lugar no sirve para este objeto',
-  'escala-invalida': 'la escala está fuera del rango permitido',
-  'orientacion-invalida': 'orientación no admitida',
-  'limite-de-objetos': 'la isla ya tiene el máximo de 150 objetos',
-  'objeto-desconocido': 'objeto desconocido',
-  'no-finito': 'valor no válido',
+  'fuera-de-zona': tr('ese lugar no sirve para este objeto', 'that spot does not work for this object'),
+  'escala-invalida': tr('la escala está fuera del rango permitido', 'the scale is outside the allowed range'),
+  'orientacion-invalida': tr('orientación no admitida', 'unsupported orientation'),
+  'limite-de-objetos': tr('la isla ya tiene el máximo de 150 objetos', 'the island already has the maximum of 150 objects'),
+  'objeto-desconocido': tr('objeto desconocido', 'unknown object'),
+  'no-finito': tr('valor no válido', 'invalid value'),
 };
 
 /** acerca un punto a la zona válida más cercana (para el borde al soltar). */
