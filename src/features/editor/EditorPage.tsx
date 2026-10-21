@@ -62,7 +62,7 @@ function init(initialDoc?: Doc) {
   return { state: createState(), recovered: false, corrupt: false, fresh: true };
 }
 
-export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla', saveRemote, ownerAvatar }: { initialDoc?: Doc; editable?: boolean; ownerLabel?: string; saveRemote?: (doc: Doc) => Promise<void>; ownerAvatar?: AvatarSpec | null }) {
+export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla', saveRemote, ownerAvatar, demo = false }: { initialDoc?: Doc; editable?: boolean; ownerLabel?: string; saveRemote?: (doc: Doc) => Promise<void>; ownerAvatar?: AvatarSpec | null; demo?: boolean }) {
   const boot = useRef<ReturnType<typeof init> | null>(null);
   if (boot.current === null) boot.current = init(initialDoc);
   const [state, dispatch] = useReducer(editorReducer, boot.current.state);
@@ -418,7 +418,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = 'tu isla'
       {editable && !exploring && <VistaSidebar mission={mission ? `${mission.mission.text} (${mission.value}/${mission.mission.goal})` : null} />}
       {exploring && <ExploreMode objects={doc.objects} level={doc.maxLevel} avatar={avatar} onExit={() => setExploring(false)} />}
       <CameraOverlay />
-      {editable && <CountryGate />}
+      {editable && !demo && <CountryGate />}
       <span className="sr-only" aria-live="polite">
         {selected ? `seleccionado: ${CATALOG_MAP.get(selected.assetId)?.name}` : ''}
       </span>

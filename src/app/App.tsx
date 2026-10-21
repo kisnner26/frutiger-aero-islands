@@ -25,6 +25,7 @@ const TITULOS: Record<Route, string> = {
   arcade: 'arcade | frutiger aero islands',
   reglas: 'reglas y privacidad | frutiger aero islands',
   ranking: 'ranking | frutiger aero islands',
+  probar: 'probar sin cuenta | frutiger aero islands',
   isla: 'tu isla | frutiger aero islands',
   auth: 'cuenta | frutiger aero islands',
   explorar: 'explorar | frutiger aero islands',
@@ -44,6 +45,7 @@ const RulesPage = lazy(() => import('../features/legal/RulesPage').then((m) => (
 const ArcadePage = lazy(() => import('../features/arcade/ArcadePage').then((m) => ({ default: m.ArcadePage })));
 const AvatarEditor = lazy(() => import('../features/avatar/AvatarEditor').then((m) => ({ default: m.AvatarEditor })));
 const ExplorePage = lazy(() => import('../features/community/ExplorePage').then((m) => ({ default: m.ExplorePage })));
+const EditorPage = lazy(() => import('../features/editor/EditorPage').then((m) => ({ default: m.EditorPage })));
 const MyIslandPage = lazy(() => import('../features/community/IslandPages').then((m) => ({ default: m.MyIslandPage })));
 const VisitIslandPage = lazy(() => import('../features/community/IslandPages').then((m) => ({ default: m.VisitIslandPage })));
 const LoadingRoute = ({ text }: { text: string }) => <AeroLoader variant="page" text={text} />;
@@ -73,7 +75,7 @@ function Inicio() {
         <p>{signed ? `vuelve a ${session.username ? `@${session.username}` : 'tu isla'} y continúa donde lo dejaste.` : 'crea una cuenta para diseñar tu isla, guardar cada objeto y visitar a otros jugadores.'}</p>
       </section>
       <nav className="landing__actions" aria-label={signed ? 'continuar jugando' : 'empezar'}>
-          {signed ? <><a className="vista-button vista-button--primary" href={routeHref('isla')} onClick={() => { sfx.click(); if (music.wantsMusic()) void music.play(); }}>continuar en mi isla</a><a className="landing__text-link" href={routeHref('mundo')}>ir al mundo</a></> : <><a className="vista-button vista-button--primary" href={routeHref('auth')}>crear cuenta o entrar</a><a className="landing__text-link" href={routeHref('introduccion')}>cómo funciona</a></>}
+          {signed ? <><a className="vista-button vista-button--primary" href={routeHref('isla')} onClick={() => { sfx.click(); if (music.wantsMusic()) void music.play(); }}>continuar en mi isla</a><a className="landing__text-link" href={routeHref('mundo')}>ir al mundo</a></> : <><a className="vista-button vista-button--primary" href={routeHref('auth')}>crear cuenta o entrar</a><a className="vista-button" href={routeHref('probar')}>probar sin cuenta</a><a className="landing__text-link" href={routeHref('introduccion')}>cómo funciona</a></>}
         </nav>
       <ul className="landing__facts" aria-label="qué incluye">
         <li><strong>en tu cuenta</strong><small>isla y avatar guardados</small></li>
@@ -181,6 +183,9 @@ function Routes() {
       <AccessGate><Suspense fallback={<AeroLoader variant="scene" text="preparando el mundo..." detail="trazando rutas y señales del atlas..." />}><WorldPage /></Suspense></AccessGate>
     );
   }
+
+  /* modo prueba: la isla funciona sin cuenta y se guarda solo en este dispositivo */
+  if (route === 'probar') return <Suspense fallback={<LoadingRoute text="cargando la isla..." />}><EditorPage demo /></Suspense>;
 
   if (route === 'isla') {
     return (
