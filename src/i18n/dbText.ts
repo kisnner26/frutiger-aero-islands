@@ -22,7 +22,9 @@ const EN: Record<string, string> = {
   constancia: 'consistency', 'haz 15 movimientos en el mapa esta semana': 'make 15 moves on the map this week', 'insignia de constancia': 'consistency badge',
   // zonas dañadas
   'el campo seco': 'the dry field', 'el mar turbio': 'the murky sea', 'el puerto de ceniza': 'the ash harbor', 'el valle opaco': 'the opaque valley',
-  'la antena apagada': 'the dead antenna', 'la ciudad plana': 'the flat city', 'la fábrica muda': 'the silent factory',
+  'la antena apagada': 'the dead antenna', 'el lago de aceite': 'the oil lake',
+  'el río gris': 'the gray river', 'la torre apagada': 'the dark tower', 'el jardín marchito': 'the withered garden', 'la plaza vacía': 'the empty square',
+  'el faro sin luz': 'the unlit lighthouse', 'la estación fría': 'the cold station', 'el bosque de humo': 'the smoke forest', 'la bahía opaca': 'the opaque bay', 'la ciudad plana': 'the flat city', 'la fábrica muda': 'the silent factory',
 };
 
 /** devuelve la versión en inglés de un texto de la base de datos si la conocemos. */
