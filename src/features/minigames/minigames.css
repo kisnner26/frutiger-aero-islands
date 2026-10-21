@@ -21,3 +21,8 @@
 .duel__actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .duel__form { display: grid; gap: 6px; }
 .duel__form input, .duel__form select { padding: 7px 9px; border-radius: 9px; border: 1px solid #8fc4e6; background: #fff; font: inherit; }
+
+/* dentro del teléfono las pantallas se alinean al inicio: estas piezas deben ocupar todo el ancho */
+.appscreen > .mg, .appscreen > .mg__menu, .appscreen > .duel, .appscreen > .duel__form, .appscreen > .mg__hint { justify-self: stretch; width: 100%; box-sizing: border-box; }
+.appscreen.mg__result { justify-items: center; text-align: center; }
+.appscreen .mg__menu button, .appscreen .mg__menu a { width: 100%; box-sizing: border-box; }
