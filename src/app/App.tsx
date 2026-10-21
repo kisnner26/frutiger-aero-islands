@@ -31,6 +31,8 @@ const TITULOS: Record<Route, string> = {
   probar: `${tr('probar sin cuenta', 'try without an account')} | frutiger aero islands`,
   royale: 'aero royale | frutiger aero islands',
   blob: 'aero blob | frutiger aero islands',
+  paintball: 'paintball royale | frutiger aero islands',
+  arena: 'aero arena | frutiger aero islands',
   isla: `${tr('tu isla', 'your island')} | frutiger aero islands`,
   auth: `${tr('cuenta', 'account')} | frutiger aero islands`,
   explorar: `${tr('explorar', 'explore')} | frutiger aero islands`,
@@ -50,6 +52,8 @@ const RulesPage = lazy(() => import('../features/legal/RulesPage').then((m) => (
 const ArcadePage = lazy(() => import('../features/arcade/ArcadePage').then((m) => ({ default: m.ArcadePage })));
 const AvatarEditor = lazy(() => import('../features/avatar/AvatarEditor').then((m) => ({ default: m.AvatarEditor })));
 const ExplorePage = lazy(() => import('../features/community/ExplorePage').then((m) => ({ default: m.ExplorePage })));
+const PaintballPage = lazy(() => import('../features/paintball/PaintballPage').then((m) => ({ default: m.PaintballPage })));
+const ArenaPage = lazy(() => import('../features/arena/ArenaPage').then((m) => ({ default: m.ArenaPage })));
 const BlobPage = lazy(() => import('../features/blob/BlobPage').then((m) => ({ default: m.BlobPage })));
 const RoyalePage = lazy(() => import('../features/royale/RoyalePage').then((m) => ({ default: m.RoyalePage })));
 const EditorPage = lazy(() => import('../features/editor/EditorPage').then((m) => ({ default: m.EditorPage })));
@@ -84,7 +88,7 @@ function Inicio() {
         <p>{signed ? `${tr('vuelve a', 'go back to')} ${session.username ? `@${session.username}` : tr('tu isla', 'your island')} ${tr('y continúa donde lo dejaste.', 'and pick up where you left off.')}` : tr('crea una cuenta para diseñar tu isla, guardar cada objeto y visitar a otros jugadores.', 'create an account to design your island, save every object and visit other players. or try it first, no account needed.')}</p>
       </section>
       <nav className="landing__actions" aria-label={signed ? tr('continuar jugando', 'keep playing') : tr('empezar', 'get started')}>
-          {signed ? <><a className="vista-button vista-button--primary" href={routeHref('isla')} onClick={() => { sfx.click(); if (music.wantsMusic()) void music.play(); }}>{tr('continuar en mi isla', 'continue to my island')}</a><a className="landing__text-link" href={routeHref('mundo')}>{tr('ir al mundo', 'go to the world')}</a></> : <><a className="vista-button vista-button--primary" href={routeHref('auth')}>{tr('crear cuenta o entrar', 'sign up or sign in')}</a><a className="vista-button" href={routeHref('probar')}>{tr('probar sin cuenta', 'try without an account')}</a><a className="vista-button" href="#/royale">{tr('aero royale', 'aero royale')}</a><a className="landing__text-link" href={routeHref('introduccion')}>{tr('cómo funciona', 'how it works')}</a></>}
+          {signed ? <><a className="vista-button vista-button--primary" href={routeHref('isla')} onClick={() => { sfx.click(); if (music.wantsMusic()) void music.play(); }}>{tr('continuar en mi isla', 'continue to my island')}</a><a className="landing__text-link" href={routeHref('mundo')}>{tr('ir al mundo', 'go to the world')}</a></> : <><a className="vista-button vista-button--primary" href={routeHref('auth')}>{tr('crear cuenta o entrar', 'sign up or sign in')}</a><a className="vista-button" href={routeHref('probar')}>{tr('probar sin cuenta', 'try without an account')}</a><a className="vista-button" href="#/arena">{tr('aero arena', 'aero arena')}</a><a className="landing__text-link" href={routeHref('introduccion')}>{tr('cómo funciona', 'how it works')}</a></>}
         </nav>
       <ul className="landing__facts" aria-label={tr('qué incluye', 'what is included')}>
         <li><strong>{tr('en tu cuenta', 'in your account')}</strong><small>{tr('isla y avatar guardados', 'island and avatar saved')}</small></li>
@@ -194,6 +198,8 @@ function Routes() {
   }
 
   if (route === 'blob') return <Suspense fallback={<LoadingRoute text={tr('preparando la arena...', 'getting the arena ready...')} />}><BlobPage /></Suspense>;
+  if (route === 'paintball') return <Suspense fallback={<LoadingRoute text={tr('preparando la arena...', 'getting the arena ready...')} />}><PaintballPage /></Suspense>;
+  if (route === 'arena') return <Suspense fallback={<LoadingRoute text={tr('abriendo la arena...', 'opening the arena...')} />}><ArenaPage /></Suspense>;
   if (route === 'royale') return <Suspense fallback={<LoadingRoute text={tr('preparando la arena...', 'getting the arena ready...')} />}><RoyalePage /></Suspense>;
 
   /* modo prueba: la isla funciona sin cuenta y se guarda solo en este dispositivo */

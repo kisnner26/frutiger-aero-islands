@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { routeHref } from '../../app/useHashRoute';
 import { randomAvatar, type AvatarSpec } from '../../avatar/model';
 import { avatarStore } from '../../avatar/store';
 import { sfx } from '../../audio/sfx';
@@ -558,7 +557,7 @@ export function RoyalePage() {
           <div className="royale__actions">
             <button type="button" className="vista-button vista-button--primary" onClick={startSolo}>{tr('jugar contra 11 bots', 'play vs 11 bots')}</button>
             <button type="button" className="vista-button" onClick={() => setHelp((v) => !v)} aria-expanded={help}>{tr('cómo se juega', 'how to play')}</button>
-            <a className="landing__text-link" href={routeHref('inicio')}>{tr('volver', 'back')}</a>
+            <a className="landing__text-link" href="#/arena">{tr('‹ aero arena', '‹ aero arena')}</a>
           </div>
           <div className="royale__online">
             <strong>{tr('sala en línea con amigos', 'online room with friends')}</strong>
@@ -578,7 +577,7 @@ export function RoyalePage() {
             </ul>
           )}
           <ProgressCard />
-          <a className="landing__text-link" href="#/blob">{tr('probar otro modo: aero blob', 'try another mode: aero blob')}</a>
+          <a className="landing__text-link" href="#/paintball">{tr('probar otro modo: paintball royale', 'try another mode: paintball royale')}</a>
         </div>
       </main>
     );

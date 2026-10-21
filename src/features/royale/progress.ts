@@ -7,7 +7,7 @@ import { tr } from '../../i18n';
 
 const KEY = 'frutiger-aero-islands:progreso-batallas';
 
-export type Mode = 'royale' | 'blob';
+export type Mode = 'royale' | 'blob' | 'paintball';
 
 /** lo que cada partida aporta al progreso. */
 export interface MatchSummary {

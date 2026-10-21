@@ -197,8 +197,8 @@ export function BattleResult({ outcome, onAgain, onMenu }: { outcome: Outcome; o
         </section>
 
         <ul className="br__chips">
-          {s.mode === 'royale' ? <li><b>{s.kills}</b>{tr('bajas', 'pops')}</li> : <li><b>{s.mass}</b>{tr('masa', 'mass')}</li>}
-          {s.mode === 'royale' ? <li><b>x{s.bestCombo}</b>{tr('mejor combo', 'best combo')}</li> : <li><b>{s.ate}</b>{tr('comidas', 'eaten')}</li>}
+          {s.mode !== 'blob' ? <li><b>{s.kills}</b>{tr('bajas', 'pops')}</li> : <li><b>{s.mass}</b>{tr('masa', 'mass')}</li>}
+          {s.mode === 'royale' ? <li><b>x{s.bestCombo}</b>{tr('mejor combo', 'best combo')}</li> : s.mode === 'blob' ? <li><b>{s.ate}</b>{tr('comidas', 'eaten')}</li> : <li><b>{Math.round(s.seconds)}s</b>{tr('duración', 'duration')}</li>}
           <li><b>{mm}:{ss}</b>{tr('tiempo', 'time')}</li>
           <li><b>{s.powers}</b>{tr('poderes', 'pickups')}</li>
         </ul>

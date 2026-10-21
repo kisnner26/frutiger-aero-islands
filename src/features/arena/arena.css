@@ -1,0 +1,27 @@
+.arena { align-items: flex-start; overflow-y: auto; padding: 24px 14px 80px; }
+.arena__wrap { width: min(980px, 100%); display: grid; gap: 18px; margin: 0 auto; }
+.arena__head { display: flex; align-items: center; gap: 16px; color: #fff; text-shadow: 0 2px 10px rgba(0,50,110,.55); }
+.arena__head h1 { margin: 0; font-size: clamp(34px, 7vw, 54px); letter-spacing: -.04em; line-height: 1; }
+.arena__head .royale__lead { margin: 6px 0 0; max-width: 52ch; }
+.arena__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+.arena__card { position: relative; display: grid; gap: 8px; padding: 18px 18px 16px; overflow: hidden; border: 1px solid rgba(255,255,255,.9); border-radius: 24px; color: #06406f; text-decoration: none; background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(190,230,248,.9)); box-shadow: inset 0 1px #fff, 0 16px 34px rgba(0,50,110,.3); transition: transform .18s, box-shadow .18s; }
+.arena__card:hover, .arena__card:focus-visible { transform: translateY(-4px); box-shadow: inset 0 1px #fff, 0 22px 40px rgba(0,50,110,.4); }
+.arena__art { position: relative; height: 92px; border-radius: 16px; overflow: hidden; margin: -4px -4px 4px; }
+.arena__art i { position: absolute; border-radius: 50%; }
+.arena__card--paint .arena__art { background: linear-gradient(180deg, #8fd8ff, #b8f0a0 60%, #7cc84a); }
+.arena__card--paint .arena__art i:nth-child(1) { left: 14%; top: 30%; width: 44px; height: 44px; background: radial-gradient(circle at 35% 30%, #ffd0e8, #ff4aa8 60%); }
+.arena__card--paint .arena__art i:nth-child(2) { left: 46%; top: 12%; width: 30px; height: 30px; background: radial-gradient(circle at 35% 30%, #d6ffd8, #3ad65a 60%); }
+.arena__card--paint .arena__art i:nth-child(3) { right: 12%; top: 38%; width: 52px; height: 52px; background: radial-gradient(circle at 35% 30%, #d8ecff, #3a8aff 60%); }
+.arena__card--orbes .arena__art { background: linear-gradient(180deg, #7fdcff, #1d8ad0); }
+.arena__card--orbes .arena__art i { background: radial-gradient(circle at 34% 28%, #fff, #bfeaff 40%, rgba(255,255,255,.2)); border: 2px solid rgba(255,255,255,.85); }
+.arena__card--orbes .arena__art i:nth-child(1) { left: 12%; top: 22%; width: 50px; height: 50px; } .arena__card--orbes .arena__art i:nth-child(2) { left: 44%; top: 40%; width: 34px; height: 34px; } .arena__card--orbes .arena__art i:nth-child(3) { right: 10%; top: 14%; width: 44px; height: 44px; }
+.arena__card--blob .arena__art { background: linear-gradient(180deg, #b6ffe0, #3ad0a8); }
+.arena__card--blob .arena__art i { background: radial-gradient(circle at 34% 28%, #fff, #8fffcf 45%, #1fa87a); opacity: .9; }
+.arena__card--blob .arena__art i:nth-child(1) { left: 10%; top: 18%; width: 62px; height: 62px; } .arena__card--blob .arena__art i:nth-child(2) { left: 50%; top: 46%; width: 24px; height: 24px; } .arena__card--blob .arena__art i:nth-child(3) { right: 14%; top: 12%; width: 36px; height: 36px; }
+.arena__tag { color: #2a7ba8; font-size: 11px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+.arena__card strong { font-size: 24px; letter-spacing: -.03em; }
+.arena__card p { margin: 0; font-size: 13px; font-weight: 600; line-height: 1.45; color: #32627f; }
+.arena__card ul { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 0; padding: 0; }
+.arena__card li { padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,.8); border: 1px solid rgba(104,174,207,.45); font-size: 11px; font-weight: 800; color: #0a5a90; }
+.arena__go { margin-top: 4px; justify-self: start; padding: 8px 20px; border-radius: 999px; background: linear-gradient(180deg, #8fe2ff, #1d9ad8); color: #fff; font-weight: 900; font-size: 14px; border: 1px solid #fff; box-shadow: inset 0 1px rgba(255,255,255,.7); }
+.arena__foot { margin: 0; text-align: center; }
