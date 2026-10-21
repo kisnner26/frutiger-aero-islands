@@ -7,12 +7,13 @@ import { avatarDataUrl, type AvatarCrop } from '../../avatar/svg';
 import { pushAvatar } from '../../persistence/avatar';
 import { sfx } from '../../audio/sfx';
 import { AeroWindow } from '../../ui/AeroWindow';
+import { tr } from '../../i18n';
 
 type Tab = 'cara' | 'pelo' | 'ropa' | 'extras';
 const TABS: Array<{ id: Tab; label: string }> = [
-  { id: 'cara', label: 'cara' },
-  { id: 'pelo', label: 'pelo' },
-  { id: 'ropa', label: 'ropa' },
+  { id: 'cara', label: tr('cara', 'face') },
+  { id: 'pelo', label: tr('pelo', 'hair') },
+  { id: 'ropa', label: tr('ropa', 'clothes') },
   { id: 'extras', label: 'extras' },
 ];
 
@@ -76,7 +77,7 @@ export function AvatarEditor() {
     avatarStore.set(draft);
     sfx.coin();
     const err = await pushAvatar();
-    setNote(err ? { tone: 'error', text: `guardado en este dispositivo; no se pudo guardar en tu cuenta: ${err}` } : { tone: 'ok', text: 'personaje guardado.' });
+    setNote(err ? { tone: 'error', text: `${tr('guardado en este dispositivo; no se pudo guardar en tu cuenta', 'saved on this device; could not save to your account')}: ${err}` } : { tone: 'ok', text: tr('personaje guardado.', 'character saved.') });
   };
 
   const back = () => {
@@ -85,24 +86,24 @@ export function AvatarEditor() {
   };
 
   return (
-    <AeroWindow className="win-avatar" title="mi personaje" icon={<span className="mini-orb mini-orb--green" />}>
+    <AeroWindow className="win-avatar" title={tr('mi personaje', 'my character')} icon={<span className="mini-orb mini-orb--green" />}>
       <div className="ae">
-        <section className="ae__preview" aria-label="vista previa">
+        <section className="ae__preview" aria-label={tr('vista previa', 'preview')}>
           <div className="ae__stage">
-            <AvatarImg spec={draft} crop="completo" className="ae__figure" alt="vista previa de tu personaje" />
+            <AvatarImg spec={draft} crop="completo" className="ae__figure" alt={tr('vista previa de tu personaje', 'preview of your character')} />
           </div>
           <div className="ae__quick">
             <button type="button" className="vista-button" onClick={() => setDraft(randomAvatar())}>
-              al azar
+              {tr('al azar', 'randomize')}
             </button>
             <button type="button" className="vista-button" onClick={() => setDraft(dirty ? saved : DEFAULT_AVATAR)} disabled={!dirty && sameAvatar(draft, DEFAULT_AVATAR)}>
-              {dirty ? 'deshacer cambios' : 'personaje inicial'}
+              {dirty ? tr('deshacer cambios', 'undo changes') : tr('personaje inicial', 'default character')}
             </button>
           </div>
         </section>
 
         <section className="ae__panel">
-          <div className="ae__tabs" role="tablist" aria-label="categorías">
+          <div className="ae__tabs" role="tablist" aria-label={tr('categorías', 'categories')}>
             {TABS.map((t) => (
               <button key={t.id} type="button" role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'is-active' : ''} onClick={() => setTab(t.id)}>
                 {t.label}
@@ -113,44 +114,44 @@ export function AvatarEditor() {
           <div className="ae__options" role="tabpanel">
             {tab === 'cara' && (
               <>
-                <Styles label="forma de la cara" field="head" crop="cabeza" draft={draft} onPick={pickStyle} />
-                <Swatches label="tono de piel" field="skin" draft={draft} onPick={pickColor} />
-                <Styles label="ojos" field="eyes" crop="cabeza" draft={draft} onPick={pickStyle} />
-                <Swatches label="color de ojos" field="eyeColor" draft={draft} onPick={pickColor} />
-                <Styles label="cejas" field="brows" crop="cabeza" draft={draft} onPick={pickStyle} />
-                <Styles label="nariz" field="nose" crop="cabeza" draft={draft} onPick={pickStyle} />
-                <Styles label="boca" field="mouth" crop="cabeza" draft={draft} onPick={pickStyle} />
-                <Styles label="pecas" field="freckles" crop="cabeza" draft={draft} onPick={pickStyle} />
-                <Styles label="vello facial" field="beard" crop="cabeza" draft={draft} onPick={pickStyle} />
+                <Styles label={tr('forma de la cara', 'face shape')} field="head" crop="cabeza" draft={draft} onPick={pickStyle} />
+                <Swatches label={tr('tono de piel', 'skin tone')} field="skin" draft={draft} onPick={pickColor} />
+                <Styles label={tr('ojos', 'eyes')} field="eyes" crop="cabeza" draft={draft} onPick={pickStyle} />
+                <Swatches label={tr('color de ojos', 'eye color')} field="eyeColor" draft={draft} onPick={pickColor} />
+                <Styles label={tr('cejas', 'eyebrows')} field="brows" crop="cabeza" draft={draft} onPick={pickStyle} />
+                <Styles label={tr('nariz', 'nose')} field="nose" crop="cabeza" draft={draft} onPick={pickStyle} />
+                <Styles label={tr('boca', 'mouth')} field="mouth" crop="cabeza" draft={draft} onPick={pickStyle} />
+                <Styles label={tr('pecas', 'freckles')} field="freckles" crop="cabeza" draft={draft} onPick={pickStyle} />
+                <Styles label={tr('vello facial', 'facial hair')} field="beard" crop="cabeza" draft={draft} onPick={pickStyle} />
               </>
             )}
             {tab === 'pelo' && (
               <>
-                <Styles label="peinado" field="hair" crop="cabeza" draft={draft} onPick={pickStyle} />
-                <Swatches label="color de pelo" field="hairColor" draft={draft} onPick={pickColor} />
+                <Styles label={tr('peinado', 'hairstyle')} field="hair" crop="cabeza" draft={draft} onPick={pickStyle} />
+                <Swatches label={tr('color de pelo', 'hair color')} field="hairColor" draft={draft} onPick={pickColor} />
               </>
             )}
             {tab === 'ropa' && (
               <>
-                <Styles label="parte de arriba" field="top" crop="completo" draft={draft} onPick={pickStyle} />
-                <Swatches label="color de arriba" field="topColor" draft={draft} onPick={pickColor} />
+                <Styles label={tr('parte de arriba', 'top')} field="top" crop="completo" draft={draft} onPick={pickStyle} />
+                <Swatches label={tr('color de arriba', 'top color')} field="topColor" draft={draft} onPick={pickColor} />
                 {draft.top === 3 ? (
-                  <p className="ae__hint">el vestido cubre la parte de abajo.</p>
+                  <p className="ae__hint">{tr('el vestido cubre la parte de abajo.', 'the dress covers the bottom.')}</p>
                 ) : (
                   <>
-                    <Styles label="parte de abajo" field="bottom" crop="completo" draft={draft} onPick={pickStyle} />
-                    <Swatches label="color de abajo" field="bottomColor" draft={draft} onPick={pickColor} />
+                    <Styles label={tr('parte de abajo', 'bottom')} field="bottom" crop="completo" draft={draft} onPick={pickStyle} />
+                    <Swatches label={tr('color de abajo', 'bottom color')} field="bottomColor" draft={draft} onPick={pickColor} />
                   </>
                 )}
-                <Styles label="calzado" field="shoes" crop="completo" draft={draft} onPick={pickStyle} />
-                <Swatches label="color del calzado" field="shoesColor" draft={draft} onPick={pickColor} />
+                <Styles label={tr('calzado', 'footwear')} field="shoes" crop="completo" draft={draft} onPick={pickStyle} />
+                <Swatches label={tr('color del calzado', 'footwear color')} field="shoesColor" draft={draft} onPick={pickColor} />
               </>
             )}
             {tab === 'extras' && (
               <>
-                <Styles label="accesorio" field="accessory" crop="cabeza" draft={draft} onPick={pickStyle} />
-                {draft.accessory !== 0 && <Swatches label="color del accesorio" field="accessoryColor" draft={draft} onPick={pickColor} />}
-                <Styles label="complexión" field="body" crop="completo" draft={draft} onPick={pickStyle} />
+                <Styles label={tr('accesorio', 'accessory')} field="accessory" crop="cabeza" draft={draft} onPick={pickStyle} />
+                {draft.accessory !== 0 && <Swatches label={tr('color del accesorio', 'accessory color')} field="accessoryColor" draft={draft} onPick={pickColor} />}
+                <Styles label={tr('complexión', 'build')} field="body" crop="completo" draft={draft} onPick={pickStyle} />
               </>
             )}
           </div>
@@ -158,25 +159,25 @@ export function AvatarEditor() {
 
         <footer className="ae__footer">
           <p className={`ae__note${note ? ` ae__note--${note.tone}` : ''}`} role="status" aria-live="polite">
-            {note ? note.text : dirty ? 'tienes cambios sin guardar.' : 'tu personaje está guardado.'}
+            {note ? note.text : dirty ? tr('tienes cambios sin guardar.', 'you have unsaved changes.') : tr('tu personaje está guardado.', 'your character is saved.')}
           </p>
           {leaving ? (
-            <div className="ae__confirm" role="alertdialog" aria-label="descartar cambios">
-              <span>¿salir sin guardar?</span>
+            <div className="ae__confirm" role="alertdialog" aria-label={tr('descartar cambios', 'discard changes')}>
+              <span>{tr('¿salir sin guardar?', 'leave without saving?')}</span>
               <button type="button" className="vista-button" onClick={() => (window.location.hash = routeHref('inicio'))}>
-                salir
+                {tr('salir', 'leave')}
               </button>
               <button type="button" className="vista-button vista-button--primary" onClick={() => setLeaving(false)}>
-                seguir editando
+                {tr('seguir editando', 'keep editing')}
               </button>
             </div>
           ) : (
             <div className="ae__actions">
               <button type="button" className="vista-button" onClick={back}>
-                volver
+                {tr('volver', 'back')}
               </button>
               <button type="button" className="vista-button vista-button--primary" disabled={!dirty} onClick={() => void save()}>
-                guardar personaje
+                {tr('guardar personaje', 'save character')}
               </button>
             </div>
           )}
