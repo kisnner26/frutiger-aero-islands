@@ -1,5 +1,9 @@
 # frutiger aero islands
 
+![una isla frutiger aero con 55 objetos](docs/renders/render-isla-1.jpg)
+
+![detalle de la isla](docs/renders/render-isla-detalle.jpg)
+
 videojuego de decoración de islas en pleno frutiger aero: lago con reflejos, burbujas de cristal, peces, ventanas estilo windows vista y fichas estilo wii u. estado: beta jugable con cuentas. se juega en https://kisnner26.github.io/frutiger-aero-islands/ y hay que crear una cuenta gratuita (el registro está en la portada); el archipiélago y las islas de otros jugadores viven en supabase.
 
 ## qué hay hoy
