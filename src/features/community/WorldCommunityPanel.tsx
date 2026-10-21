@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { contributeToExpedition, listExpeditions, myExpeditionContributions, type Expedition } from '../../persistence/community';
 import { currentSession, readableSupabaseError } from '../../persistence/supabase';
 import './social.css';
+import { tr } from '../../i18n';
 
 const CAP = 100;
 
@@ -11,7 +12,7 @@ export function WorldCommunityPanel() {
   const [signed, setSigned] = useState(false);
   const [message, setMessage] = useState('');
   useEffect(() => {
-    listExpeditions().then(setItems).catch(() => { setItems([]); setMessage('las expediciones estarán disponibles al conectar la comunidad.'); });
+    listExpeditions().then(setItems).catch(() => { setItems([]); setMessage(tr('las expediciones estarán disponibles al conectar la comunidad.', 'expeditions will be available when the community is connected.')); });
     void currentSession().then((s) => { setSigned(Boolean(s)); if (s) void myExpeditionContributions().then(setMine); });
   }, []);
   const contribute = async (item: Expedition) => {

@@ -1,3 +1,4 @@
+import { tr } from '../i18n';
 export interface AeroForecast {
   label: string;
   detail: string;
@@ -5,10 +6,10 @@ export interface AeroForecast {
 }
 
 const signals: readonly AeroForecast[] = [
-  { label: 'brisa de burbujas', detail: 'corriente suave para visitas', tone: 'sun' },
-  { label: 'marea luminosa', detail: 'ideal para navegar rutas', tone: 'wave' },
-  { label: 'nubes de cristal', detail: 'el cielo guarda destellos', tone: 'cloud' },
-  { label: 'arco de agua', detail: 'señal favorable en el archipiélago', tone: 'rainbow' },
+  { label: tr('brisa de burbujas', 'bubble breeze'), detail: tr('corriente suave para visitas', 'gentle current for visits'), tone: 'sun' },
+  { label: tr('marea luminosa', 'glowing tide'), detail: tr('ideal para navegar rutas', 'ideal for sailing routes'), tone: 'wave' },
+  { label: tr('nubes de cristal', 'glass clouds'), detail: tr('el cielo guarda destellos', 'the sky holds sparkles'), tone: 'cloud' },
+  { label: tr('arco de agua', 'water arc'), detail: tr('señal favorable en el archipiélago', 'favorable signal across the archipelago'), tone: 'rainbow' },
 ];
 
 /** pronóstico estético diario, determinista y sin afirmar clima real. */

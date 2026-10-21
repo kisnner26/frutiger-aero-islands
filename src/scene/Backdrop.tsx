@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { glassBubble } from '../art/aero';
 import { renderBackdrop, renderIslandComposite } from '../art/scenery';
+import { tr } from '../i18n';
 
 /** cielo y mar dibujados a lápiz; se regeneran al cambiar el tamaño de la ventana. */
 export function Backdrop({ withIsland = true }: { withIsland?: boolean }) {
@@ -59,7 +60,7 @@ function IslandArt() {
     };
   }, []);
   if (failed) return null;
-  return <canvas ref={ref} className="scene__island" role="img" aria-label="dibujo a lápiz de una isla con palmeras, un pabellón de vidrio, una fuente y cristales" />;
+  return <canvas ref={ref} className="scene__island" role="img" aria-label={tr('dibujo a lápiz de una isla con palmeras, un pabellón de vidrio, una fuente y cristales', 'pencil drawing of an island with palm trees, a glass pavilion, a fountain and crystals')} />;
 }
 
 const BUBBLES: Array<{ x: string; y: string; s: string; d: string; seed: number }> = [

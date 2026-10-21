@@ -7,6 +7,7 @@ import { CENTER, landRadii } from '../../domain/geometry';
 import type { PlacedObject } from '../../domain/island';
 import { dirOf, rightOf, startWalker, stepWalker, toCamera, type Walker } from './walker';
 import './explore.css';
+import { tr } from '../../i18n';
 
 interface Props {
   objects: readonly PlacedObject[];
@@ -361,7 +362,7 @@ export function ExploreMode({ objects, level, avatar, onExit }: Props) {
   };
 
   return (
-    <div className="explore" role="application" aria-label="exploración a pie">
+    <div className="explore" role="application" aria-label={tr('exploración a pie', 'exploring on foot')}>
       <canvas ref={canvasRef} className="explore__canvas" />
       <div className="explore__bar">
         <strong>{view === 'primera' ? 'primera persona' : 'tercera persona'}</strong>

@@ -14,7 +14,7 @@ export function AeroLoader({ text, detail = tr('sincronizando agua, cielo y recu
   return (
     <section className={`aero-loader aero-loader--${variant}`} role="status" aria-live="polite" aria-label={text}>
       <div className="aero-loader__orb" aria-hidden="true"><i /><b /><span className="aero-loader__ring aero-loader__ring--one" /><span className="aero-loader__ring aero-loader__ring--two" /></div>
-      <div className="aero-loader__copy"><p>señal aero</p><strong>{text}</strong><small>{detail}</small></div>
+      <div className="aero-loader__copy"><p>{tr('señal aero', 'aero signal')}</p><strong>{text}</strong><small>{detail}</small></div>
       <div className="aero-loader__progress" aria-hidden="true"><i /></div>
     </section>
   );

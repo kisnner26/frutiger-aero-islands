@@ -1,5 +1,6 @@
 import { cached } from './fastcache';
 import { supabase } from './supabase';
+import { tr } from '../i18n';
 
 export interface IslandSocialStatus { likes: number; favorites: number; isLiked: boolean; isFavorited: boolean; }
 export interface WorldPresence { islandId: string; onlineCount: number; }
@@ -7,7 +8,7 @@ export interface Expedition { id: string; title: string; kind: 'faro' | 'arrecif
 export interface ClubPreview { id: string; slug: string; name: string; motto: string; badge: 'orb' | 'wave' | 'palm' | 'crystal'; }
 export interface Gadget { id: string; name: string; kind: 'camera' | 'music' | 'laptop' | 'watch' | 'phone'; description: string; unlockLevel: number; }
 
-function requireClient() { if (!supabase) throw new Error('supabase no está configurado'); return supabase; }
+function requireClient() { if (!supabase) throw new Error(tr('supabase no está configurado', 'supabase is not configured')); return supabase; }
 
 export async function islandSocialStatus(islandId: string): Promise<IslandSocialStatus> {
   const { data, error } = await requireClient().rpc('island_social_status', { p_island_id: islandId });
