@@ -1,0 +1,590 @@
+{
+  "version": 1,
+  "historyId": "262e6427-0275-4cc6-9276-a43f098b5520",
+  "currentRevision": "2b9bf87a-102a-4e69-a4c3-ec06988d93ac",
+  "pendingChanges": false,
+  "files": {
+    "AGENTS.md": {
+      "hash": "1d4f0c8ca2507b94fd7c9df709fff01416adbd51a0f922b9d6ed2f40129147d5",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/1d/1d4f0c8ca2507b94fd7c9df709fff01416adbd51a0f922b9d6ed2f40129147d5"
+    },
+    "BRIEF.md": {
+      "hash": "665071e850b95d101abc29759c13457c126381eac464f64dce1b8d9a4cca6392",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/66/665071e850b95d101abc29759c13457c126381eac464f64dce1b8d9a4cca6392"
+    },
+    "CLAUDE.md": {
+      "hash": "1d4f0c8ca2507b94fd7c9df709fff01416adbd51a0f922b9d6ed2f40129147d5",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/1d/1d4f0c8ca2507b94fd7c9df709fff01416adbd51a0f922b9d6ed2f40129147d5"
+    },
+    "capture/extracted/tokens.json": {
+      "hash": "d887a419700729eb0c6f4bcd8bd52e3827e1a8ac08278a4bd3a99ee64eb70146",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/d8/d887a419700729eb0c6f4bcd8bd52e3827e1a8ac08278a4bd3a99ee64eb70146"
+    },
+    "capture/extracted/visible-text.txt": {
+      "hash": "3135ce2303071bd0353016108a0bb46439bd7a2b8e966df9acdfa8cd753dc19e",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/31/3135ce2303071bd0353016108a0bb46439bd7a2b8e966df9acdfa8cd753dc19e"
+    },
+    "hyperframes.json": {
+      "hash": "9313260261b6e431830877ee35083331270bc6b9a32d50650abe2bd58bdf558d",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/93/9313260261b6e431830877ee35083331270bc6b9a32d50650abe2bd58bdf558d"
+    },
+    "index.html": {
+      "hash": "d015d4f3d1f6b909f7f89e76eb11e8328b895490b8cea53fe789ad3ceefab5e7",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/d0/d015d4f3d1f6b909f7f89e76eb11e8328b895490b8cea53fe789ad3ceefab5e7"
+    },
+    "meta.json": {
+      "hash": "0b7d6c3d99dd296e4161f0f7f5daaedbcb80d81eabe035ae00bba33e7185c071",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/0b/0b7d6c3d99dd296e4161f0f7f5daaedbcb80d81eabe035ae00bba33e7185c071"
+    },
+    "package.json": {
+      "hash": "25fab79de4b9d9d7527c23eba1f18620bf85746ec70e650553adec903937428b",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/25/25fab79de4b9d9d7527c23eba1f18620bf85746ec70e650553adec903937428b"
+    },
+    "compositions/frames/01-circuito.html": {
+      "hash": "7f45620838f263be8070eeceeebcede9539ab61e6af7ce935100a383d1a96167",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/7f/7f45620838f263be8070eeceeebcede9539ab61e6af7ce935100a383d1a96167"
+    },
+    "compositions/frames/02-agua.html": {
+      "hash": "35c2201fb53af901cc37b921af4be41fb4c0db48023effc801464738da73d94d",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/35/35c2201fb53af901cc37b921af4be41fb4c0db48023effc801464738da73d94d"
+    },
+    "compositions/frames/03-nefrona.html": {
+      "hash": "bb82300701212996a1eb83d07f373b02df0b51922042bb8941afc66cfa4e24fa",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/bb/bb82300701212996a1eb83d07f373b02df0b51922042bb8941afc66cfa4e24fa"
+    },
+    "compositions/frames/04-miccion.html": {
+      "hash": "21680e344a37632c14af90c64695385c2b65c3d3cf4ff8b9c37d90bed67edd1e",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/21/21680e344a37632c14af90c64695385c2b65c3d3cf4ff8b9c37d90bed67edd1e"
+    },
+    "compositions/frames/05-orina.html": {
+      "hash": "e259630d8f69780399ac3d4ebdee1a196b897c1bb02107724e50ad4667f4094a",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/e2/e259630d8f69780399ac3d4ebdee1a196b897c1bb02107724e50ad4667f4094a"
+    },
+    "compositions/frames/06-calculos-infeccion.html": {
+      "hash": "71b8312ff02e8cb0c981910ceee817c09c2430c8828d1f8857f2e04c8df9717d",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/71/71b8312ff02e8cb0c981910ceee817c09c2430c8828d1f8857f2e04c8df9717d"
+    },
+    "frame.md": {
+      "hash": "2cbbfaa298e6e5b3ce6fba456e7e59e6b1311d1b272fd3f4805af2ba9e688972",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/2c/2cbbfaa298e6e5b3ce6fba456e7e59e6b1311d1b272fd3f4805af2ba9e688972"
+    },
+    "REFERENCES.md": {
+      "hash": "bbe6b223435a1b8cfb393765fc8dcc9a958ee43f7df5857ee7bc437529394879",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/bb/bbe6b223435a1b8cfb393765fc8dcc9a958ee43f7df5857ee7bc437529394879"
+    },
+    "STORYBOARD.md": {
+      "hash": "79c6320473fbbac5a781ace7893b29991e540af77a3148100d323db62e23d5ca",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/79/79c6320473fbbac5a781ace7893b29991e540af77a3148100d323db62e23d5ca"
+    },
+    "assets/images/urinary-system-realistic.png": {
+      "hash": "f2932f2489f144db216a9c0c20e649ba94d278d18ae187d22d477e690a797316",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/f2/f2932f2489f144db216a9c0c20e649ba94d278d18ae187d22d477e690a797316"
+    }
+  },
+  "revisions": {
+    "980ddd80-5193-4d42-8ff8-8711b02a3fc2": {
+      "actor": {
+        "kind": "agent",
+        "name": "codex"
+      },
+      "label": "crear explainer médico del sistema urinario",
+      "startedAt": 1792556689682,
+      "endedAt": 1792556964415.5017,
+      "files": {
+        "compositions/frames/01-circuito.html": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/db/db63365e089cdda63db9f54ba372de526b1daab11faeae969d2d944ce2d3e946"
+        },
+        "compositions/frames/02-agua.html": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/90/90504456111d0bc24238f6bea4dbe39b92f2183c0db27d680fb558d835fe93d0"
+        },
+        "compositions/frames/03-nefrona.html": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/27/27b8bb9bd52e93c5cb351fb63370c4c5502d8e207c5f337b28d5fa442b755e30"
+        },
+        "compositions/frames/04-miccion.html": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/d5/d55e69cc2be1ee1b6b531196f6a55c147964ced9aae6256d6dcc50e05bc47651"
+        },
+        "compositions/frames/05-orina.html": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/58/581a7ba60f8d23f6a9f81090c9089fb2411b1cb6dd1ce8f349f757bc48550be2"
+        },
+        "compositions/frames/06-calculos-infeccion.html": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/e9/e9ed28644cc14bef9385df7d099fd40adf10c3025d6467e34b003384cdc08d1f"
+        },
+        "frame.md": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/2c/2cbbfaa298e6e5b3ce6fba456e7e59e6b1311d1b272fd3f4805af2ba9e688972"
+        },
+        "index.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/1b/1b8a7122c4208d02b152b6767bef6cac78f54e86f04895f00326e0e94cbfda17",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/7c/7cb70cad66794f728b4988579cbe423b2490af3bff42c50fe8a34fb219c2cb6e"
+        },
+        "REFERENCES.md": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/bb/bbe6b223435a1b8cfb393765fc8dcc9a958ee43f7df5857ee7bc437529394879"
+        },
+        "STORYBOARD.md": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/79/79c6320473fbbac5a781ace7893b29991e540af77a3148100d323db62e23d5ca"
+        }
+      }
+    },
+    "02e42dc6-c102-49e7-9f20-a6b9f8470aa6": {
+      "actor": {
+        "kind": "agent",
+        "name": "codex"
+      },
+      "label": "crear explainer médico del sistema urinario",
+      "startedAt": 1792556689682,
+      "endedAt": 1792557004114.352,
+      "files": {
+        "compositions/frames/03-nefrona.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/27/27b8bb9bd52e93c5cb351fb63370c4c5502d8e207c5f337b28d5fa442b755e30",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/7c/7c33026f216fa89d08b17313e3301a0dcf6b409ec4d5361d4addc2bbd4e94613"
+        }
+      }
+    },
+    "19665093-f43e-474b-ab1c-302772ea3272": {
+      "actor": {
+        "kind": "agent",
+        "name": "codex"
+      },
+      "label": "crear explainer médico del sistema urinario",
+      "startedAt": 1792556689682,
+      "endedAt": 1792557111992.9607,
+      "files": {
+        "assets/images/urinary-system-realistic.png": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/f2/f2932f2489f144db216a9c0c20e649ba94d278d18ae187d22d477e690a797316"
+        },
+        "compositions/frames/01-circuito.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/db/db63365e089cdda63db9f54ba372de526b1daab11faeae969d2d944ce2d3e946",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/a3/a31cf2c0e475f210de6f044baa14de1d7c9d47101d44b194295ed0614003fdcb"
+        },
+        "compositions/frames/03-nefrona.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/7c/7c33026f216fa89d08b17313e3301a0dcf6b409ec4d5361d4addc2bbd4e94613",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/92/92b7133c126511c4fd28a80dccef72ed2ce2f37c39649606dadabc4934f16b3a"
+        }
+      }
+    },
+    "2b9bf87a-102a-4e69-a4c3-ec06988d93ac": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792557154419,
+      "endedAt": 1792557154448,
+      "files": {
+        "compositions/frames/01-circuito.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/a3/a31cf2c0e475f210de6f044baa14de1d7c9d47101d44b194295ed0614003fdcb",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/7f/7f45620838f263be8070eeceeebcede9539ab61e6af7ce935100a383d1a96167"
+        },
+        "compositions/frames/02-agua.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/90/90504456111d0bc24238f6bea4dbe39b92f2183c0db27d680fb558d835fe93d0",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/35/35c2201fb53af901cc37b921af4be41fb4c0db48023effc801464738da73d94d"
+        },
+        "compositions/frames/03-nefrona.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/92/92b7133c126511c4fd28a80dccef72ed2ce2f37c39649606dadabc4934f16b3a",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/bb/bb82300701212996a1eb83d07f373b02df0b51922042bb8941afc66cfa4e24fa"
+        },
+        "compositions/frames/04-miccion.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/d5/d55e69cc2be1ee1b6b531196f6a55c147964ced9aae6256d6dcc50e05bc47651",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/21/21680e344a37632c14af90c64695385c2b65c3d3cf4ff8b9c37d90bed67edd1e"
+        },
+        "compositions/frames/05-orina.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/58/581a7ba60f8d23f6a9f81090c9089fb2411b1cb6dd1ce8f349f757bc48550be2",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/e2/e259630d8f69780399ac3d4ebdee1a196b897c1bb02107724e50ad4667f4094a"
+        },
+        "compositions/frames/06-calculos-infeccion.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/e9/e9ed28644cc14bef9385df7d099fd40adf10c3025d6467e34b003384cdc08d1f",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/71/71b8312ff02e8cb0c981910ceee817c09c2430c8828d1f8857f2e04c8df9717d"
+        },
+        "index.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/7c/7cb70cad66794f728b4988579cbe423b2490af3bff42c50fe8a34fb219c2cb6e",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/d0/d015d4f3d1f6b909f7f89e76eb11e8328b895490b8cea53fe789ad3ceefab5e7"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": "19665093-f43e-474b-ab1c-302772ea3272",
+      "id": "fa409caa-a001-4aa4-9fb6-68c971ed6605"
+    },
+    "revisions": {
+      "980ddd80-5193-4d42-8ff8-8711b02a3fc2": [
+        {
+          "id": "b1739cbb-6623-46b5-aa23-657344fd1a6f",
+          "scope": "project",
+          "report": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/checks/b1739cbb-6623-46b5-aa23-657344fd1a6f.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 13,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 3000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": true,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1792556987156,
+          "contentHash": "d1020ddb51ffc303123f6cf5ff2e4655ab2d7792ce974e89aeb4c946811e1ecb",
+          "revision": "980ddd80-5193-4d42-8ff8-8711b02a3fc2",
+          "inputFingerprint": "db922845435abb3ac90ca5085f02dd6505897d7376be804b193594283fefd222",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ],
+      "02e42dc6-c102-49e7-9f20-a6b9f8470aa6": [
+        {
+          "id": "28ba2dfa-dcb2-4e58-851c-44b2263aee3f",
+          "scope": "project",
+          "report": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/checks/28ba2dfa-dcb2-4e58-851c-44b2263aee3f.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 13,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 3000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1792557014947,
+          "contentHash": "b48e1a55b0bfc8498a1afc0a7bf53aa4fc5332f0e9b598c21158a158a31783ea",
+          "revision": "02e42dc6-c102-49e7-9f20-a6b9f8470aa6",
+          "inputFingerprint": "c47d06e2f85cf07245fd3b39023553b5275703e08a8f1c02c02d5dd9ae3ddb43",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ],
+      "19665093-f43e-474b-ab1c-302772ea3272": [
+        {
+          "id": "fa409caa-a001-4aa4-9fb6-68c971ed6605",
+          "scope": "project",
+          "report": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/checks/fa409caa-a001-4aa4-9fb6-68c971ed6605.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 13,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 3000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1792557122473,
+          "contentHash": "0a8e81b5a1390ae11e862bb4229f3de84afd712f6b9edd10dabbcec63315ffab",
+          "revision": "19665093-f43e-474b-ab1c-302772ea3272",
+          "inputFingerprint": "84294b6c4cc58fa62b150081c618ce4ff1ad918b51dc59e207d5029e3456ebf1",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": []
+  },
+  "snapshots": {
+    "latest": {
+      "revision": "19665093-f43e-474b-ab1c-302772ea3272",
+      "id": "64330d3c-5b98-41e2-83dc-3d23fd614148-1"
+    },
+    "revisions": {
+      "980ddd80-5193-4d42-8ff8-8711b02a3fc2": [
+        {
+          "id": "b1739cbb-6623-46b5-aa23-657344fd1a6f-0",
+          "scope": "full",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/fff0a091-9e29-4cb9-976b-8e89ca925c06/frame-00-at-3.5s.png",
+          "time": 3.462,
+          "metadata": {
+            "checkId": "b1739cbb-6623-46b5-aa23-657344fd1a6f",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1792556987156,
+          "contentHash": "333c2984a30cff51b05313a641f6e53080ad23cd7bc271b0fa7b4bfa4af01543",
+          "revision": "980ddd80-5193-4d42-8ff8-8711b02a3fc2",
+          "inputFingerprint": "db922845435abb3ac90ca5085f02dd6505897d7376be804b193594283fefd222",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "b1739cbb-6623-46b5-aa23-657344fd1a6f-1",
+          "scope": "full",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/fff0a091-9e29-4cb9-976b-8e89ca925c06/frame-01-at-24.2s.png",
+          "time": 24.231,
+          "metadata": {
+            "checkId": "b1739cbb-6623-46b5-aa23-657344fd1a6f",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1792556987156,
+          "contentHash": "759c3c49ce8012589736083b230897b38c6ef5033daad66c23d8c58c748434e8",
+          "revision": "980ddd80-5193-4d42-8ff8-8711b02a3fc2",
+          "inputFingerprint": "db922845435abb3ac90ca5085f02dd6505897d7376be804b193594283fefd222",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "b1739cbb-6623-46b5-aa23-657344fd1a6f-2",
+          "scope": "full",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/fff0a091-9e29-4cb9-976b-8e89ca925c06/frame-02-at-45.0s.png",
+          "time": 45,
+          "metadata": {
+            "checkId": "b1739cbb-6623-46b5-aa23-657344fd1a6f",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1792556987156,
+          "contentHash": "da90488f0460484b3696dd1b835174604886e3bf3f845a9e12b8d4c6e7c96693",
+          "revision": "980ddd80-5193-4d42-8ff8-8711b02a3fc2",
+          "inputFingerprint": "db922845435abb3ac90ca5085f02dd6505897d7376be804b193594283fefd222",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "b1739cbb-6623-46b5-aa23-657344fd1a6f-3",
+          "scope": "full",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/fff0a091-9e29-4cb9-976b-8e89ca925c06/frame-03-at-65.8s.png",
+          "time": 65.769,
+          "metadata": {
+            "checkId": "b1739cbb-6623-46b5-aa23-657344fd1a6f",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1792556987156,
+          "contentHash": "6fdada6364b9bba332696b38cb1ab8b986c8ea1519dda82613e588fef20e0817",
+          "revision": "980ddd80-5193-4d42-8ff8-8711b02a3fc2",
+          "inputFingerprint": "db922845435abb3ac90ca5085f02dd6505897d7376be804b193594283fefd222",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "b1739cbb-6623-46b5-aa23-657344fd1a6f-4",
+          "scope": "full",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/fff0a091-9e29-4cb9-976b-8e89ca925c06/frame-04-at-86.5s.png",
+          "time": 86.538,
+          "metadata": {
+            "checkId": "b1739cbb-6623-46b5-aa23-657344fd1a6f",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1792556987156,
+          "contentHash": "d4fd9d7996c8b4cb38c46439b2f170821db30bcd503ca8824d6af9e0b98d202e",
+          "revision": "980ddd80-5193-4d42-8ff8-8711b02a3fc2",
+          "inputFingerprint": "db922845435abb3ac90ca5085f02dd6505897d7376be804b193594283fefd222",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ],
+      "02e42dc6-c102-49e7-9f20-a6b9f8470aa6": [
+        {
+          "scope": "full",
+          "id": "2a4ad0a2-5434-454b-bcad-8a077aac01bd-0",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/9cdcee5c-343f-4b55-ba8b-61e441c2ff75/frame-00-at-6s.png",
+          "time": 6,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792557019617,
+          "contentHash": "c0a7d699a5f74f6ff5ca5c5cd9d19511142ffd5a2a42708bd14bce4f5e10281b",
+          "revision": "02e42dc6-c102-49e7-9f20-a6b9f8470aa6",
+          "inputFingerprint": "c47d06e2f85cf07245fd3b39023553b5275703e08a8f1c02c02d5dd9ae3ddb43",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2a4ad0a2-5434-454b-bcad-8a077aac01bd-1",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/9cdcee5c-343f-4b55-ba8b-61e441c2ff75/frame-01-at-19s.png",
+          "time": 19,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792557019618,
+          "contentHash": "33998eee815d786585ab1406a54e8bb57058192e5343962f9802ddf6e51c0c7b",
+          "revision": "02e42dc6-c102-49e7-9f20-a6b9f8470aa6",
+          "inputFingerprint": "c47d06e2f85cf07245fd3b39023553b5275703e08a8f1c02c02d5dd9ae3ddb43",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2a4ad0a2-5434-454b-bcad-8a077aac01bd-2",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/9cdcee5c-343f-4b55-ba8b-61e441c2ff75/frame-02-at-35s.png",
+          "time": 35,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792557019618,
+          "contentHash": "8d71c826fde1ec085b8c673eba4f207f6428c56fe447ea18d1ae87fd0f40094e",
+          "revision": "02e42dc6-c102-49e7-9f20-a6b9f8470aa6",
+          "inputFingerprint": "c47d06e2f85cf07245fd3b39023553b5275703e08a8f1c02c02d5dd9ae3ddb43",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2a4ad0a2-5434-454b-bcad-8a077aac01bd-3",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/9cdcee5c-343f-4b55-ba8b-61e441c2ff75/frame-03-at-52s.png",
+          "time": 52,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792557019618,
+          "contentHash": "703e3970412d51725b8152285c7af9d29b461ed79f5d3df0274e973d98d1672b",
+          "revision": "02e42dc6-c102-49e7-9f20-a6b9f8470aa6",
+          "inputFingerprint": "c47d06e2f85cf07245fd3b39023553b5275703e08a8f1c02c02d5dd9ae3ddb43",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2a4ad0a2-5434-454b-bcad-8a077aac01bd-4",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/9cdcee5c-343f-4b55-ba8b-61e441c2ff75/frame-04-at-67s.png",
+          "time": 67,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792557019618,
+          "contentHash": "77810c883e279f4177276ea0c3d80a47b55bf2dcccc4c785239c6c072e8bbbdf",
+          "revision": "02e42dc6-c102-49e7-9f20-a6b9f8470aa6",
+          "inputFingerprint": "c47d06e2f85cf07245fd3b39023553b5275703e08a8f1c02c02d5dd9ae3ddb43",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2a4ad0a2-5434-454b-bcad-8a077aac01bd-5",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/9cdcee5c-343f-4b55-ba8b-61e441c2ff75/frame-05-at-82s.png",
+          "time": 82,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792557019618,
+          "contentHash": "6ca0f70a097c5f9697bfdaa47b36b373b50087d376c42ef1a2974427eed72c18",
+          "revision": "02e42dc6-c102-49e7-9f20-a6b9f8470aa6",
+          "inputFingerprint": "c47d06e2f85cf07245fd3b39023553b5275703e08a8f1c02c02d5dd9ae3ddb43",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2a4ad0a2-5434-454b-bcad-8a077aac01bd-6",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/9cdcee5c-343f-4b55-ba8b-61e441c2ff75/frame-06-at-87.3s.png",
+          "time": 87.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792557019618,
+          "contentHash": "fdb37449dd5fb588688bbd2a3e5ac06640f938a43e058a551e92da2859cd9040",
+          "revision": "02e42dc6-c102-49e7-9f20-a6b9f8470aa6",
+          "inputFingerprint": "c47d06e2f85cf07245fd3b39023553b5275703e08a8f1c02c02d5dd9ae3ddb43",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ],
+      "19665093-f43e-474b-ab1c-302772ea3272": [
+        {
+          "scope": "full",
+          "id": "64330d3c-5b98-41e2-83dc-3d23fd614148-0",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/b21bfb4d-8b8a-47c5-b4aa-161663b5226c/frame-00-at-7s.png",
+          "time": 7,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792557132285,
+          "contentHash": "55b8459f1e2481b5ef8a25be879585a54bb3a8f47a26bff9fd58d2461860e220",
+          "revision": "19665093-f43e-474b-ab1c-302772ea3272",
+          "inputFingerprint": "84294b6c4cc58fa62b150081c618ce4ff1ad918b51dc59e207d5029e3456ebf1",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "64330d3c-5b98-41e2-83dc-3d23fd614148-1",
+          "image": "/Users/kisito/Documents/frutiger-idea/videos/sistema-urinario/.hyperframes/artifacts/snapshots/b21bfb4d-8b8a-47c5-b4aa-161663b5226c/frame-01-at-87.3s.png",
+          "time": 87.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792557132285,
+          "contentHash": "fdb37449dd5fb588688bbd2a3e5ac06640f938a43e058a551e92da2859cd9040",
+          "revision": "19665093-f43e-474b-ab1c-302772ea3272",
+          "inputFingerprint": "84294b6c4cc58fa62b150081c618ce4ff1ad918b51dc59e207d5029e3456ebf1",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": []
+  }
+}

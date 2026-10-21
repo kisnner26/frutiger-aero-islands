@@ -1,0 +1,47 @@
+<template>
+  <style>
+    #root{width:100%;height:100%;position:relative;overflow:hidden;color:#eafcff;font-family:ui-sans-serif,system-ui,sans-serif;container-type:size}
+    #f04-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(0,217,255,.11),transparent 34%),#05090c}
+    #f04-stage{position:absolute;inset:0;overflow:hidden}
+    #f04-head{position:absolute;left:88px;top:64px}.f04-k{font:600 18px ui-monospace,monospace;letter-spacing:.16em;color:#00d9ff;text-transform:uppercase}.f04-h{font-size:68px;letter-spacing:-.05em;font-weight:650;margin-top:12px}
+    #f04-map{position:absolute;left:88px;top:210px;width:1744px;height:650px;border:1.5px solid rgba(0,217,255,.2);border-radius:44px;background:rgba(0,217,255,.035)}
+    #f04-map svg{width:100%;height:100%}.f04-l{font:600 18px ui-monospace,monospace;letter-spacing:.09em;fill:#eafcff}.f04-m{font:500 15px ui-monospace,monospace;fill:#00d9ff;letter-spacing:.07em}
+    #f04-ureter{fill:none;stroke:#9ddfe8;stroke-width:34;stroke-linecap:round}#f04-lumen{fill:none;stroke:#d99b2f;stroke-width:15;stroke-linecap:round}#f04-urethra{fill:none;stroke:#d99b2f;stroke-width:18;stroke-linecap:round}
+    .f04-bolus{fill:#ffd36d;filter:drop-shadow(0 0 16px rgba(255,211,109,.65))}.f04-wave{fill:none;stroke:#00d9ff;stroke-width:4;opacity:.8}
+    #f04-signal{position:absolute;right:110px;top:42px;width:380px;padding:20px 26px;border:1px solid rgba(0,217,255,.26);border-radius:999px;background:rgba(0,217,255,.07);font:600 16px ui-monospace,monospace;letter-spacing:.08em;text-align:center}
+    #f04-steps{position:absolute;left:220px;right:220px;bottom:86px;display:flex;justify-content:space-between;font:600 16px ui-monospace,monospace;letter-spacing:.08em;color:rgba(234,252,255,.72)}#f04-steps b{color:#00d9ff}
+  </style>
+  <div data-hf-id="hf-io8o" id="root" data-composition-id="04-miccion" data-duration="16.5" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-d834" id="f04-bg" class="clip" data-start="0" data-duration="16.5" data-track-index="0"></div>
+    <div data-hf-id="hf-qjvy" id="f04-stage" class="clip" data-start="0" data-duration="16.5" data-track-index="1">
+      <div data-hf-id="hf-igg0" id="f04-head"><div data-hf-id="hf-i45n" class="f04-k">transporte muscular · control neural</div><div data-hf-id="hf-4ozq" class="f04-h">del riñón al exterior</div></div>
+      <div data-hf-id="hf-hd6o" id="f04-map"><div data-hf-id="hf-us47" id="f04-signal">vejiga llena → señal al cerebro</div><svg data-hf-id="hf-hd8o" viewBox="0 0 1744 650" aria-label="transporte de orina y micción">
+        <defs data-hf-id="hf-mh0t"><radialGradient data-hf-id="hf-bbwy" id="f04-kg"><stop data-hf-id="hf-l4qz" stop-color="#d85f73"/><stop data-hf-id="hf-0hik" offset="1" stop-color="#4a0d19"/></radialGradient><radialGradient data-hf-id="hf-vsdx" id="f04-bg2"><stop data-hf-id="hf-25gh" stop-color="#ffd980" stop-opacity=".9"/><stop data-hf-id="hf-9xc0" offset="1" stop-color="#875510" stop-opacity=".8"/></radialGradient></defs>
+        <path data-hf-id="hf-4xzo" id="f04-kidney" d="M180 138c-96 0-138 86-103 180 31 84 110 109 160 47 34-42 2-88-26-111 42-49 42-116-31-116z" fill="url(#f04-kg)" stroke="#ff6e84" stroke-width="3"/>
+        <path data-hf-id="hf-gb9y" id="f04-ureter" d="M230 302C430 320 540 350 720 410s240 102 372 100"/>
+        <path data-hf-id="hf-yl3s" id="f04-lumen" d="M230 302C430 320 540 350 720 410s240 102 372 100"/>
+        <g data-hf-id="hf-24p6" id="f04-waves"><ellipse data-hf-id="hf-jlqe" class="f04-wave" cx="420" cy="342" rx="33" ry="58" transform="rotate(-71 420 342)"/><ellipse data-hf-id="hf-35dv" class="f04-wave" cx="680" cy="402" rx="33" ry="58" transform="rotate(-67 680 402)"/><ellipse data-hf-id="hf-hwzv" class="f04-wave" cx="920" cy="482" rx="33" ry="58" transform="rotate(-78 920 482)"/></g>
+        <g data-hf-id="hf-djj3" id="f04-boluses"><circle data-hf-id="hf-n8k1" class="f04-bolus" cx="300" cy="316" r="18"/><circle data-hf-id="hf-ajjx" class="f04-bolus" cx="560" cy="370" r="18"/><circle data-hf-id="hf-qxax" class="f04-bolus" cx="820" cy="445" r="18"/></g>
+        <path data-hf-id="hf-hi6y" id="f04-bladder" d="M1092 426c0-111 74-174 174-174s174 63 174 174c0 134-73 194-174 194s-174-60-174-194z" fill="url(#f04-bg2)" stroke="#ffd980" stroke-width="4"/>
+        <path data-hf-id="hf-9nk8" id="f04-urethra" d="M1266 606v42"/><g data-hf-id="hf-k66d" id="f04-sphincters"><ellipse data-hf-id="hf-3dsu" cx="1266" cy="604" rx="52" ry="17" fill="none" stroke="#00d9ff" stroke-width="7"/><ellipse data-hf-id="hf-kyfd" cx="1266" cy="636" rx="42" ry="14" fill="none" stroke="#00d9ff" stroke-width="7"/></g>
+        <g data-hf-id="hf-ggrp" id="f04-labels"><text data-hf-id="hf-onur" class="f04-l" x="55" y="95">PELVIS RENAL</text><text data-hf-id="hf-cxvn" class="f04-m" x="55" y="118">RECOGE ORINA</text><text data-hf-id="hf-si6h" class="f04-l" x="500" y="285">PERISTALSIS</text><text data-hf-id="hf-qs1u" class="f04-m" x="500" y="307">ONDAS DE MÚSCULO LISO</text><text data-hf-id="hf-61t5" class="f04-l" x="1150" y="190">VEJIGA</text><text data-hf-id="hf-glew" class="f04-m" x="1150" y="213">DETRUSOR RELAJADO</text><text data-hf-id="hf-awez" class="f04-l" x="1370" y="596">ESFÍNTERES</text></g>
+      </svg></div>
+      <div data-hf-id="hf-4d7j" id="f04-steps"><span data-hf-id="hf-acnz"><b data-hf-id="hf-27a2">01</b> producir</span><span data-hf-id="hf-jdia"><b data-hf-id="hf-2ll3">02</b> impulsar</span><span data-hf-id="hf-w58r"><b data-hf-id="hf-2zw4">03</b> almacenar</span><span data-hf-id="hf-q8f3"><b data-hf-id="hf-3e75">04</b> vaciar</span></div>
+    </div>
+  </div>
+  <script>
+    const f04=gsap.timeline({paused:true});
+    f04.fromTo('#f04-head',{opacity:0,y:-28},{opacity:1,y:0,duration:1,ease:'power3.out'},0)
+      .fromTo('#f04-kidney',{opacity:0,scale:.75},{opacity:1,scale:1,duration:1,transformOrigin:'15% 35%',ease:'back.out(1.4)'},.6)
+      .fromTo('#f04-ureter,#f04-lumen',{strokeDasharray:1000,strokeDashoffset:1000},{strokeDashoffset:0,duration:2.3,ease:'power2.inOut'},2)
+      .fromTo('#f04-waves',{opacity:0,scale:.75},{opacity:1,scale:1,duration:1.2,transformOrigin:'50% 50%',ease:'power3.out'},4)
+      .to('#f04-boluses',{x:360,duration:3.6,ease:'power2.inOut'},4.5)
+      .fromTo('#f04-bladder',{opacity:0,scale:.7},{opacity:1,scale:1,duration:1.2,transformOrigin:'73% 70%',ease:'back.out(1.3)'},8)
+      .fromTo('#f04-signal',{opacity:0,y:-24},{opacity:1,y:0,duration:.8,ease:'power3.out'},10.2)
+      .fromTo('#f04-sphincters',{opacity:0,scaleX:1.25},{opacity:1,scaleX:1,duration:.9,transformOrigin:'50% 50%',ease:'power3.out'},11.5)
+      .fromTo('#f04-urethra',{strokeDasharray:90,strokeDashoffset:90},{strokeDashoffset:0,duration:1,ease:'power2.inOut'},12.4)
+      .to('#f04-bladder',{scaleY:.78,duration:1.8,transformOrigin:'50% 100%',ease:'power2.inOut'},13)
+      .fromTo('#f04-steps span',{opacity:0,y:20},{opacity:1,y:0,duration:.45,stagger:.16,ease:'power3.out'},14.2);
+    window.__timelines['04-miccion']=f04;
+  </script>
+</template>

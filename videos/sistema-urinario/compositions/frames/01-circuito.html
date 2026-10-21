@@ -1,0 +1,65 @@
+<template>
+  <style>
+    #root{width:100%;height:100%;position:relative;overflow:hidden;container-type:size;color:#eafcff;font-family:ui-sans-serif,system-ui,sans-serif}
+    #f01-bg{position:absolute;inset:0;background:radial-gradient(circle at 58% 38%,rgba(0,217,255,.12),transparent 30%),#05090c}
+    #f01-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,217,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(0,217,255,.045) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(circle at center,#000,transparent 78%)}
+    #f01-stage{position:absolute;inset:0;overflow:hidden}
+    #f01-copy{position:absolute;left:92px;top:82px;width:570px;z-index:5}
+    #f01-kicker{font:600 20px ui-monospace,SFMono-Regular,monospace;letter-spacing:.16em;text-transform:uppercase;color:#00d9ff}
+    #f01-title{font-size:82px;line-height:.94;letter-spacing:-.055em;margin-top:20px;font-weight:650}
+    #f01-sub{margin-top:24px;font-size:24px;line-height:1.45;color:rgba(234,252,255,.68);max-width:470px}
+    #f01-anatomy{display:none}
+    #f01-real{position:absolute;left:760px;top:22px;width:900px;height:900px;object-fit:contain;filter:drop-shadow(0 28px 80px rgba(0,0,0,.72)) drop-shadow(0 0 24px rgba(0,217,255,.15))}
+    .f01-call{position:absolute;z-index:6;padding:10px 15px;border:1px solid rgba(0,217,255,.3);border-radius:999px;background:rgba(5,9,12,.82);font:600 15px ui-monospace,SFMono-Regular,monospace;letter-spacing:.09em;color:#00d9ff}
+    #f01-call-k{left:1510px;top:260px}#f01-call-u{left:1490px;top:520px}#f01-call-b{left:1440px;top:750px}
+    .f01-organ{filter:drop-shadow(0 0 24px rgba(255,79,104,.25))}
+    .f01-label{font:600 22px ui-monospace,SFMono-Regular,monospace;letter-spacing:.08em;fill:#eafcff}
+    .f01-small{font:500 16px ui-monospace,SFMono-Regular,monospace;letter-spacing:.12em;fill:#00d9ff}
+    #f01-route{fill:none;stroke:#00d9ff;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 12px #00d9ff)}
+    .f01-pulse{fill:#eafcff;filter:drop-shadow(0 0 16px #00d9ff)}
+    #f01-footer{position:absolute;left:92px;right:92px;bottom:86px;display:flex;align-items:center;gap:28px;font:600 19px ui-monospace,SFMono-Regular,monospace;letter-spacing:.14em;text-transform:uppercase;color:#00d9ff}
+    #f01-footer span{display:inline-block;padding:14px 22px;border:1px solid rgba(0,217,255,.28);border-radius:999px;background:rgba(0,217,255,.07)}
+  </style>
+  <div data-hf-id="hf-1vap" id="root" data-composition-id="01-circuito" data-duration="12.5" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-pxjb" id="f01-bg" class="clip" data-start="0" data-duration="12.5" data-track-index="0"><div data-hf-id="hf-0kp5" id="f01-grid"></div></div>
+    <div data-hf-id="hf-u98r" id="f01-stage" class="clip" data-start="0" data-duration="12.5" data-track-index="1">
+      <div data-hf-id="hf-p5ka" id="f01-copy"><div data-hf-id="hf-1oay" id="f01-kicker">anatomía funcional · varón</div><div data-hf-id="hf-galu" id="f01-title">un circuito<br data-hf-id="hf-x5px">que limpia la sangre</div><div data-hf-id="hf-4a8u" id="f01-sub">dos riñones producen orina; los uréteres la transportan, la vejiga la almacena y la uretra la expulsa.</div></div>
+      <img data-hf-id="hf-xile" id="f01-real" src="assets/images/urinary-system-realistic.png" alt="render anatómico realista del sistema urinario masculino">
+      <div data-hf-id="hf-i42g" class="f01-call" id="f01-call-k">riñones · filtran</div><div data-hf-id="hf-m4ky" class="f01-call" id="f01-call-u">uréteres · transportan</div><div data-hf-id="hf-cxls" class="f01-call" id="f01-call-b">vejiga · almacena</div>
+      <svg data-hf-id="hf-49f0" id="f01-anatomy" viewBox="0 0 1160 920" aria-label="sistema urinario masculino estilizado">
+        <defs data-hf-id="hf-mh0t">
+          <radialGradient data-hf-id="hf-wnrd" id="f01-kidney" cx="38%" cy="35%"><stop data-hf-id="hf-b188" offset="0" stop-color="#ff9aa9"/><stop data-hf-id="hf-ged7" offset=".42" stop-color="#b62b43"/><stop data-hf-id="hf-7gt6" offset="1" stop-color="#4b0e1a"/></radialGradient>
+          <linearGradient data-hf-id="hf-c0k7" id="f01-body" x1="0" x2="1"><stop data-hf-id="hf-504m" stop-color="#0c1b22"/><stop data-hf-id="hf-o9e8" offset=".5" stop-color="#173642"/><stop data-hf-id="hf-xzz4" offset="1" stop-color="#091117"/></linearGradient>
+          <linearGradient data-hf-id="hf-12a6" id="f01-bladder" x1="0" y1="0" x2="0" y2="1"><stop data-hf-id="hf-rapf" stop-color="#f7d26b" stop-opacity=".9"/><stop data-hf-id="hf-p7mp" offset="1" stop-color="#a86d12" stop-opacity=".7"/></linearGradient>
+        </defs>
+        <path data-hf-id="hf-9eo3" id="f01-torso" d="M430 40C322 71 272 160 262 278l-28 312c-8 86 54 166 142 185l74 16v80h260v-80l74-16c88-19 150-99 142-185l-28-312C888 160 838 71 730 40l-72-18H502z" fill="url(#f01-body)" stroke="rgba(234,252,255,.22)" stroke-width="3"/>
+        <path data-hf-id="hf-ezst" id="f01-spine" d="M579 92v625" stroke="rgba(234,252,255,.15)" stroke-width="22" stroke-linecap="round"/>
+        <g data-hf-id="hf-lkny" id="f01-kidneys" class="f01-organ">
+          <path data-hf-id="hf-nuoi" d="M415 255c-76 2-118 75-93 157 20 66 70 102 123 71 43-26 33-84 3-112 31-41 38-118-33-116z" fill="url(#f01-kidney)" stroke="#ff7287" stroke-width="3"/>
+          <path data-hf-id="hf-okwn" d="M744 255c76 2 118 75 93 157-20 66-70 102-123 71-43-26-33-84-3-112-31-41-38-118 33-116z" fill="url(#f01-kidney)" stroke="#ff7287" stroke-width="3"/>
+          <path data-hf-id="hf-h93v" d="M454 351h102M706 351H606" stroke="#ef405d" stroke-width="15" stroke-linecap="round"/>
+          <path data-hf-id="hf-kllp" d="M454 377h102M706 377H606" stroke="#517de9" stroke-width="12" stroke-linecap="round"/>
+        </g>
+        <path data-hf-id="hf-qet2" id="f01-route" d="M446 420C456 528 480 588 527 670Q580 716 633 670C680 588 704 528 714 420M580 707v132"/>
+        <path data-hf-id="hf-gs8o" id="f01-bladder" d="M508 658c0-48 32-78 72-78s72 30 72 78c0 61-30 106-72 106s-72-45-72-106z" fill="url(#f01-bladder)" stroke="#ffd973" stroke-width="3"/>
+        <g data-hf-id="hf-ywfe" id="f01-labels"><path data-hf-id="hf-9d7o" d="M298 326h-94" stroke="#00d9ff" stroke-width="2"/><text data-hf-id="hf-ejc3" class="f01-label" x="40" y="333">RIÑÓN</text><text data-hf-id="hf-tcur" class="f01-small" x="40" y="360">FILTRA</text><path data-hf-id="hf-8ab9" d="M790 510h160" stroke="#00d9ff" stroke-width="2"/><text data-hf-id="hf-y2bc" class="f01-label" x="966" y="517">URÉTER</text><text data-hf-id="hf-ss42" class="f01-small" x="966" y="544">TRANSPORTA</text><path data-hf-id="hf-s9sd" d="M650 696h300" stroke="#00d9ff" stroke-width="2"/><text data-hf-id="hf-uql8" class="f01-label" x="966" y="703">VEJIGA</text><text data-hf-id="hf-6pyb" class="f01-small" x="966" y="730">ALMACENA</text></g>
+        <g data-hf-id="hf-qasp" id="f01-pulses"><circle data-hf-id="hf-io54" class="f01-pulse" r="9"><animateMotion data-hf-id="hf-6fa5" dur="2.2s" repeatCount="indefinite" path="M446 420C456 528 480 588 527 670Q580 716 633 670C680 588 704 528 714 420"/></circle></g>
+      </svg>
+      <div data-hf-id="hf-7u0k" id="f01-footer"><span data-hf-id="hf-xikx">filtrar</span><span data-hf-id="hf-2oph">transportar</span><span data-hf-id="hf-w58r">almacenar</span><span data-hf-id="hf-49jt">expulsar</span></div>
+    </div>
+  </div>
+  <script>
+    const f01=gsap.timeline({paused:true});
+    f01.fromTo('#f01-copy',{opacity:0,x:-55},{opacity:1,x:0,duration:1.1,ease:'power3.out'},0)
+      .fromTo('#f01-real',{opacity:0,scale:.88,rotationY:-8},{opacity:1,scale:1,rotationY:0,duration:2.2,ease:'power4.out'},0)
+      .fromTo('.f01-call',{opacity:0,x:35},{opacity:1,x:0,duration:.55,stagger:.45,ease:'power3.out'},4.2)
+      .fromTo('#f01-torso',{opacity:0,scale:.94},{opacity:1,scale:1,duration:1.8,ease:'power3.out'},0)
+      .fromTo('#f01-spine',{opacity:0,scaleY:0},{opacity:1,scaleY:1,duration:1.5,transformOrigin:'50% 0%',ease:'power2.out'},.6)
+      .fromTo('#f01-kidneys',{opacity:0,scale:.72},{opacity:1,scale:1,duration:1.4,transformOrigin:'50% 40%',ease:'back.out(1.4)'},3)
+      .fromTo('#f01-labels',{opacity:0,x:30},{opacity:1,x:0,duration:1,ease:'power3.out'},5.5)
+      .fromTo('#f01-route',{strokeDasharray:1100,strokeDashoffset:1100},{strokeDashoffset:0,duration:2.6,ease:'power2.inOut'},7.2)
+      .fromTo('#f01-bladder',{opacity:0,scale:.7},{opacity:1,scale:1,duration:1,transformOrigin:'50% 50%',ease:'back.out(1.5)'},8.4)
+      .fromTo('#f01-footer span',{opacity:0,y:24},{opacity:1,y:0,duration:.5,stagger:.18,ease:'power3.out'},10.1);
+    window.__timelines['01-circuito']=f01;
+  </script>
+</template>
