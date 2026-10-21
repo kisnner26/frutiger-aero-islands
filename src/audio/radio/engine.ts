@@ -1,6 +1,7 @@
 import { barSeconds, BEATS_PER_BAR, midiToHz, planBar, type NoteEvent } from './generator';
 import { loadPrefs, savePrefs, type RadioPrefs } from './prefs';
 import { AMBIENCE_IDS, PERSONAL_TRACK, STATIONS, findStation, type AmbienceId, type StationId, type TrackInfo } from './stations';
+import { tr } from '../../i18n';
 
 export type RadioStatus = 'detenida' | 'cargando' | 'sonando' | 'interrumpida' | 'error';
 
@@ -98,7 +99,7 @@ class RadioEngine {
       return {
         status: this.status,
         station: st,
-        stationName: 'personal',
+        stationName: tr('personal', 'personal'),
         title: PERSONAL_TRACK.title,
         author: PERSONAL_TRACK.author,
         note: PERSONAL_TRACK.note,
@@ -120,7 +121,7 @@ class RadioEngine {
       stationName: station.name,
       title: track.title,
       author: track.author,
-      note: 'música generativa original creada con web audio',
+      note: tr('música generativa original creada con web audio', 'original generative music created with web audio'),
       trackIndex: idx,
       trackCount: station.tracks.length,
       volume: this.prefs.volume,
@@ -168,11 +169,11 @@ class RadioEngine {
       this.reverbIn.connect(conv).connect(wet).connect(this.musicBus);
       this.noise = this.makeNoise(ctx, 3);
       ctx.addEventListener('statechange', () => {
-        if (this.status === 'sonando' && ctx.state !== 'running') this.setStatus('interrumpida', 'el navegador detuvo el audio. toca reproducir para continuar.');
+        if (this.status === 'sonando' && ctx.state !== 'running') this.setStatus('interrumpida', tr('el navegador detuvo el audio. toca reproducir para continuar.', 'the browser stopped the audio. tap play to continue.'));
       });
       return ctx;
     } catch {
-      this.setStatus('error', 'este navegador no permite audio. prueba con otro.');
+      this.setStatus('error', tr('este navegador no permite audio. prueba con otro.', 'this browser does not allow audio. try another one.'));
       return null;
     }
   }

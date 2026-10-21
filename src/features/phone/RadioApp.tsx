@@ -1,6 +1,7 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { radio } from '../../audio/radio/engine';
 import { AMBIENCE_IDS, AMBIENCE_LABELS, STATIONS, type StationId } from '../../audio/radio/stations';
+import { tr } from '../../i18n';
 
 function Bars() {
   const ref = useRef<HTMLDivElement>(null);
@@ -32,11 +33,11 @@ function Bars() {
 }
 
 const MESSAGES: Record<string, string> = {
-  detenida: 'en pausa',
-  cargando: 'cargando la pista...',
-  sonando: 'reproduciendo',
-  interrumpida: 'interrumpida por el navegador',
-  error: 'sin audio',
+  detenida: tr('en pausa', 'paused'),
+  cargando: tr('cargando la pista...', 'loading the track...'),
+  sonando: tr('reproduciendo', 'playing'),
+  interrumpida: tr('interrumpida por el navegador', 'interrupted by the browser'),
+  error: tr('sin audio', 'no audio'),
 };
 
 /** aplicación de radio del teléfono: emisoras generativas, ambientes y volumen. */
@@ -48,7 +49,7 @@ export function RadioApp() {
     void radio.checkPersonal();
   }, []);
 
-  const stations: Array<{ id: StationId; name: string }> = [...STATIONS.map((st) => ({ id: st.id as StationId, name: st.name })), ...(s.personalAvailable ? [{ id: 'personal' as StationId, name: 'personal' }] : [])];
+  const stations: Array<{ id: StationId; name: string }> = [...STATIONS.map((st) => ({ id: st.id as StationId, name: st.name })), ...(s.personalAvailable ? [{ id: 'personal' as StationId, name: tr('personal', 'personal') }] : [])];
 
   return (
     <div className="radio">
@@ -59,7 +60,7 @@ export function RadioApp() {
         <Bars />
       </div>
 
-      <div className="radio__stations" role="radiogroup" aria-label="emisora">
+      <div className="radio__stations" role="radiogroup" aria-label={tr('emisora', 'station')}>
         {stations.map((st) => (
           <button key={st.id} type="button" role="radio" aria-checked={s.station === st.id} className="radio__chip" onClick={() => void radio.setStation(st.id)}>
             {st.name}
@@ -68,32 +69,32 @@ export function RadioApp() {
       </div>
 
       <div className="radio__transport">
-        <button type="button" className="radio__round" aria-label="pista anterior" disabled={s.trackCount < 2} onClick={() => void radio.prev()}>
+        <button type="button" className="radio__round" aria-label={tr('pista anterior', 'previous track')} disabled={s.trackCount < 2} onClick={() => void radio.prev()}>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M18 5v14l-9-7zM6 5v14" />
           </svg>
         </button>
-        <button type="button" className="radio__round radio__round--main" aria-label={playing ? 'pausar' : 'reproducir'} onClick={() => void radio.toggle()}>
+        <button type="button" className="radio__round radio__round--main" aria-label={playing ? tr('pausar', 'pause') : tr('reproducir', 'play')} onClick={() => void radio.toggle()}>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             {playing ? <path d="M8 5v14M16 5v14" /> : <path d="M8 5l11 7-11 7z" />}
           </svg>
         </button>
-        <button type="button" className="radio__round" aria-label="pista siguiente" disabled={s.trackCount < 2} onClick={() => void radio.next()}>
+        <button type="button" className="radio__round" aria-label={tr('pista siguiente', 'next track')} disabled={s.trackCount < 2} onClick={() => void radio.next()}>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M6 5v14l9-7zM18 5v14" />
           </svg>
         </button>
       </div>
       <p className="radio__count" aria-hidden="true">
-        pista {s.trackIndex + 1} de {s.trackCount}
+        {tr('pista', 'track')} {s.trackIndex + 1} {tr('de', 'of')} {s.trackCount}
       </p>
 
       <label className="radio__slider">
-        <span>volumen</span>
+        <span>{tr('volumen', 'volume')}</span>
         <input type="range" min={0} max={1} step={0.05} value={s.volume} onChange={(e) => radio.setVolume(Number(e.target.value))} />
       </label>
 
-      <div className="radio__amb" role="group" aria-label="sonidos de ambiente">
+      <div className="radio__amb" role="group" aria-label={tr('sonidos de ambiente', 'ambient sounds')}>
         {AMBIENCE_IDS.map((id) => (
           <button key={id} type="button" className="radio__chip" aria-pressed={s.ambience[id]} onClick={() => radio.setAmbience(id, !s.ambience[id])}>
             {AMBIENCE_LABELS[id]}
@@ -101,7 +102,7 @@ export function RadioApp() {
         ))}
       </div>
       <label className="radio__slider">
-        <span>nivel del ambiente</span>
+        <span>{tr('nivel del ambiente', 'ambience level')}</span>
         <input type="range" min={0} max={1} step={0.05} value={s.ambienceLevel} onChange={(e) => radio.setAmbienceLevel(Number(e.target.value))} />
       </label>
 

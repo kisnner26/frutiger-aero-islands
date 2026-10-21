@@ -30,6 +30,7 @@ import { CountryGate } from '../../world/CountryPicker';
 import { FlagBadge } from '../../world/FlagBadge';
 import { loadWorldView, saveWorldView, type WorldView as ViewState } from '../../world/worldState';
 import { aeroForecast } from '../../world/aeroForecast';
+import { tr } from '../../i18n';
 
 /** mundo: planeta lejano, transición a su océano interior y selección de islas. */
 export function WorldPage() {
@@ -262,7 +263,7 @@ export function WorldPage() {
     window.location.hash = routeHref('arcade');
   };
 
-  const status = mode === 'lejos' ? 'vista lejana del planeta' : 'dentro del planeta, archipiélago interior';
+  const status = mode === 'lejos' ? tr('vista lejana del planeta', 'distant view of the planet') : tr('dentro del planeta, archipiélago interior', 'inside the planet, inner archipelago');
 
   return (
     <div className="game world">
@@ -272,30 +273,30 @@ export function WorldPage() {
         <div className="glass-panel world-hud__bar">
           {mode === 'dentro' ? (
             <button type="button" className="world-hud__back" onClick={() => sceneRef.current?.leave()}>
-              ‹ alejar
+              ‹ {tr('alejar', 'zoom out')}
             </button>
           ) : (
             <a className="world-hud__back" href={routeHref('inicio')}>
-              ‹ inicio
+              ‹ {tr('inicio', 'home')}
             </a>
           )}
-          <strong>mundo</strong>
-          <span className="world-hud__hint">{mode === 'lejos' ? 'vista exterior del planeta' : 'arrastra, usa rueda o pinza para zoom y toca un punto de país'}</span>
+          <strong>{tr('mundo', 'world')}</strong>
+          <span className="world-hud__hint">{mode === 'lejos' ? tr('vista exterior del planeta', 'outside view of the planet') : tr('arrastra, usa rueda o pinza para zoom y toca un punto de país', 'drag, use the wheel or pinch to zoom and tap a country point')}</span>
         </div>
         {loaded && (
           <p className="world-hud__note">
-            {others.length === 0 ? 'aún no hay otros exploradores. comparte el enlace y sé de los primeros.' : `${others.length + 1} islas de jugadores reales`}
-            {territory.restoration ? ` · planeta restaurado ${territory.restoration.percent.toFixed(territory.restoration.percent < 10 ? 1 : 0)}%` : ''}
+            {others.length === 0 ? tr('aún no hay otros exploradores. comparte el enlace y sé de los primeros.', 'there are no other explorers yet. share the link and be one of the first.') : `${others.length + 1} ${tr('islas de jugadores reales', 'islands of real players')}`}
+            {territory.restoration ? ` · ${tr('planeta restaurado', 'planet restored')} ${territory.restoration.percent.toFixed(territory.restoration.percent < 10 ? 1 : 0)}%` : ''}
           </p>
         )}
       </header>
 
-      {!focusedCountry && !selected && <aside className={`world-radar world-radar--${mode}`} aria-label="radar del archipiélago">
-        <header><span className={`world-radar__weather world-radar__weather--${forecast.tone}`} aria-hidden="true" /><div><p>radar aero</p><strong>{forecast.label}</strong><small>{forecast.detail}</small></div></header>
-        <div className="world-radar__metrics"><span><b>{others.length + 1}</b> islas</span><span><b>{onlineTotal}</b> en línea</span><span><b>{Math.max(0, others.length)}</b> rutas</span></div>
+      {!focusedCountry && !selected && <aside className={`world-radar world-radar--${mode}`} aria-label={tr('radar del archipiélago', 'archipelago radar')}>
+        <header><span className={`world-radar__weather world-radar__weather--${forecast.tone}`} aria-hidden="true" /><div><p>{tr('radar aero', 'aero radar')}</p><strong>{forecast.label}</strong><small>{forecast.detail}</small></div></header>
+        <div className="world-radar__metrics"><span><b>{others.length + 1}</b> {tr('islas', 'islands')}</span><span><b>{onlineTotal}</b> {tr('en línea', 'online')}</span><span><b>{Math.max(0, others.length)}</b> {tr('rutas', 'routes')}</span></div>
         <div className="world-radar__actions">
-          <button type="button" onClick={() => { sceneRef.current?.enter(); window.setTimeout(() => choose('mia'), 30); }}>mi zona</button>
-          <button type="button" onClick={() => setAtlasOpen(true)}>atlas de países</button>
+          <button type="button" onClick={() => { sceneRef.current?.enter(); window.setTimeout(() => choose('mia'), 30); }}>{tr('mi zona', 'my zone')}</button>
+          <button type="button" onClick={() => setAtlasOpen(true)}>{tr('atlas de países', 'country atlas')}</button>
           <button type="button" onClick={() => phoneBus.open('radio')}>radio</button>
         </div>
       </aside>}
@@ -303,19 +304,19 @@ export function WorldPage() {
       {mode === 'lejos' && (
         <div className="world-enter">
           <button type="button" className="vista-button vista-button--primary" onClick={() => sceneRef.current?.enter()}>
-            entrar al planeta
+            {tr('entrar al planeta', 'enter the planet')}
           </button>
         </div>
       )}
 
       {listOpen && (
-        <AeroWindow className="win-world-list" title="islas del mundo" icon={<span className="mini-orb mini-orb--green" />} onClose={() => setListOpen(false)}>
-          <ul className="island-list" aria-label="islas">
+        <AeroWindow className="win-world-list" title={tr('islas del mundo', 'islands of the world')} icon={<span className="mini-orb mini-orb--green" />} onClose={() => setListOpen(false)}>
+          <ul className="island-list" aria-label={tr('islas', 'islands')}>
             {islands.map((i) => (
               <li key={i.id}>
                 <button type="button" aria-pressed={i.id === selectedId} onClick={() => choose(i.id)}>
                   <strong>{i.name}</strong>
-                  <small>{i.kind === 'mia' ? (remoteMine ? 'tuya, guardada en tu cuenta' : 'tuya, guardada en este dispositivo') : `@${i.username}`} · {presence[i.id] ?? 0} en línea</small>
+                  <small>{i.kind === 'mia' ? (remoteMine ? tr('tuya, guardada en tu cuenta', 'yours, saved to your account') : tr('tuya, guardada en este dispositivo', 'yours, saved on this device')) : `@${i.username}`} · {presence[i.id] ?? 0} {tr('en línea', 'online')}</small>
                 </button>
               </li>
             ))}
@@ -324,7 +325,7 @@ export function WorldPage() {
       )}
 
       {expOpen && (
-        <AeroWindow className="win-world-list" title="expediciones" icon={<span className="mini-orb" />} onClose={() => setExpOpen(false)}>
+        <AeroWindow className="win-world-list" title={tr('expediciones', 'expeditions')} icon={<span className="mini-orb" />} onClose={() => setExpOpen(false)}>
           <WorldCommunityPanel />
         </AeroWindow>
       )}
@@ -334,7 +335,7 @@ export function WorldPage() {
         </AeroWindow>
       )}
       {playersOpen && (
-        <AeroWindow className="win-players" title="jugadores" icon={<span className="mini-orb mini-orb--green" />} onClose={() => setPlayersOpen(false)}>
+        <AeroWindow className="win-players" title={tr('jugadores', 'players')} icon={<span className="mini-orb mini-orb--green" />} onClose={() => setPlayersOpen(false)}>
           <PlayersPanel me={territory.myName} />
         </AeroWindow>
       )}
@@ -344,49 +345,49 @@ export function WorldPage() {
         </AeroWindow>
       )}
       {conquestOpen && (
-        <AeroWindow className="win-territory" title="conquista y restauración" icon={<span className="mini-orb mini-orb--green" />} onClose={() => { setConquestOpen(false); setPickedCell(null); sceneRef.current?.selectCell(null); }}>
+        <AeroWindow className="win-territory" title={tr('conquista y restauración', 'conquest and restoration')} icon={<span className="mini-orb mini-orb--green" />} onClose={() => { setConquestOpen(false); setPickedCell(null); sceneRef.current?.selectCell(null); }}>
           <TerritoryPanel sceneRef={sceneRef} data={territory} picked={pickedCell} />
         </AeroWindow>
       )}
       {atlasOpen && (
-        <AeroWindow className="win-world-atlas" title="atlas de países" icon={<span className="mini-orb mini-orb--globe" />} onClose={() => setAtlasOpen(false)}>
-          <section className="world-atlas"><label>busca un país<input autoFocus value={atlasQuery} onChange={(event) => setAtlasQuery(event.target.value)} placeholder="nicaragua, japón, brasil..." /></label><div>{searchCountries(atlasQuery).slice(0, 18).map((entry) => <button key={entry.code} type="button" onClick={() => openCountry(entry.code)}><FlagBadge code={entry.code} width={28} /><span><strong>{entry.name}</strong><small>{countOf(entry.code)} {countOf(entry.code) === 1 ? 'isla' : 'islas'} en esta zona{counts[entry.code]?.online ? ` · ${counts[entry.code].online} en línea` : ''}</small></span></button>)}</div></section>
+        <AeroWindow className="win-world-atlas" title={tr('atlas de países', 'country atlas')} icon={<span className="mini-orb mini-orb--globe" />} onClose={() => setAtlasOpen(false)}>
+          <section className="world-atlas"><label>{tr('busca un país', 'search for a country')}<input autoFocus value={atlasQuery} onChange={(event) => setAtlasQuery(event.target.value)} placeholder={tr('nicaragua, japón, brasil...', 'nicaragua, japan, brazil...')} /></label><div>{searchCountries(atlasQuery).slice(0, 18).map((entry) => <button key={entry.code} type="button" onClick={() => openCountry(entry.code)}><FlagBadge code={entry.code} width={28} /><span><strong>{entry.name}</strong><small>{countOf(entry.code)} {countOf(entry.code) === 1 ? tr('isla', 'island') : tr('islas', 'islands')} {tr('en esta zona', 'in this zone')}{counts[entry.code]?.online ? ` · ${counts[entry.code].online} ${tr('en línea', 'online')}` : ''}</small></span></button>)}</div></section>
         </AeroWindow>
       )}
       {focusedCountry && (
         <AeroWindow className="win-world-country" title={focusedCountry.name} icon={<FlagBadge code={focusedCountry.code} width={28} />} onClose={() => setCountryFocus(null)}>
           <div className="world-country">
-            <p>{facts?.continente ?? 'país'}</p>
+            <p>{facts?.continente ?? tr('país', 'country')}</p>
             {facts && (
               <dl className="world-country__facts">
-                <div><dt>capital</dt><dd>{facts.capital}</dd></div>
-                <div><dt>idioma</dt><dd>{facts.idioma}</dd></div>
+                <div><dt>{tr('capital', 'capital')}</dt><dd>{facts.capital}</dd></div>
+                <div><dt>{tr('idioma', 'language')}</dt><dd>{facts.idioma}</dd></div>
               </dl>
             )}
-            <strong>{countOf(focusedCountry.code)} {countOf(focusedCountry.code) === 1 ? 'isla de jugador' : 'islas de jugadores'} en esta zona{counts[focusedCountry.code]?.online ? ` · ${counts[focusedCountry.code].online} en línea` : ''}</strong>
+            <strong>{countOf(focusedCountry.code)} {countOf(focusedCountry.code) === 1 ? tr('isla de jugador', 'player island') : tr('islas de jugadores', 'player islands')} {tr('en esta zona', 'in this zone')}{counts[focusedCountry.code]?.online ? ` · ${counts[focusedCountry.code].online} ${tr('en línea', 'online')}` : ''}</strong>
             {focusedCountryPlayers.length > 0 ? (
               <ul className="world-country__players">
                 {focusedCountryPlayers.slice(0, 6).map((i) => (
                   <li key={i.id}>
                     <span>{i.name}</span>
-                    {i.kind === 'mia' ? <a href={routeHref('isla')}>entrar</a> : <a href={islandHref(i.username!)}>visitar</a>}
+                    {i.kind === 'mia' ? <a href={routeHref('isla')}>{tr('entrar', 'enter')}</a> : <a href={islandHref(i.username!)}>{tr('visitar', 'visit')}</a>}
                   </li>
                 ))}
               </ul>
             ) : (
-              <small>nadie ha construido aquí todavía. elige este país en tu perfil y sé el primero de la zona.</small>
+              <small>{tr('nadie ha construido aquí todavía. elige este país en tu perfil y sé el primero de la zona.', 'nobody has built here yet. choose this country in your profile and be the first in the zone.')}</small>
             )}
             <div className="world-country__actions">
               {mode === 'lejos' ? (
-                <button type="button" className="vista-button vista-button--primary" onClick={() => exploreCountry(focusedCountry.code)}>explorar la zona</button>
+                <button type="button" className="vista-button vista-button--primary" onClick={() => exploreCountry(focusedCountry.code)}>{tr('explorar la zona', 'explore the zone')}</button>
               ) : focusedCountryPlayers.length > 0 ? (
                 <button type="button" className="vista-button vista-button--primary" onClick={() => { const first = focusedCountryPlayers[0]; setCountryFocus(null); sceneRef.current?.select(first.id); setSelectedId(first.id); sceneRef.current?.focus(first.id); }}>
-                  ver {focusedCountryPlayers.length === 1 ? 'la isla' : 'las islas'}
+                  {tr('ver', 'see')} {focusedCountryPlayers.length === 1 ? tr('la isla', 'the island') : tr('las islas', 'the islands')}
                 </button>
               ) : (
-                <button type="button" className="vista-button vista-button--primary" onClick={() => sceneRef.current?.zoomBy(1.7)}>acercar más</button>
+                <button type="button" className="vista-button vista-button--primary" onClick={() => sceneRef.current?.zoomBy(1.7)}>{tr('acercar más', 'zoom in more')}</button>
               )}
-              {focusedCountry.code !== country && <button type="button" className="vista-button" onClick={() => { countryStore.set(focusedCountry.code); void syncCountry(); }}>vivo aquí</button>}
+              {focusedCountry.code !== country && <button type="button" className="vista-button" onClick={() => { countryStore.set(focusedCountry.code); void syncCountry(); }}>{tr('vivo aquí', 'i live here')}</button>}
             </div>
           </div>
         </AeroWindow>
@@ -398,30 +399,30 @@ export function WorldPage() {
             {selected.kind === 'mia' ? (
               <>
                 <p>
-                  {selected.objects.length} objetos · nivel {selected.level} · {remoteMine ? 'guardada en tu cuenta' : 'guardada en este dispositivo'} · {selectedOnline} en línea
+                  {selected.objects.length} {tr('objetos', 'objects')} · {tr('nivel', 'level')} {selected.level} · {remoteMine ? tr('guardada en tu cuenta', 'saved to your account') : tr('guardada en este dispositivo', 'saved on this device')} · {selectedOnline} {tr('en línea', 'online')}
                 </p>
                 <p className="world-card__zone">
                   <FlagBadge code={selected.country} width={34} />
-                  {findCountry(selected.country) ? `zona: ${findCountry(selected.country)!.name}` : 'zona: mar abierto, aún sin país'}{' '}
+                  {findCountry(selected.country) ? `${tr('zona', 'zone')}: ${findCountry(selected.country)!.name}` : tr('zona: mar abierto, aún sin país', 'zone: open sea, no country yet')}{' '}
                   <button type="button" className="text-link" onClick={() => setChangeCountry(true)}>
-                    {selected.country ? 'cambiar país' : 'elegir país'}
+                    {selected.country ? tr('cambiar país', 'change country') : tr('elegir país', 'choose country')}
                   </button>
                 </p>
                 <a className="vista-button vista-button--primary" href={routeHref('isla')}>
-                  entrar a mi isla
+                  {tr('entrar a mi isla', 'enter my island')}
                 </a>
               </>
             ) : (
               <>
                 <p>
-                  {selected.objects.length} objetos · nivel {selected.level} · {selectedOnline} en línea
+                  {selected.objects.length} {tr('objetos', 'objects')} · {tr('nivel', 'level')} {selected.level} · {selectedOnline} {tr('en línea', 'online')}
                 </p>
                 <p className="world-card__zone">
                   <FlagBadge code={selected.country} width={34} />
-                  {findCountry(selected.country) ? `zona: ${findCountry(selected.country)!.name}` : 'zona: mar abierto'}
+                  {findCountry(selected.country) ? `${tr('zona', 'zone')}: ${findCountry(selected.country)!.name}` : tr('zona: mar abierto', 'zone: open sea')}
                 </p>
                 <a className="vista-button vista-button--primary" href={islandHref(selected.username!)}>
-                  visitar
+                  {tr('visitar', 'visit')}
                 </a>
               </>
             )}
@@ -432,28 +433,28 @@ export function WorldPage() {
       <CountryGate forceOpen={changeCountry} onClose={() => setChangeCountry(false)} />
       <span className="sr-only" role="status" aria-live="polite">
         {status}
-        {selected ? `, seleccionada: ${selected.name}` : ''}
+        {selected ? `, ${tr('seleccionada', 'selected')}: ${selected.name}` : ''}
       </span>
 
-      <nav className="world-controls" aria-label="controles del mundo" data-card={selected && mode === 'dentro' ? '1' : '0'}>
+      <nav className="world-controls" aria-label={tr('controles del mundo', 'world controls')} data-card={selected && mode === 'dentro' ? '1' : '0'}>
         {mode === 'lejos' ? (
           <>
-            <button type="button" className="world-controls__wide" disabled={!country} onClick={() => country && sceneRef.current?.faceCountry(country)}>ir a mi país</button>
+            <button type="button" className="world-controls__wide" disabled={!country} onClick={() => country && sceneRef.current?.faceCountry(country)}>{tr('ir a mi país', 'go to my country')}</button>
           </>
         ) : (
           <>
-            <button type="button" className="world-controls__wide" onClick={() => { sceneRef.current?.select('mia'); setSelectedId('mia'); sceneRef.current?.focus('mia'); }}>ir a mi isla</button>
+            <button type="button" className="world-controls__wide" onClick={() => { sceneRef.current?.select('mia'); setSelectedId('mia'); sceneRef.current?.focus('mia'); }}>{tr('ir a mi isla', 'go to my island')}</button>
             {zoomed && (
               <button type="button" className="world-controls__wide" onClick={() => { sceneRef.current?.focusCountry(null); setCountryFocus(null); sceneRef.current?.resetCamera(); }}>
-                ver todo el mundo
+                {tr('ver todo el mundo', 'see the whole world')}
               </button>
             )}
           </>
         )}
       </nav>
 
-      <Taskbar tasks={[{ id: 'islas', label: 'islas', icon: <span className="mini-orb mini-orb--green" />, active: listOpen, onClick: () => setListOpen((v) => !v) }, { id: 'jugadores', label: 'jugadores', icon: <span className="mini-orb mini-orb--green" />, active: playersOpen, onClick: () => setPlayersOpen((v) => !v) }, { id: 'ranking', label: 'ranking', icon: <span className="mini-orb" />, active: leaderOpen, onClick: () => setLeaderOpen((v) => !v) }, { id: 'conquista', label: 'conquista', icon: <span className="mini-orb mini-orb--green" />, active: conquestOpen, onClick: () => { if (!conquestOpen && sceneRef.current?.mode === 'lejos') sceneRef.current.enter(); setConquestOpen((v) => !v); } }, { id: 'atlas', label: 'atlas', icon: <span className="mini-orb mini-orb--globe" />, active: atlasOpen, onClick: () => setAtlasOpen((v) => !v) },
-        ...(isSupabaseConfigured ? [{ id: 'exp', label: 'expediciones', icon: <span className="mini-orb" />, active: expOpen, onClick: () => setExpOpen((v) => !v) }, { id: 'gadgets', label: 'gadgets', icon: <span className="mini-orb mini-orb--green" />, active: gadgetsOpen, onClick: () => setGadgetsOpen((v) => !v) }] : [])]} />
+      <Taskbar tasks={[{ id: 'islas', label: tr('islas', 'islands'), icon: <span className="mini-orb mini-orb--green" />, active: listOpen, onClick: () => setListOpen((v) => !v) }, { id: 'jugadores', label: tr('jugadores', 'players'), icon: <span className="mini-orb mini-orb--green" />, active: playersOpen, onClick: () => setPlayersOpen((v) => !v) }, { id: 'ranking', label: 'ranking', icon: <span className="mini-orb" />, active: leaderOpen, onClick: () => setLeaderOpen((v) => !v) }, { id: 'conquista', label: tr('conquista', 'conquest'), icon: <span className="mini-orb mini-orb--green" />, active: conquestOpen, onClick: () => { if (!conquestOpen && sceneRef.current?.mode === 'lejos') sceneRef.current.enter(); setConquestOpen((v) => !v); } }, { id: 'atlas', label: 'atlas', icon: <span className="mini-orb mini-orb--globe" />, active: atlasOpen, onClick: () => setAtlasOpen((v) => !v) },
+        ...(isSupabaseConfigured ? [{ id: 'exp', label: tr('expediciones', 'expeditions'), icon: <span className="mini-orb" />, active: expOpen, onClick: () => setExpOpen((v) => !v) }, { id: 'gadgets', label: 'gadgets', icon: <span className="mini-orb mini-orb--green" />, active: gadgetsOpen, onClick: () => setGadgetsOpen((v) => !v) }] : [])]} />
     </div>
   );
 }
