@@ -9,8 +9,9 @@ import { sfx } from '../../audio/sfx';
 import { AeroWindow } from '../../ui/AeroWindow';
 import { tr } from '../../i18n';
 
-type Tab = 'cara' | 'pelo' | 'ropa' | 'extras';
+type Tab = 'looks' | 'cara' | 'pelo' | 'ropa' | 'extras';
 const TABS: Array<{ id: Tab; label: string }> = [
+  { id: 'looks', label: 'looks' },
   { id: 'cara', label: tr('cara', 'face') },
   { id: 'pelo', label: tr('pelo', 'hair') },
   { id: 'ropa', label: tr('ropa', 'clothes') },
@@ -26,6 +27,19 @@ const PALETTE: Record<ColorKey, readonly string[]> = {
   shoesColor: CLOTH_COLORS,
   accessoryColor: CLOTH_COLORS,
 };
+
+/** looks completos: cambian varias prendas a la vez sobre el personaje actual. */
+const LOOKS: Array<{ id: string; name: string; spec: Partial<AvatarSpec> }> = [
+  { id: 'casual', name: tr('casual', 'casual'), spec: { top: 0, topColor: 7, bottom: 0, bottomColor: 11, shoes: 0, shoesColor: 0, accessory: 0 } },
+  { id: 'aero', name: 'aero', spec: { top: 1, topColor: 6, bottom: 1, bottomColor: 7, shoes: 0, shoesColor: 0, accessory: 6, accessoryColor: 4 } },
+  { id: 'elegante', name: tr('elegante', 'dressy'), spec: { top: 2, topColor: 0, bottom: 0, bottomColor: 11, shoes: 2, shoesColor: 11, accessory: 0 } },
+  { id: 'playa', name: tr('playa', 'beach'), spec: { top: 4, topColor: 3, bottom: 1, bottomColor: 6, shoes: 3, shoesColor: 0, accessory: 7 } },
+  { id: 'princesa', name: tr('realeza', 'royal'), spec: { top: 3, topColor: 9, shoes: 1, shoesColor: 3, accessory: 8, accessoryColor: 3 } },
+  { id: 'rayas', name: tr('marinero', 'sailor'), spec: { top: 7, topColor: 7, bottom: 1, bottomColor: 0, shoes: 0, shoesColor: 0, accessory: 4, accessoryColor: 7 } },
+  { id: 'gato', name: tr('gatito', 'kitty'), spec: { top: 1, topColor: 10, bottom: 0, bottomColor: 11, shoes: 0, shoesColor: 0, accessory: 10, accessoryColor: 10 } },
+  { id: 'chaqueta', name: tr('chaqueta', 'jacket'), spec: { top: 6, topColor: 11, bottom: 0, bottomColor: 7, shoes: 2, shoesColor: 11, accessory: 1, accessoryColor: 11 } },
+  { id: 'robot', name: tr('retro', 'retro'), spec: { top: 5, topColor: 5, bottom: 0, bottomColor: 4, shoes: 0, shoesColor: 5, accessory: 11, accessoryColor: 5 } },
+];
 
 function Styles({ label, field, crop, draft, onPick }: { label: string; field: CategoryKey; crop: AvatarCrop; draft: AvatarSpec; onPick: (field: CategoryKey, i: number) => void }) {
   return (
@@ -60,8 +74,9 @@ function Swatches({ label, field, draft, onPick }: { label: string; field: Color
 export function AvatarEditor() {
   const saved = useAvatar();
   const [draft, setDraft] = useState<AvatarSpec>(saved);
-  const [tab, setTab] = useState<Tab>('cara');
+  const [tab, setTab] = useState<Tab>('looks');
   const [leaving, setLeaving] = useState(false);
+  const [zoomFace, setZoomFace] = useState(false);
   const [note, setNote] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
   const dirty = useMemo(() => !sameAvatar(draft, saved), [draft, saved]);
 
@@ -90,7 +105,8 @@ export function AvatarEditor() {
       <div className="ae">
         <section className="ae__preview" aria-label={tr('vista previa', 'preview')}>
           <div className="ae__stage">
-            <AvatarImg spec={draft} crop="completo" className="ae__figure" alt={tr('vista previa de tu personaje', 'preview of your character')} />
+            <AvatarImg spec={draft} crop={zoomFace ? 'cabeza' : 'completo'} className="ae__figure" alt={tr('vista previa de tu personaje', 'preview of your character')} />
+            <button type="button" className="ae__view" aria-pressed={zoomFace} onClick={() => setZoomFace((v) => !v)}>{zoomFace ? tr('ver cuerpo completo', 'full body') : tr('acercar la cara', 'zoom on face')}</button>
           </div>
           <div className="ae__quick">
             <button type="button" className="vista-button" onClick={() => setDraft(randomAvatar())}>
@@ -112,6 +128,20 @@ export function AvatarEditor() {
           </div>
 
           <div className="ae__options" role="tabpanel">
+            {tab === 'looks' && (
+              <fieldset className="ae-group">
+                <legend>{tr('looks listos para probar', 'ready-made looks')}</legend>
+                <div className="ae-looks">
+                  {LOOKS.map((look) => (
+                    <button key={look.id} type="button" onClick={() => { sfx.click(); setNote(null); setDraft((d) => ({ ...d, ...look.spec })); }}>
+                      <img src={avatarDataUrl({ ...draft, ...look.spec }, 'completo')} alt="" loading="lazy" draggable={false} />
+                      <span>{look.name}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="ae__hint">{tr('toca un look y luego ajusta cada parte en las otras pestañas.', 'tap a look, then fine-tune each part in the other tabs.')}</p>
+              </fieldset>
+            )}
             {tab === 'cara' && (
               <>
                 <Styles label={tr('forma de la cara', 'face shape')} field="head" crop="cabeza" draft={draft} onPick={pickStyle} />
@@ -133,17 +163,17 @@ export function AvatarEditor() {
             )}
             {tab === 'ropa' && (
               <>
-                <Styles label={tr('parte de arriba', 'top')} field="top" crop="completo" draft={draft} onPick={pickStyle} />
+                <Styles label={tr('parte de arriba', 'top')} field="top" crop="torso" draft={draft} onPick={pickStyle} />
                 <Swatches label={tr('color de arriba', 'top color')} field="topColor" draft={draft} onPick={pickColor} />
                 {draft.top === 3 ? (
                   <p className="ae__hint">{tr('el vestido cubre la parte de abajo.', 'the dress covers the bottom.')}</p>
                 ) : (
                   <>
-                    <Styles label={tr('parte de abajo', 'bottom')} field="bottom" crop="completo" draft={draft} onPick={pickStyle} />
+                    <Styles label={tr('parte de abajo', 'bottom')} field="bottom" crop="piernas" draft={draft} onPick={pickStyle} />
                     <Swatches label={tr('color de abajo', 'bottom color')} field="bottomColor" draft={draft} onPick={pickColor} />
                   </>
                 )}
-                <Styles label={tr('calzado', 'footwear')} field="shoes" crop="completo" draft={draft} onPick={pickStyle} />
+                <Styles label={tr('calzado', 'footwear')} field="shoes" crop="pies" draft={draft} onPick={pickStyle} />
                 <Swatches label={tr('color del calzado', 'footwear color')} field="shoesColor" draft={draft} onPick={pickColor} />
               </>
             )}
