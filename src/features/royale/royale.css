@@ -46,3 +46,15 @@
 .royale__roster li { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; font-weight: 700; background: rgba(255,255,255,.2); text-align: left; }
 .royale__roster i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; flex: none; }
 .royale__wait { font-weight: 700; opacity: .9; }
+
+/* frenesí y combo */
+.royale__frenzy { position: absolute; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(300px, 46vw); display: grid; gap: 4px; justify-items: center; }
+.royale__fbar { position: relative; width: 100%; height: 16px; border-radius: 999px; background: rgba(0,40,90,.55); border: 1px solid rgba(255,255,255,.7); overflow: hidden; }
+.royale__fbar i { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: linear-gradient(180deg, #fff3a8, #ffb400 55%, #ff7a00); transition: width 80ms linear; box-shadow: 0 0 14px rgba(255,190,0,.9); }
+.royale__fbar u { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,.7); }
+.royale__fbar.is-rush i { background: linear-gradient(90deg, #ff6ad8, #6ae0ff, #fff36a, #ff6ad8); background-size: 200% 100%; animation: royale-rush 0.7s linear infinite; }
+@keyframes royale-rush { to { background-position: 200% 0; } }
+.royale__frenzy small { font-size: 11px; font-weight: 700; text-shadow: 0 1px 6px rgba(0,40,90,.8); text-align: center; }
+.royale__combo { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); display: grid; justify-items: center; }
+.royale__combo b { font-size: clamp(48px, 10vw, 84px); font-weight: 800; line-height: 1; color: #ffe36a; text-shadow: 0 4px 0 #c46a00, 0 0 28px rgba(255,200,40,.9); transform: scale(calc(.8 + var(--k, 1) * .3)); }
+.royale__combo span { font-weight: 800; letter-spacing: .3em; text-transform: uppercase; font-size: 12px; text-shadow: 0 1px 8px rgba(0,40,90,.8); }

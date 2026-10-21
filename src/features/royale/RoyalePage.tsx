@@ -4,39 +4,18 @@ import { randomAvatar, type AvatarSpec } from '../../avatar/model';
 import { avatarStore } from '../../avatar/store';
 import { sfx } from '../../audio/sfx';
 import { tr, lang } from '../../i18n';
-import { awardSoles } from '../../persistence/soles';
 import { useSession } from '../../persistence/session';
 import { BrandOrb } from '../../ui/Brand';
 import { mulberry32 } from '../minigames/rng';
 import { burst, draw, drawMinimap, newFx, stepFx, RoyaleArt, type Fx } from './render';
-import { createMatch, eliminate, step, zoneAt, BULLET_LIFE, MAX_HP, type Input, type Match, type PlayerInit, type RoyaleEvent } from './sim';
+import { createMatch, eliminate, registerHit, step, zoneAt, BULLET_DMG, BULLET_LIFE, MAX_HP, type Input, type Match, type PlayerInit, type RoyaleEvent } from './sim';
 import { cleanCode, netAvailable, newRoomCode, RoyaleNet, type Member, type NetMsg, type StartMsg, type StateMsg } from './net';
+import { BattleResult, ProgressCard } from './BattleResult';
+import { recordMatch, type Outcome } from './progress';
 import './royale.css';
 
 const BOT_NAMES = ['burbuja', 'delfín', 'nenúfar', 'cristal', 'medusa', 'brisa', 'coral', 'perla', 'aqua', 'bruma', 'nube', 'marea'];
 const BOT_NAMES_EN = ['bubble', 'dolphin', 'lily', 'crystal', 'jelly', 'breeze', 'coral', 'pearl', 'aqua', 'mist', 'cloud', 'tide'];
-const STATS_KEY = 'frutiger-aero-islands:royale';
-
-interface Stats { played: number; wins: number; best: number; kills: number }
-const loadStats = (): Stats => {
-  try {
-    return { played: 0, wins: 0, best: 0, kills: 0, ...(JSON.parse(window.localStorage.getItem(STATS_KEY) ?? '{}') as Partial<Stats>) };
-  } catch {
-    return { played: 0, wins: 0, best: 0, kills: 0 };
-  }
-};
-const saveStats = (s: Stats) => {
-  try {
-    window.localStorage.setItem(STATS_KEY, JSON.stringify(s));
-  } catch {
-    /* sin almacenamiento */
-  }
-};
-
-/** soles por puesto y por bajas. */
-export const royaleReward = (placement: number, kills: number) => (placement === 1 ? 160 : placement <= 3 ? 70 : placement <= 6 ? 35 : 15) + kills * 8;
-
-interface Result { placement: number; kills: number; soles: number; won: boolean }
 interface Feed { id: number; text: string; at: number }
 
 export function RoyalePage() {
@@ -52,10 +31,10 @@ export function RoyalePage() {
   const membersRef = useRef<(l: Member[]) => void>(() => undefined);
   const cfgRef = useRef<{ seed: number; inits: PlayerInit[]; specs: Record<string, AvatarSpec | null>; online: boolean; isHost: boolean } | null>(null);
   const meId = useRef(`u${Math.random().toString(36).slice(2, 8)}`);
-  const [result, setResult] = useState<Result | null>(null);
-  const [stats, setStats] = useState<Stats>(loadStats);
+  const [outcome, setOutcome] = useState<Outcome | null>(null);
+  const powersRef = useRef(0);
   const [help, setHelp] = useState(false);
-  const [hud, setHud] = useState({ alive: 12, kills: 0, hp: MAX_HP, shield: 0, zone: '', count: 3, dead: false, place: 0, banner: '' });
+  const [hud, setHud] = useState({ alive: 12, kills: 0, hp: MAX_HP, maxHp: MAX_HP, shield: 0, frenzy: 0, combo: 0, comboLeft: 0, rush: false, triple: false, zone: '', count: 3, dead: false, place: 0, banner: '' });
   const [feed, setFeed] = useState<Feed[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const miniRef = useRef<HTMLCanvasElement>(null);
@@ -67,19 +46,14 @@ export function RoyalePage() {
   const finish = useCallback((m: Match) => {
     const me = m.players.find((p) => p.id === meId.current || p.id === 'me')!;
     const placement = me.placement || 1;
-    const soles = awardSoles(royaleReward(placement, me.kills));
-    const next = loadStats();
-    next.played += 1;
-    next.kills += me.kills;
-    if (placement === 1) next.wins += 1;
-    next.best = next.best ? Math.min(next.best, placement) : placement;
-    saveStats(next);
-    setStats(next);
-    setResult({ placement, kills: me.kills, soles, won: placement === 1 });
+    const result = recordMatch({
+      mode: 'royale', placement, players: m.players.length, kills: me.kills, bestCombo: me.bestCombo, powers: powersRef.current,
+      seconds: m.t, mass: 0, ate: 0, lowHpWin: placement === 1 && me.hp < 25,
+    });
+    setOutcome(result);
     void netRef.current?.close();
     netRef.current = null;
     setPhase('over');
-    if (placement === 1) sfx.levelUp();
   }, []);
 
   useEffect(() => {
@@ -99,6 +73,7 @@ export function RoyalePage() {
     const pointer = { x: 0, y: 0, down: false, mouse: false };
     const stick = { active: false, id: -1, cx: 0, cy: 0, x: 0, y: 0 };
     const touchFire = { down: false };
+    let tapFlag = false;
     let lastAim = 0;
     let zoomNow = 1;
     const focus = { x: 0, y: 0 };
@@ -131,8 +106,10 @@ export function RoyalePage() {
     const onKey = (e: KeyboardEvent, down: boolean) => {
       const k = e.key.toLowerCase();
       if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault();
-      if (down) keys.add(k);
-      else keys.delete(k);
+      if (down) {
+        if (k === ' ' && !e.repeat) tapFlag = true;
+        keys.add(k);
+      } else keys.delete(k);
     };
     const kd = (e: KeyboardEvent) => onKey(e, true);
     const ku = (e: KeyboardEvent) => onKey(e, false);
@@ -148,6 +125,7 @@ export function RoyalePage() {
       if (e.pointerType === 'mouse') {
         pointer.mouse = true;
         pointer.down = true;
+        tapFlag = true;
         pointer.x = p.x;
         pointer.y = p.y;
         return;
@@ -204,7 +182,7 @@ export function RoyalePage() {
     window.addEventListener('pointerup', pu);
     window.addEventListener('pointercancel', pu);
     const fireBtn = document.getElementById('royale-fire');
-    const fd = (e: Event) => { e.preventDefault(); touchFire.down = true; };
+    const fd = (e: Event) => { e.preventDefault(); touchFire.down = true; tapFlag = true; };
     const fu = () => { touchFire.down = false; };
     fireBtn?.addEventListener('pointerdown', fd);
     window.addEventListener('pointerup', fu);
@@ -233,13 +211,15 @@ export function RoyalePage() {
         else if (mx || my) aim = Math.atan2(my, mx);
       }
       lastAim = aim;
-      return { mx, my, aim, fire: firing && countdown <= 0 };
+      const tap = tapFlag && countdown <= 0;
+      tapFlag = false;
+      return { mx, my, aim, fire: firing && countdown <= 0, tap };
     };
 
     const handle = (ev: RoyaleEvent) => {
       if (ev.type === 'shot') {
         if (ev.bullet.owner === myId) sfx.pop();
-        if (online && (ev.bullet.owner === myId || (isHost && m.players.find((p) => p.id === ev.bullet.owner)?.isBot))) net?.send({ k: 'shot', owner: ev.bullet.owner, x: ev.bullet.x, y: ev.bullet.y, vx: ev.bullet.vx, vy: ev.bullet.vy });
+        if (online && (ev.bullet.owner === myId || (isHost && m.players.find((p) => p.id === ev.bullet.owner)?.isBot))) net?.send({ k: 'shot', owner: ev.bullet.owner, x: ev.bullet.x, y: ev.bullet.y, vx: ev.bullet.vx, vy: ev.bullet.vy, dmg: ev.bullet.dmg });
       } else if (ev.type === 'hit') {
         const v = m.players.find((p) => p.id === ev.victim);
         if (v) {
@@ -266,8 +246,27 @@ export function RoyalePage() {
         const v = m.players.find((p) => p.id === ev.player);
         if (v) {
           fx.floats.push({ x: v.x, y: v.y - 36, text: { heart: '+hp', shield: '+escudo', rapid: tr('ráfaga', 'rapid'), speed: tr('veloz', 'speed') }[ev.kind], life: 1, color: '#9affb0' });
-          if (v.id === myId) sfx.coin();
+          if (v.id === myId) {
+            sfx.coin();
+            powersRef.current += 1;
+          }
           if (online && v.auth) net?.send({ k: 'pickup', id: ev.id, player: v.id, kind: ev.kind });
+        }
+      } else if (ev.type === 'combo') {
+        if (ev.player === myId) {
+          fx.floats.push({ x: meP.x, y: meP.y - 64, text: `x${ev.combo}`, life: 1.1, color: ev.combo >= 8 ? '#ffd24a' : '#fff' });
+          if (ev.reward) {
+            const label = { heal: tr('+vida', '+health'), shield: tr('+escudo', '+shield'), triple: tr('ráfaga triple', 'triple shot'), ring: tr('anillo de burbujas', 'bubble ring'), life: tr('+40 vida máxima', '+40 max health') }[ev.reward];
+            setHud((h) => ({ ...h, banner: `${tr('combo', 'combo')} x${ev.combo}: ${label}` }));
+            window.setTimeout(() => setHud((h) => ({ ...h, banner: '' })), 2200);
+            sfx.levelUp();
+            burst(fx, meP.x, meP.y, 50, 16);
+          } else sfx.coin();
+        }
+      } else if (ev.type === 'frenzy') {
+        if (ev.player === myId) {
+          fx.floats.push({ x: meP.x, y: meP.y - 50, text: [tr('', ''), tr('calentando', 'warming up'), tr('frenesí', 'frenzy'), tr('furia', 'fury'), 'AERO RUSH'][ev.tier] ?? '', life: 1, color: '#ffe36a' });
+          burst(fx, meP.x, meP.y, 45, 10);
         }
       } else if (ev.type === 'phase') {
         setHud((h) => ({ ...h, banner: tr('la opacidad avanza', 'the haze is closing in') }));
@@ -300,9 +299,10 @@ export function RoyalePage() {
         else if (msg.k === 'bots') msg.list.forEach(applyState);
         else if (msg.k === 'shot') {
           const owner = m.players.find((p) => p.id === msg.owner);
-          if (owner && owner.alive) m.bullets.push({ id: -(m.nextId++), owner: msg.owner, x: msg.x, y: msg.y, vx: msg.vx, vy: msg.vy, life: BULLET_LIFE });
+          if (owner && owner.alive) m.bullets.push({ id: -(m.nextId++), owner: msg.owner, x: msg.x, y: msg.y, vx: msg.vx, vy: msg.vy, life: BULLET_LIFE, dmg: msg.dmg ?? BULLET_DMG });
         } else if (msg.k === 'hit') {
           const v = m.players.find((p) => p.id === msg.victim);
+          if (msg.killer === myId && v) for (const e2 of registerHit(m, meP, msg.dead)) handle(e2);
           if (v && !v.auth) {
             fx.flash[v.id] = 1;
             fx.floats.push({ x: v.x, y: v.y - 40, text: `-${Math.round(msg.dmg)}`, life: 0.9, color: '#ffe36a' });
@@ -371,7 +371,13 @@ export function RoyalePage() {
           alive: m.players.filter((p) => p.alive).length,
           kills: me.kills,
           hp: Math.max(0, Math.round(me.hp)),
+          maxHp: me.maxHp,
           shield: Math.round(me.shield),
+          frenzy: Math.round(me.frenzy),
+          combo: me.combo,
+          comboLeft: Math.max(0, 1.8 - (m.t - me.comboAt)),
+          rush: me.rush > 0,
+          triple: me.triple > 0,
           zone: z.phase >= 4 ? tr('zona final', 'final zone') : z.shrinking ? tr('la opacidad avanza', 'the haze advances') : `${tr('próximo cierre', 'next closing')} ${Math.ceil(z.next)}s`,
           count: Math.max(0, Math.ceil(countdown)),
           dead: !me.alive,
@@ -437,7 +443,8 @@ export function RoyalePage() {
     const seed = Math.floor(Math.random() * 2_000_000_000) + 1;
     const bots = buildBots(seed, 11);
     cfgRef.current = { seed, inits: [{ id: 'me', name: meName, isBot: false, auth: true, hue: 190 }, ...bots.inits], specs: { me: avatarStore.get(), ...bots.specs }, online: false, isHost: false };
-    setResult(null);
+    setOutcome(null);
+    powersRef.current = 0;
     setFeed([]);
     setPhase('play');
   };
@@ -446,7 +453,8 @@ export function RoyalePage() {
   const startFromMsg = useCallback((start: StartMsg, host: boolean) => {
     const inits: PlayerInit[] = start.roster.map((r) => ({ id: r.id, name: r.name, isBot: r.isBot, auth: r.id === meId.current || (r.isBot && host), hue: r.hue }));
     cfgRef.current = { seed: start.seed, inits, specs: start.specs, online: true, isHost: host };
-    setResult(null);
+    setOutcome(null);
+    powersRef.current = 0;
     setFeed([]);
     setPhase('play');
   }, []);
@@ -537,6 +545,8 @@ export function RoyalePage() {
     );
   }
 
+  if (phase === 'over' && outcome) return <BattleResult outcome={outcome} onAgain={startSolo} onMenu={() => setPhase('menu')} />;
+
   if (phase === 'menu' || phase === 'over') {
     return (
       <main className="royale royale--menu">
@@ -544,17 +554,9 @@ export function RoyalePage() {
           <BrandOrb size={72} />
           <p className="royale__kicker">frutiger aero</p>
           <h1>aero royale</h1>
-          {phase === 'over' && result ? (
-            <div className="royale__result" role="status">
-              <strong>{result.won ? tr('¡victoria!', 'victory!') : `${tr('puesto', 'place')} ${result.placement} ${tr('de 12', 'of 12')}`}</strong>
-              <span>{result.kills} {tr('bajas', 'pops')} · +{result.soles} {tr('soles para tu isla', 'suns for your island')}</span>
-              {result.soles === 0 && <small>{tr('hoy ya llegaste al tope diario de soles.', "you've reached today's suns cap.")}</small>}
-            </div>
-          ) : (
-            <p className="royale__lead">{tr('12 orbes de cristal, una isla que se encoge. la opacidad gris avanza: revienta burbujas, junta objetos y sé el último en pie.', '12 glass orbs, one shrinking island. the gray haze closes in: pop bubbles, grab pickups and be the last one standing.')}</p>
-          )}
+          <p className="royale__lead">{tr('12 orbes de cristal, una isla que se encoge. la opacidad gris avanza: revienta burbujas, haz clic rápido para cargar el frenesí y sé el último en pie.', '12 glass orbs, one shrinking island. the gray haze closes in: pop bubbles, click fast to charge frenzy and be the last one standing.')}</p>
           <div className="royale__actions">
-            <button type="button" className="vista-button vista-button--primary" onClick={startSolo}>{phase === 'over' ? tr('jugar otra vez', 'play again') : tr('jugar contra 11 bots', 'play vs 11 bots')}</button>
+            <button type="button" className="vista-button vista-button--primary" onClick={startSolo}>{tr('jugar contra 11 bots', 'play vs 11 bots')}</button>
             <button type="button" className="vista-button" onClick={() => setHelp((v) => !v)} aria-expanded={help}>{tr('cómo se juega', 'how to play')}</button>
             <a className="landing__text-link" href={routeHref('inicio')}>{tr('volver', 'back')}</a>
           </div>
@@ -575,7 +577,8 @@ export function RoyalePage() {
               <li><b>{tr('la opacidad', 'the haze')}</b> {tr('fuera del círculo luminoso pierdes vida; fuera de la isla caes al lago', 'outside the glowing circle you lose health; outside the island you fall into the lake')}</li>
             </ul>
           )}
-          <p className="royale__stats">{tr('partidas', 'matches')} {stats.played} · {tr('victorias', 'wins')} {stats.wins} · {tr('mejor puesto', 'best place')} {stats.best || '—'} · {tr('bajas', 'pops')} {stats.kills}</p>
+          <ProgressCard />
+          <a className="landing__text-link" href="#/blob">{tr('probar otro modo: aero blob', 'try another mode: aero blob')}</a>
         </div>
       </main>
     );
@@ -593,9 +596,16 @@ export function RoyalePage() {
         <canvas ref={miniRef} className="royale__mini" width={132} height={132} aria-hidden="true" />
         <ul className="royale__feed" aria-live="polite">{feed.map((f) => <li key={f.id}>{f.text}</li>)}</ul>
         <div className="royale__vitals">
-          <div className="royale__bar"><i style={{ width: `${(hud.hp / MAX_HP) * 100}%` }} /><span>{hud.hp}</span></div>
+          <div className="royale__bar"><i style={{ width: `${(hud.hp / hud.maxHp) * 100}%` }} /><span>{hud.hp} / {hud.maxHp}</span></div>
           {hud.shield > 0 && <div className="royale__bar royale__bar--shield"><i style={{ width: `${Math.min(100, (hud.shield / 60) * 100)}%` }} /><span>{hud.shield}</span></div>}
         </div>
+        {!hud.dead && hud.count === 0 && (
+          <div className="royale__frenzy" aria-label={tr('frenesí', 'frenzy')}>
+            <div className={`royale__fbar${hud.rush ? ' is-rush' : ''}`}><i style={{ width: `${hud.frenzy}%` }} />{[25, 50, 75].map((t) => <u key={t} style={{ left: `${t}%` }} />)}</div>
+            <small>{hud.rush ? 'AERO RUSH' : hud.triple ? tr('ráfaga triple', 'triple shot') : hud.frenzy >= 25 ? tr('clics rápidos = más velocidad y daño', 'fast clicks = more speed and damage') : tr('haz clic rápido para cargar el frenesí', 'click fast to charge frenzy')}</small>
+          </div>
+        )}
+        {hud.combo >= 2 && !hud.dead && <div className="royale__combo" style={{ ['--k' as string]: hud.comboLeft / 1.8 }}><b>x{hud.combo}</b><span>{tr('combo', 'combo')}</span></div>}
         {hud.count > 0 && <div className="royale__count" aria-live="assertive">{hud.count}</div>}
         {hud.dead && (
           <div className="royale__dead" role="status">
