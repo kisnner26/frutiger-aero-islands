@@ -1,130 +1,132 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=1920, height=1080" />
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js" integrity="sha384-sG0Hv1tP1lZCk9KQmrIbY/XNwi+OY84GQqhMscbnsoBFqAz8KNCil1kvfL3Hbbk2" crossorigin="anonymous"></script>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      html,
-      body {
-        width: 1920px;
-        height: 1080px;
-        overflow: hidden;
-        background: #000;
-      }
-      #root {
-        position: relative;
-        width: 1920px;
-        height: 1080px;
-        overflow: hidden;
-        background: #eafcff;
-      }
-      .scene {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-      }
-    </style>
-  </head>
-  <body>
-    <div data-hf-id="hf-dy4d"
-      id="root"
-      data-composition-id="main"
-      data-start="0"
-      data-duration="90"
-      data-width="1920"
-      data-height="1080"
-    >
-      <div data-hf-id="hf-ryj5"
-        id="el-01-circuito"
-        class="scene"
-        data-composition-id="01-circuito"
-        data-composition-src="compositions/frames/01-circuito.html"
-        data-start="0"
-        data-duration="12.5"
-        data-track-index="0"
-      ></div>
-
-      <div data-hf-id="hf-o0h7"
-        id="el-02-agua"
-        class="scene"
-        data-composition-id="02-agua"
-        data-composition-src="compositions/frames/02-agua.html"
-        data-start="12"
-        data-duration="14.6"
-        data-track-index="1"
-      ></div>
-
-      <div data-hf-id="hf-abo3"
-        id="el-03-nefrona"
-        class="scene"
-        data-composition-id="03-nefrona"
-        data-composition-src="compositions/frames/03-nefrona.html"
-        data-start="26"
-        data-duration="18.6"
-        data-track-index="0"
-      ></div>
-
-      <div data-hf-id="hf-3udl"
-        id="el-04-miccion"
-        class="scene"
-        data-composition-id="04-miccion"
-        data-composition-src="compositions/frames/04-miccion.html"
-        data-start="44"
-        data-duration="16.5"
-        data-track-index="1"
-      ></div>
-
-      <div data-hf-id="hf-2rep"
-        id="el-05-orina"
-        class="scene"
-        data-composition-id="05-orina"
-        data-composition-src="compositions/frames/05-orina.html"
-        data-start="60"
-        data-duration="14.6"
-        data-track-index="0"
-      ></div>
-
-      <div data-hf-id="hf-9nd6"
-        id="el-06-calculos-infeccion"
-        class="scene"
-        data-composition-id="06-calculos-infeccion"
-        data-composition-src="compositions/frames/06-calculos-infeccion.html"
-        data-start="74"
-        data-duration="16"
-        data-track-index="1"
-      ></div>
-
-    </div>
-
-    <script>
-      window.__timelines = window.__timelines || {};
-      window.__timelines["main"] = gsap.timeline({ paused: true });
-      // ── frame transitions (injected by transitions.mjs) ──
-      (function () { var tl = window.__timelines["main"];
-        tl.to("#el-01-circuito", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 12);
-        tl.fromTo("#el-02-agua", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 12);
-        tl.addLabel("hf:transition:01-circuito:02-agua:crossfade", 12);
-        tl.to("#el-02-agua", { filter: "blur(10px)", scale: 1.03, opacity: 0, duration: 0.6, ease: "power2.inOut" }, 26);
-        tl.fromTo("#el-03-nefrona", { filter: "blur(10px)", scale: 0.97, opacity: 0 }, { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.6, ease: "power2.inOut" }, 26);
-        tl.addLabel("hf:transition:02-agua:03-nefrona:blur-crossfade", 26);
-        tl.to("#el-03-nefrona", { filter: "blur(10px)", scale: 1.03, opacity: 0, duration: 0.6, ease: "power2.inOut" }, 44);
-        tl.fromTo("#el-04-miccion", { filter: "blur(10px)", scale: 0.97, opacity: 0 }, { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.6, ease: "power2.inOut" }, 44);
-        tl.addLabel("hf:transition:03-nefrona:04-miccion:blur-crossfade", 44);
-        tl.to("#el-04-miccion", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 60);
-        tl.fromTo("#el-05-orina", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 60);
-        tl.addLabel("hf:transition:04-miccion:05-orina:crossfade", 60);
-        tl.to("#el-05-orina", { filter: "blur(10px)", scale: 1.03, opacity: 0, duration: 0.6, ease: "power2.inOut" }, 74);
-        tl.fromTo("#el-06-calculos-infeccion", { filter: "blur(10px)", scale: 0.97, opacity: 0 }, { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.6, ease: "power2.inOut" }, 74);
-        tl.addLabel("hf:transition:05-orina:06-calculos-infeccion:blur-crossfade", 74);
-        tl.to({}, { duration: 90 }, 0); // full-span anchor — main.duration() == composition total (Studio master duration)
-      })();
-    </script>
-  </body>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="simulación interactiva del sistema urinario masculino y la función renal">
+  <title>sistema urinario en vivo</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./layout-fixes.css">
+</head>
+<body>
+<main class="app" aria-labelledby="page-title">
+  <header class="topbar">
+    <div><p class="eyebrow">atlas urológico interactivo</p><h1 id="page-title">fisiología urinaria masculina</h1></div>
+    <div class="live-status" aria-label="simulación activa"><span></span>modelo fisiológico activo</div>
+  </header>
+  <section class="workspace" aria-label="simulador del sistema urinario masculino">
+    <aside class="controls" aria-labelledby="controls-title">
+      <div class="panel-heading"><p class="panel-index">01</p><h2 id="controls-title">condiciones</h2></div>
+      <div class="control-block">
+        <div class="control-label"><label for="water">agua ingerida</label><output id="water-value" for="water">500 ml</output></div>
+        <input id="water" type="range" min="0" max="1500" step="50" value="500">
+        <div class="range-scale"><span>0</span><span>1.5 l</span></div>
+      </div>
+      <div class="control-block">
+        <div class="control-label"><label for="filter">función renal</label><output id="filter-value" for="filter">100 %</output></div>
+        <input id="filter" type="range" min="20" max="100" step="5" value="100">
+      </div>
+      <div class="control-block">
+        <div class="control-label"><label for="adh">hormona adh</label><output id="adh-value" for="adh">50 %</output></div>
+        <input id="adh" type="range" min="0" max="100" step="5" value="50">
+        <p class="control-hint">más adh: mayor reabsorción de agua y menor volumen urinario.</p>
+      </div>
+      <fieldset class="control-block segmented">
+        <legend>aspecto de la orina</legend>
+        <button type="button" data-urine="clara" aria-pressed="false">clara</button><button type="button" data-urine="normal" aria-pressed="true">normal</button><button type="button" data-urine="oscura" aria-pressed="false">oscura</button><button type="button" data-urine="hematuria" aria-pressed="false">sangre</button>
+      </fieldset>
+      <fieldset class="control-block switches">
+        <legend>alteraciones</legend>
+        <label><input id="stone" type="checkbox"><span>formación de cálculo renal</span></label>
+        <label><input id="infection" type="checkbox"><span>infección ascendente</span></label>
+        <label><input id="protein" type="checkbox"><span>lesión glomerular · proteinuria</span></label>
+        <label><input id="prostate" type="checkbox"><span>obstrucción prostática</span></label>
+      </fieldset>
+      <div class="stone-controls" id="stone-controls" aria-labelledby="stone-controls-title">
+        <p id="stone-controls-title" class="section-label">riesgo de cristalización</p>
+        <div class="control-label"><label for="mineral">minerales en orina</label><output id="mineral-value" for="mineral">65 %</output></div>
+        <input id="mineral" type="range" min="20" max="100" step="5" value="65">
+        <div class="control-label compact"><label for="citrate">citrato protector</label><output id="citrate-value" for="citrate">50 %</output></div>
+        <input id="citrate" type="range" min="0" max="100" step="5" value="50">
+        <fieldset class="stone-types">
+          <legend>tipo de cálculo</legend>
+          <button type="button" data-stone-type="calcio" aria-pressed="true">calcio</button><button type="button" data-stone-type="urico" aria-pressed="false">ácido úrico</button><button type="button" data-stone-type="estruvita" aria-pressed="false">estruvita</button><button type="button" data-stone-type="cistina" aria-pressed="false">cistina</button>
+        </fieldset>
+      </div>
+      <button id="void" class="void-button" type="button">orinar ahora</button>
+      <p class="medical-note">modelo educativo simplificado. el color orienta, pero no diagnostica una enfermedad.</p>
+    </aside>
+    <section class="anatomy-view" aria-labelledby="anatomy-title">
+      <h2 id="anatomy-title" class="sr-only">anatomía urinaria masculina animada</h2>
+      <div class="view-tools" role="group" aria-label="capas visibles">
+        <button type="button" data-layer="labels" aria-pressed="true">etiquetas</button><button type="button" data-layer="nephron" aria-pressed="true">nefrona</button><button type="button" data-layer="flow" aria-pressed="true">flujos</button>
+      </div>
+      <div class="anatomy-stage" id="anatomy-stage">
+        <img src="./assets/images/urinary-system-reference.png" width="1312" height="1199" alt="riñones, vasos renales, uréteres, vejiga, próstata y uretra masculinos">
+        <svg id="physiology" viewBox="0 0 1312 1199" role="img" aria-labelledby="svg-title svg-desc">
+          <title id="svg-title">flujo urinario y renal en tiempo real</title><desc id="svg-desc">partículas muestran la sangre filtrándose en los riñones, la orina descendiendo por los uréteres y acumulándose en la vejiga.</desc>
+          <defs>
+            <filter id="glow-cyan"><feGaussianBlur stdDeviation="7" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="glow-red"><feGaussianBlur stdDeviation="9" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <clipPath id="bladder-clip"><ellipse cx="656" cy="822" rx="142" ry="110"/></clipPath>
+            <path id="blood-left" d="M650 245 C575 245 540 255 485 282 C450 300 423 316 400 320"/><path id="blood-right" d="M662 245 C738 245 786 257 830 282 C858 298 881 311 910 318"/>
+            <path id="vein-left" d="M400 300 C474 284 532 265 620 267"/><path id="vein-right" d="M910 300 C840 282 780 267 690 267"/>
+            <path id="ureter-left" d="M435 365 C440 520 500 632 558 760 C575 790 594 807 620 816"/><path id="ureter-right" d="M875 365 C870 520 810 632 754 760 C737 790 718 807 692 816"/>
+            <path id="urethra-path" d="M656 902 C654 976 655 1062 656 1160"/><path id="infection-path" d="M656 1160 C655 1035 655 940 656 882 C657 827 700 808 731 781 C778 739 823 608 875 365"/>
+            <path id="nephron-filter-path" d="M1048 142 C1002 120 978 166 1011 190 C1048 216 1096 177 1067 141 C1046 116 1007 133 1011 166"/>
+            <path id="nephron-tubule-path" d="M1058 205 C1128 215 1088 265 1148 274 C1202 282 1160 324 1218 344"/>
+          </defs>
+          <g class="organ-effects" aria-hidden="true">
+            <ellipse id="kidney-left-glow" class="kidney-glow" cx="398" cy="273" rx="158" ry="188"/><ellipse id="kidney-right-glow" class="kidney-glow" cx="914" cy="273" rx="158" ry="188"/>
+            <path id="left-ureter-highlight" class="tract-highlight" d="M435 365 C440 520 500 632 558 760 C575 790 594 807 620 816"/><path id="right-ureter-highlight" class="tract-highlight" d="M875 365 C870 520 810 632 754 760 C737 790 718 807 692 816"/><path id="urethra-highlight" class="tract-highlight" d="M656 902 C654 976 655 1062 656 1160"/>
+            <g clip-path="url(#bladder-clip)"><rect id="bladder-fluid" x="505" y="930" width="302" height="0"/></g><ellipse id="bladder-outline" cx="656" cy="822" rx="142" ry="110"/>
+            <g id="stone-formation">
+              <g id="renal-crystals"><path d="M421 322l8-13 8 13-8 12z"/><path d="M440 338l7-12 8 12-8 12z"/><path d="M403 345l6-10 7 10-7 11z"/><path d="M450 307l6-10 7 10-7 11z"/><path d="M416 366l7-12 8 12-8 12z"/></g>
+              <circle id="stone-core" cx="435" cy="357" r="0"/>
+            </g>
+            <g id="stone-marker"><circle cx="0" cy="0" r="18"/><circle cx="0" cy="0" r="7"/></g><path id="pressure-wave" d="M435 365 C440 480 470 550 493 618"/><g id="infection-halo"><ellipse cx="656" cy="822" rx="158" ry="126"/><ellipse cx="875" cy="365" rx="118" ry="142"/></g>
+            <ellipse id="hydronephrosis" cx="430" cy="347" rx="64" ry="82"/><ellipse id="prostate-halo" cx="656" cy="934" rx="57" ry="46"/><path id="urethra-stricture" d="M656 914V994"/><g id="protein-indicator"><circle cx="405" cy="314" r="11"/><circle cx="430" cy="328" r="9"/><circle cx="452" cy="309" r="12"/></g>
+          </g>
+          <g id="particle-layer" aria-hidden="true"></g>
+          <g id="nephron-inset" transform="translate(500 0) scale(.62)" aria-hidden="true">
+            <circle class="nephron-bg" cx="1100" cy="205" r="174"/><text x="978" y="65">ampliación · nefrona</text>
+            <path class="nephron-glomerulus" d="M1048 142 C1002 120 978 166 1011 190 C1048 216 1096 177 1067 141 C1046 116 1007 133 1011 166"/><path class="nephron-tubule" d="M1058 205 C1128 215 1088 265 1148 274 C1202 282 1160 324 1218 344"/>
+            <text x="930" y="245">filtración</text><text x="1108" y="306">reabsorción</text><text x="1168" y="372">orina</text>
+          </g>
+          <g class="labels" aria-hidden="true">
+            <g transform="translate(92 198)"><path d="M145 18 H242"/><text x="0" y="25">riñón izquierdo</text></g><g transform="translate(976 198)"><path d="M0 18 H-92"/><text x="18" y="25">riñón derecho</text></g><g transform="translate(1000 560)"><path d="M0 18 H-115"/><text x="18" y="25">uréter</text></g><g transform="translate(942 815)"><path d="M0 18 H-130"/><text x="18" y="25">vejiga</text></g><g transform="translate(920 935)"><path d="M0 18 H-155"/><text x="18" y="25">próstata</text></g><g transform="translate(887 1070)"><path d="M0 18 H-150"/><text x="18" y="25">uretra</text></g>
+          </g>
+        </svg>
+        <div class="testes-context" aria-label="testículos, pertenecientes al sistema reproductor"><span></span><span></span><p>testículos · sistema reproductor</p></div>
+        <button class="organ-hotspot kidney-left" type="button" data-organ="kidney" aria-label="examinar riñón izquierdo"><span>riñón</span></button>
+        <button class="organ-hotspot bladder" type="button" data-organ="bladder" aria-label="examinar vejiga"><span>vejiga</span></button>
+        <button class="organ-hotspot prostate" type="button" data-organ="prostate" aria-label="examinar próstata"><span>próstata</span></button>
+        <div id="organ-detail" class="organ-detail" aria-live="polite"><b>riñones</b><span>filtran plasma, regulan agua y electrolitos y producen orina.</span></div>
+      </div>
+    </section>
+    <aside class="readout" aria-labelledby="readout-title">
+      <div class="panel-heading"><p class="panel-index">02</p><h2 id="readout-title">respuesta actual</h2></div>
+      <dl class="metrics">
+        <div><dt>filtración estimada</dt><dd><span id="gfr">125</span> ml/min</dd></div><div><dt>flujo de orina</dt><dd><span id="urine-flow">1.2</span> ml/min</dd></div><div><dt>vejiga</dt><dd><span id="bladder-volume">180</span> ml</dd></div><div><dt>residuo posmiccional</dt><dd><span id="residual">35</span> ml</dd></div><div><dt>concentración</dt><dd id="concentration">normal</dd></div>
+      </dl>
+      <section class="live-chart" aria-labelledby="chart-title"><div><p class="status-label">últimos 30 segundos</p><h3 id="chart-title">producción de orina</h3></div><svg id="flow-chart" viewBox="0 0 300 76" role="img" aria-label="gráfico en vivo del flujo de orina"><path class="chart-grid" d="M0 18H300M0 38H300M0 58H300"/><path id="flow-line" d="M0 60L300 60"/></svg></section>
+      <div class="status-copy" aria-live="polite"><p class="status-label">mecanismo activo</p><p id="status-title">filtración equilibrada</p><p id="status-detail">la sangre entra a ambos riñones; las nefronas filtran y devuelven al cuerpo el agua y los solutos necesarios.</p></div>
+      <section class="stone-process" aria-labelledby="stone-process-title">
+        <div class="stone-process-head"><p class="status-label">litiasis renal</p><strong id="stone-risk-value">riesgo moderado</strong></div>
+        <h3 id="stone-process-title">cómo se forma un cálculo</h3>
+        <ol>
+          <li data-stone-step="1"><b>sobresaturación</b><span>la orina concentra minerales.</span></li>
+          <li data-stone-step="2"><b>nucleación</b><span>aparecen los primeros cristales.</span></li>
+          <li data-stone-step="3"><b>crecimiento</b><span>los cristales se agregan.</span></li>
+          <li data-stone-step="4"><b>obstrucción</b><span>el cálculo puede bloquear el uréter.</span></li>
+        </ol>
+        <p id="stone-type-detail" class="stone-detail">oxalato o fosfato de calcio: son los tipos más frecuentes.</p>
+      </section>
+      <div class="legend" aria-label="leyenda de flujos"><span><i class="blood"></i>sangre renal</span><span><i class="urine"></i>orina</span><span><i class="alert"></i>inflamación u obstrucción</span></div>
+      <p class="source-note">contenido médico: <a href="https://www.niddk.nih.gov/health-information/urologic-diseases/kidney-stones/definition-facts" target="_blank" rel="noreferrer">niddk · nih</a></p>
+    </aside>
+  </section>
+</main>
+<script type="module" src="./js/main.js"></script>
+</body>
 </html>

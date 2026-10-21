@@ -1,7 +1,7 @@
 {
   "version": 1,
   "historyId": "262e6427-0275-4cc6-9276-a43f098b5520",
-  "currentRevision": "2b9bf87a-102a-4e69-a4c3-ec06988d93ac",
+  "currentRevision": "30cfdbc1-a18d-4894-a287-47c7155387cf",
   "pendingChanges": false,
   "files": {
     "AGENTS.md": {
@@ -28,17 +28,13 @@
       "hash": "9313260261b6e431830877ee35083331270bc6b9a32d50650abe2bd58bdf558d",
       "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/93/9313260261b6e431830877ee35083331270bc6b9a32d50650abe2bd58bdf558d"
     },
-    "index.html": {
-      "hash": "d015d4f3d1f6b909f7f89e76eb11e8328b895490b8cea53fe789ad3ceefab5e7",
-      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/d0/d015d4f3d1f6b909f7f89e76eb11e8328b895490b8cea53fe789ad3ceefab5e7"
-    },
     "meta.json": {
       "hash": "0b7d6c3d99dd296e4161f0f7f5daaedbcb80d81eabe035ae00bba33e7185c071",
       "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/0b/0b7d6c3d99dd296e4161f0f7f5daaedbcb80d81eabe035ae00bba33e7185c071"
     },
     "package.json": {
-      "hash": "25fab79de4b9d9d7527c23eba1f18620bf85746ec70e650553adec903937428b",
-      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/25/25fab79de4b9d9d7527c23eba1f18620bf85746ec70e650553adec903937428b"
+      "hash": "d14e9f0c394177a257c64692741af96b2c6df8adc41bd5de01d5afcd3a4096a4",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/d1/d14e9f0c394177a257c64692741af96b2c6df8adc41bd5de01d5afcd3a4096a4"
     },
     "compositions/frames/01-circuito.html": {
       "hash": "7f45620838f263be8070eeceeebcede9539ab61e6af7ce935100a383d1a96167",
@@ -79,6 +75,50 @@
     "assets/images/urinary-system-realistic.png": {
       "hash": "f2932f2489f144db216a9c0c20e649ba94d278d18ae187d22d477e690a797316",
       "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/f2/f2932f2489f144db216a9c0c20e649ba94d278d18ae187d22d477e690a797316"
+    },
+    "assets/images/urinary-system-reference.png": {
+      "hash": "999959d1f5f7710eb3ac3a7f1b29b21057b389f5bd110ad49797d777e0dc9a21",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/99/999959d1f5f7710eb3ac3a7f1b29b21057b389f5bd110ad49797d777e0dc9a21"
+    },
+    "index.html": {
+      "hash": "f5e566a6d3a027d7d9debd4b859ddedf76feea74ce27a71f670a9161ab00a3b1",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/f5/f5e566a6d3a027d7d9debd4b859ddedf76feea74ce27a71f670a9161ab00a3b1"
+    },
+    "js/simulation.js": {
+      "hash": "38c78ac87f0672c41cb5e592c28def5a7133ffde7f1abfbd4320568000c7f48c",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/38/38c78ac87f0672c41cb5e592c28def5a7133ffde7f1abfbd4320568000c7f48c"
+    },
+    "js/ui.js": {
+      "hash": "10262754879d13c05afb11828f32989376176c6a2be206dfca2f1214f9bf8ea9",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/10/10262754879d13c05afb11828f32989376176c6a2be206dfca2f1214f9bf8ea9"
+    },
+    "js/main.js": {
+      "hash": "bf4fcfb4c653ca6eff00f908f73e941c8d46f1eeec53e08a3945e50667565ad4",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/bf/bf4fcfb4c653ca6eff00f908f73e941c8d46f1eeec53e08a3945e50667565ad4"
+    },
+    "sistema-urinario-en-vivo.jpg": {
+      "hash": "19a18f576f871ee8d1900caea5ac52a9e82779cad846fc25e8aa631ecf51e9f0",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/19/19a18f576f871ee8d1900caea5ac52a9e82779cad846fc25e8aa631ecf51e9f0"
+    },
+    "styles.css": {
+      "hash": "95afd5e01a6310de913846a9a25bd2906ec50d6a5c2c6e8c20a6255eb634110c",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/95/95afd5e01a6310de913846a9a25bd2906ec50d6a5c2c6e8c20a6255eb634110c"
+    },
+    "sistema-urinario-clinico.jpg": {
+      "hash": "76b68973c7eac85c7a359fc3c49ae43dae12c25bcac37b5838b26227cce713d8",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/76/76b68973c7eac85c7a359fc3c49ae43dae12c25bcac37b5838b26227cce713d8"
+    },
+    "sistema-urinario-avanzado.jpg": {
+      "hash": "390d1a7a493066313665a5671a367e0e4852c547daddd93249da423719a99528",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/39/390d1a7a493066313665a5671a367e0e4852c547daddd93249da423719a99528"
+    },
+    "layout-fixes.css": {
+      "hash": "2d2697178d63c6c8cb9ed8ba2e7f42c3e96c064bbcce61562e4795afb9848673",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/2d/2d2697178d63c6c8cb9ed8ba2e7f42c3e96c064bbcce61562e4795afb9848673"
+    },
+    "sistema-urinario-sin-obstruccion.jpg": {
+      "hash": "40fcd13c4c9a3b0f12712d263f8b318e2befa4bda91643a19f9da61dba669635",
+      "content": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/40/40fcd13c4c9a3b0f12712d263f8b318e2befa4bda91643a19f9da61dba669635"
     }
   },
   "revisions": {
@@ -207,6 +247,278 @@
         "index.html": {
           "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/7c/7cb70cad66794f728b4988579cbe423b2490af3bff42c50fe8a34fb219c2cb6e",
           "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/d0/d015d4f3d1f6b909f7f89e76eb11e8328b895490b8cea53fe789ad3ceefab5e7"
+        }
+      }
+    },
+    "8f3cb6fd-2b28-4797-b401-da44bc14d206": {
+      "actor": {
+        "kind": "agent",
+        "name": "codex"
+      },
+      "label": "concentrar todas las escenas en anatomía urinaria masculina",
+      "startedAt": 1792557225429,
+      "endedAt": 1792557623619.3862,
+      "files": {
+        "assets/images/urinary-system-reference.png": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/99/999959d1f5f7710eb3ac3a7f1b29b21057b389f5bd110ad49797d777e0dc9a21"
+        },
+        "index.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/d0/d015d4f3d1f6b909f7f89e76eb11e8328b895490b8cea53fe789ad3ceefab5e7",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/ad/ad535881932b344937a3e9fc92eace85ccc282777b0ffac9a06f8011af680e44"
+        },
+        "js/main.js": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/bf/bf4fcfb4c653ca6eff00f908f73e941c8d46f1eeec53e08a3945e50667565ad4"
+        },
+        "js/simulation.js": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/2e/2ecf3076902462d171270d450512b10c00ee2ac57affdbfebbbc186ee1c3a70a"
+        },
+        "js/ui.js": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/4a/4a6ef6432c0916cbac314fd28dc8b772461c6f64c744901c55af983a38d15dad"
+        },
+        "package.json": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/25/25fab79de4b9d9d7527c23eba1f18620bf85746ec70e650553adec903937428b",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/d1/d14e9f0c394177a257c64692741af96b2c6df8adc41bd5de01d5afcd3a4096a4"
+        },
+        "sistema-urinario-en-vivo.jpg": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/19/19a18f576f871ee8d1900caea5ac52a9e82779cad846fc25e8aa631ecf51e9f0"
+        },
+        "styles.css": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/76/7695e6e498b346424032e3d567ed5e6b0d4de3547171eb308d58e93a78112b0e"
+        }
+      }
+    },
+    "215435f3-0614-411c-80ec-cdae5b7f4b20": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792557786237,
+      "endedAt": 1792557788239,
+      "files": {
+        "index.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/ad/ad535881932b344937a3e9fc92eace85ccc282777b0ffac9a06f8011af680e44",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/d5/d5d32ac4db80c450464467a1dfcc3816f0bb01b9d272859629015d8c61964f9f"
+        }
+      }
+    },
+    "46e11438-a0a1-4f06-83b7-5da54275aba9": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792557791635,
+      "endedAt": 1792557793637,
+      "files": {
+        "styles.css": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/76/7695e6e498b346424032e3d567ed5e6b0d4de3547171eb308d58e93a78112b0e",
+          "after": null
+        }
+      }
+    },
+    "6f171233-81f8-46a5-a795-9f009a38bd68": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792557824831,
+      "endedAt": 1792557826832,
+      "files": {
+        "styles.css": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/26/263ae328b756cd4d3778317b7849c74f140b84363e2b79b28cf498eb33f7eec1"
+        }
+      }
+    },
+    "1e3129e9-793c-49d0-93ee-2f2528aed02a": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792557838046,
+      "endedAt": 1792557840047,
+      "files": {
+        "js/simulation.js": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/2e/2ecf3076902462d171270d450512b10c00ee2ac57affdbfebbbc186ee1c3a70a",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/c1/c1bc4270a2c99a29b97bb4e9497a8ddb54427ec5075f43585db5901081a0999b"
+        }
+      }
+    },
+    "061655d1-e678-4230-9bad-b180567abe9a": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792557851295,
+      "endedAt": 1792557853301,
+      "files": {
+        "js/ui.js": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/4a/4a6ef6432c0916cbac314fd28dc8b772461c6f64c744901c55af983a38d15dad",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/b6/b68f09a7dd42e99559e91d68dbbca165c95f4a3ccc975568590a495011df8dd4"
+        }
+      }
+    },
+    "021d9f02-8154-44cf-a4ee-f61c268dfb69": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792557880901,
+      "endedAt": 1792557882903,
+      "files": {
+        "js/simulation.js": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/c1/c1bc4270a2c99a29b97bb4e9497a8ddb54427ec5075f43585db5901081a0999b",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/b9/b9f43857c4e5133bf6aafadf100e1c7e3a26f658b5e54720c15d758e2785a7ee"
+        }
+      }
+    },
+    "1c872d19-8260-4381-aa10-e7f89a8ab36d": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792557905741,
+      "endedAt": 1792557907741,
+      "files": {
+        "sistema-urinario-clinico.jpg": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/76/76b68973c7eac85c7a359fc3c49ae43dae12c25bcac37b5838b26227cce713d8"
+        }
+      }
+    },
+    "57d8e396-884d-4e95-a1c1-771970fa5a04": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792558090363,
+      "endedAt": 1792558092366,
+      "files": {
+        "index.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/d5/d5d32ac4db80c450464467a1dfcc3816f0bb01b9d272859629015d8c61964f9f",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/5e/5e4245b986982f7bb0944799be3f0046dd80627de92da5c37c02dafec833c8c8"
+        }
+      }
+    },
+    "c863e74d-9838-48b3-b1f6-1626818b7a39": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792558142526,
+      "endedAt": 1792558144548,
+      "files": {
+        "styles.css": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/26/263ae328b756cd4d3778317b7849c74f140b84363e2b79b28cf498eb33f7eec1",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/95/95afd5e01a6310de913846a9a25bd2906ec50d6a5c2c6e8c20a6255eb634110c"
+        }
+      }
+    },
+    "9d86027b-f209-468e-ae03-958ad4941871": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792558158556,
+      "endedAt": 1792558160819,
+      "files": {
+        "js/simulation.js": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/b9/b9f43857c4e5133bf6aafadf100e1c7e3a26f658b5e54720c15d758e2785a7ee",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/38/38c78ac87f0672c41cb5e592c28def5a7133ffde7f1abfbd4320568000c7f48c"
+        }
+      }
+    },
+    "be15444c-3c92-4ebe-81a8-1db66621154f": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792558179066,
+      "endedAt": 1792558181125,
+      "files": {
+        "js/ui.js": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/b6/b68f09a7dd42e99559e91d68dbbca165c95f4a3ccc975568590a495011df8dd4",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/10/10262754879d13c05afb11828f32989376176c6a2be206dfca2f1214f9bf8ea9"
+        }
+      }
+    },
+    "9dbafa92-ffd6-48f1-945b-07ae3f07dba8": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792558213320,
+      "endedAt": 1792558215322,
+      "files": {
+        "sistema-urinario-avanzado.jpg": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/39/390d1a7a493066313665a5671a367e0e4852c547daddd93249da423719a99528"
+        }
+      }
+    },
+    "4aba3f0e-e6b0-401d-9c56-7a36f6513dd3": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792558333169,
+      "endedAt": 1792558335539,
+      "files": {
+        "index.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/5e/5e4245b986982f7bb0944799be3f0046dd80627de92da5c37c02dafec833c8c8",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/0a/0a0a7395d9559682892a2e89076d95bf5f9fd832c724f7f58093f115435c5d7b"
+        }
+      }
+    },
+    "25887941-57b5-4a4c-ae43-6553e908408c": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792558363855,
+      "endedAt": 1792558365938,
+      "files": {
+        "index.html": {
+          "before": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/0a/0a0a7395d9559682892a2e89076d95bf5f9fd832c724f7f58093f115435c5d7b",
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/f5/f5e566a6d3a027d7d9debd4b859ddedf76feea74ce27a71f670a9161ab00a3b1"
+        },
+        "layout-fixes.css": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/2d/2d2697178d63c6c8cb9ed8ba2e7f42c3e96c064bbcce61562e4795afb9848673"
+        }
+      }
+    },
+    "30cfdbc1-a18d-4894-a287-47c7155387cf": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792558380587,
+      "endedAt": 1792558382587,
+      "files": {
+        "sistema-urinario-sin-obstruccion.jpg": {
+          "before": null,
+          "after": "/Users/kisito/.cache/hyperframes/history/262e6427-0275-4cc6-9276-a43f098b5520/blobs/40/40fcd13c4c9a3b0f12712d263f8b318e2befa4bda91643a19f9da61dba669635"
         }
       }
     }

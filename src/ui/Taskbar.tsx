@@ -75,6 +75,13 @@ function StartMenu({ onClose }: { onClose: () => void }) {
           {link('personaje', 'personaje', tr('mi personaje', 'my character'), tr('cara, pelo y ropa', 'face, hair and clothes'))}
           {link('explorar', 'explorar', tr('explorar', 'explore'), tr('islas de la comunidad', 'community islands'))}
           {link('ranking', 'info', 'ranking', tr('top 100 de jugadores', 'top 100 players'))}
+          <a role="menuitem" className="start-menu__item" href="#/royale" onClick={onClose}>
+            <span className="start-menu__ico start-menu__ico--info" aria-hidden="true" />
+            <span>
+              <strong>aero royale</strong>
+              <small>{tr('batalla de 12 orbes', '12-orb battle')}</small>
+            </span>
+          </a>
           {link('inicio', 'inicio', tr('bienvenida', 'welcome'), tr('pantalla de inicio', 'home screen'))}
           {link('introduccion', 'info', tr('cómo se juega', 'how to play'), tr('introducción', 'introduction'))}
         </div>
