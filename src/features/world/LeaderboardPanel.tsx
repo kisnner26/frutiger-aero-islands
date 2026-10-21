@@ -5,6 +5,7 @@ import { useSession } from '../../persistence/session';
 import { isSupabaseConfigured } from '../../persistence/supabase';
 import { findCountry } from '../../world/countries';
 import { FlagBadge } from '../../world/FlagBadge';
+import { tr } from '../../i18n';
 
 const MEDAL = ['#f5c542', '#c9d3dc', '#d9955a'];
 
@@ -39,36 +40,36 @@ export function LeaderboardPanel() {
 
   const myRow = useMemo(() => rows?.find((r) => r.username === session.username) ?? null, [rows, session.username]);
 
-  if (!isSupabaseConfigured) return <p className="leader__empty">el ranking aparece cuando hay comunidad conectada.</p>;
+  if (!isSupabaseConfigured) return <p className="leader__empty">{tr('el ranking aparece cuando hay comunidad conectada.', 'the ranking appears when the community is connected.')}</p>;
   return (
     <div className="leader">
-      <div className="vista-addr" aria-label="ubicación">
+      <div className="vista-addr" aria-label={tr('ubicación', 'location')}>
         <span className="vista-addr__back" aria-hidden="true">‹</span>
-        <span className="vista-addr__path"><span>mundo</span><i aria-hidden="true">›</i><span>ranking</span><i aria-hidden="true">›</i><strong>{period === 'semana' ? 'esta semana' : 'de siempre'}</strong></span>
+        <span className="vista-addr__path"><span>{tr('mundo', 'world')}</span><i aria-hidden="true">›</i><span>ranking</span><i aria-hidden="true">›</i><strong>{period === 'semana' ? tr('esta semana', 'this week') : tr('de siempre', 'all time')}</strong></span>
         <label className="vista-search">
           <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5.2" /><path d="M12 12 L17 17" /></svg>
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="buscar" aria-label="buscar jugador o país" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr('buscar', 'search')} aria-label={tr('buscar jugador o país', 'search player or country')} />
         </label>
       </div>
-      <nav className="leader__tabs" role="tablist" aria-label="periodo del ranking">
+      <nav className="leader__tabs" role="tablist" aria-label={tr('periodo del ranking', 'ranking period')}>
         {(['semana', 'siempre'] as Period[]).map((p) => (
           <button key={p} type="button" role="tab" aria-selected={period === p} className={period === p ? 'is-active' : ''} onClick={() => setPeriod(p)}>
-            {p === 'semana' ? 'esta semana' : 'de siempre'}
+            {p === 'semana' ? tr('esta semana', 'this week') : tr('de siempre', 'all time')}
           </button>
         ))}
       </nav>
-      <p className="leader__rules">10 por parcela · 15 por captura · 5 por restaurar · 3 por reclamar · 2 por me gusta</p>
-      {rows === null && <p className="leader__empty" role="status">cargando ranking...</p>}
-      {failed && <p className="leader__empty" role="alert">no se pudo cargar el ranking. vuelve a intentarlo en un momento.</p>}
-      {rows && rows.length === 0 && !failed && <p className="leader__empty">todavía nadie suma puntos. restaura una zona o reclama una parcela y serás el primero.</p>}
+      <p className="leader__rules">{tr('10 por parcela · 15 por captura · 5 por restaurar · 3 por reclamar · 2 por me gusta', '10 per plot · 15 per capture · 5 per restore · 3 per claim · 2 per like')}</p>
+      {rows === null && <p className="leader__empty" role="status">{tr('cargando ranking...', 'loading ranking...')}</p>}
+      {failed && <p className="leader__empty" role="alert">{tr('no se pudo cargar el ranking. vuelve a intentarlo en un momento.', 'the ranking could not be loaded. try again in a moment.')}</p>}
+      {rows && rows.length === 0 && !failed && <p className="leader__empty">{tr('todavía nadie suma puntos. restaura una zona o reclama una parcela y serás el primero.', 'nobody has scored yet. restore a zone or claim a plot and you will be the first.')}</p>}
       {rows && rows.length > 0 && (
         <div className="leader__cols" role="row">
-          <button type="button" className={sort === 'puesto' ? 'is-sorted' : ''} onClick={() => setSort('puesto')}>puesto</button>
-          <button type="button" className={sort === 'jugador' ? 'is-sorted' : ''} onClick={() => setSort('jugador')}>jugador</button>
-          <button type="button" className={sort === 'puntos' ? 'is-sorted' : ''} onClick={() => setSort('puntos')}>puntos</button>
+          <button type="button" className={sort === 'puesto' ? 'is-sorted' : ''} onClick={() => setSort('puesto')}>{tr('puesto', 'rank')}</button>
+          <button type="button" className={sort === 'jugador' ? 'is-sorted' : ''} onClick={() => setSort('jugador')}>{tr('jugador', 'player')}</button>
+          <button type="button" className={sort === 'puntos' ? 'is-sorted' : ''} onClick={() => setSort('puntos')}>{tr('puntos', 'points')}</button>
         </div>
       )}
-      {rows && rows.length > 0 && shown.length === 0 && <p className="leader__empty">no hay resultados para "{query}".</p>}
+      {rows && rows.length > 0 && shown.length === 0 && <p className="leader__empty">{tr('no hay resultados para', 'no results for')} "{query}".</p>}
       {rows && rows.length > 0 && (
         <ol className="leader__list">
           {shown.map((r) => {
@@ -78,10 +79,10 @@ export function LeaderboardPanel() {
               <li key={r.username} className={me ? 'is-me' : ''}>
                 <span className="leader__rank" style={r.rank <= 3 ? { background: MEDAL[r.rank - 1], color: '#4a3a10' } : undefined}>{r.rank}</span>
                 <FlagBadge code={r.country} width={22} />
-                <a href={islandHref(r.username)} title={country ? `${country.name} · ver su isla` : 'ver su isla'}>
+                <a href={islandHref(r.username)} title={country ? `${country.name} · ${tr('ver su isla', 'see their island')}` : tr('ver su isla', 'see their island')}>
                   @{r.username}
                 </a>
-                <small>{r.parcels} parc. · {r.restores} rest.</small>
+                <small>{r.parcels} {tr('parc.', 'plots')} · {r.restores} {tr('rest.', 'rest.')}</small>
                 <b>{r.score}</b>
               </li>
             );
@@ -90,8 +91,8 @@ export function LeaderboardPanel() {
       )}
       {session.status === 'con-sesion' && !myRow && mine && (
         <p className="leader__me">
-          {mine.rank ? `estás en el puesto ${mine.rank} de ${mine.total}` : mine.total ? 'todavía no tienes puntos: restaura una zona o reclama una parcela.' : ''}
-          {mine.rank ? ` · ${mine.score} puntos` : ''}
+          {mine.rank ? `${tr('estás en el puesto', 'you are in place')} ${mine.rank} ${tr('de', 'of')} ${mine.total}` : mine.total ? tr('todavía no tienes puntos: restaura una zona o reclama una parcela.', 'you have no points yet: restore a zone or claim a plot.') : ''}
+          {mine.rank ? ` · ${mine.score} ${tr('puntos', 'points')}` : ''}
         </p>
       )}
     </div>

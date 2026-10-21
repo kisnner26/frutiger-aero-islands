@@ -4,6 +4,7 @@ import { pushCountry } from '../persistence/country';
 import { findCountry, searchCountries } from './countries';
 import { countryStore } from './country';
 import { FlagBadge } from './FlagBadge';
+import { tr } from '../i18n';
 
 /** pregunta de qué país es la persona; la isla aparecerá en esa zona del mundo. */
 export function CountryPicker({ onDone, current }: { onDone: () => void; current?: string | null }) {
@@ -49,14 +50,14 @@ export function CountryPicker({ onDone, current }: { onDone: () => void; current
   const picked = findCountry(chosen);
   return (
     <div className="country-layer">
-      <AeroWindow className="win-country" title="¿de qué país eres?" icon={<span className="mini-orb mini-orb--globe" />} onClose={later}>
+      <AeroWindow className="win-country" title={tr('¿de qué país eres?', 'which country are you from?')} icon={<span className="mini-orb mini-orb--globe" />} onClose={later}>
         <div className="country">
-          <p>tu isla aparecerá en la zona de tu país dentro del mundo, para que cada región tenga su propio archipiélago.</p>
+          <p>{tr('tu isla aparecerá en la zona de tu país dentro del mundo, para que cada región tenga su propio archipiélago.', 'your island will appear in the zone of your country inside the world, so every region has its own archipelago.')}</p>
           <label className="country__search">
-            <span>buscar país</span>
-            <input ref={input} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="por ejemplo: nicaragua" autoComplete="off" />
+            <span>{tr('buscar país', 'search country')}</span>
+            <input ref={input} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr('por ejemplo: nicaragua', 'for example: nicaragua')} autoComplete="off" />
           </label>
-          <ul className="country__list" aria-label="países">
+          <ul className="country__list" aria-label={tr('países', 'countries')}>
             {list.map((c) => (
               <li key={c.code}>
                 <button type="button" aria-pressed={c.code === chosen} onClick={() => setChosen(c.code)}>
@@ -65,7 +66,7 @@ export function CountryPicker({ onDone, current }: { onDone: () => void; current
                 </button>
               </li>
             ))}
-            {list.length === 0 && <li className="country__empty">no hay coincidencias.</li>}
+            {list.length === 0 && <li className="country__empty">{tr('no hay coincidencias.', 'no matches.')}</li>}
           </ul>
           {error && (
             <p className="country__error" role="alert">
@@ -74,13 +75,13 @@ export function CountryPicker({ onDone, current }: { onDone: () => void; current
           )}
           <div className="country__actions">
             <button type="button" className="vista-button vista-button--primary" disabled={!picked || busy} onClick={() => void confirm()}>
-              {picked ? `elegir ${picked.name}` : 'elige un país'}
+              {picked ? `${tr('elegir', 'choose')} ${picked.name}` : tr('elige un país', 'pick a country')}
             </button>
             <button type="button" className="vista-button" onClick={later}>
-              ahora no
+              {tr('ahora no', 'not now')}
             </button>
           </div>
-          <p className="country__note">puedes cambiarlo después desde el mundo. si hay cuenta, el servidor permite un cambio cada 30 días.</p>
+          <p className="country__note">{tr('puedes cambiarlo después desde el mundo. si hay cuenta, el servidor permite un cambio cada 30 días.', 'you can change it later from the world. with an account, the server allows one change every 30 days.')}</p>
         </div>
       </AeroWindow>
     </div>

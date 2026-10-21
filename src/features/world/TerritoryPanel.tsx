@@ -10,6 +10,7 @@ import { everyWhileVisible } from '../../persistence/fastcache';
 import { nextMilestone } from '../../story/lore';
 import { restorationStore } from '../../world/restorationStore';
 import { CELL, RESTORE_CAP_PER_PERSON, cellCenter, cellKey, claimHint, ownerColor, type CellInfo, type CellRef } from '../../world/territory';
+import { tr } from '../../i18n';
 
 type Tab = 'retos' | 'jugadores' | 'paises' | 'restauradores';
 
@@ -126,11 +127,11 @@ export function TerritoryPanel({ sceneRef, data, picked }: Props) {
       if (kind === 'restaurar') {
         const p = await restoreCell(picked.cx, picked.cy);
         patchLocal(picked.cx, picked.cy, { progress: p }, 1);
-        setMsg({ text: p >= 100 ? 'zona restaurada. el color vuelve al planeta.' : `restauración al ${p}%.` });
+        setMsg({ text: p >= 100 ? tr('zona restaurada. el color vuelve al planeta.', 'zone restored. color returns to the planet.') : `${tr('restauración al', 'restored to')} ${p}%.` });
       } else {
         const a = await claimCell(picked.cx, picked.cy);
         patchLocal(picked.cx, picked.cy, { owner: myName, shieldUntil: Date.now() + 30 * 60_000 }, a === 'capture' ? 2 : 1);
-        setMsg({ text: a === 'capture' ? 'parcela capturada. tiene escudo 30 minutos.' : 'parcela reclamada. tiene escudo 30 minutos.' });
+        setMsg({ text: a === 'capture' ? tr('parcela capturada. tiene escudo 30 minutos.', 'plot captured. it has a 30 minute shield.') : tr('parcela reclamada. tiene escudo 30 minutos.', 'plot claimed. it has a 30 minute shield.') });
       }
       forgetSnapshot();
       void refresh(true); // sin bloquear: el resultado ya se ve
@@ -141,68 +142,68 @@ export function TerritoryPanel({ sceneRef, data, picked }: Props) {
     }
   };
 
-  if (!isSupabaseConfigured) return <p className="territory__empty">la conquista necesita conexión con la comunidad.</p>;
+  if (!isSupabaseConfigured) return <p className="territory__empty">{tr('la conquista necesita conexión con la comunidad.', 'conquest needs a connection to the community.')}</p>;
   const pct = restoration?.percent ?? 0;
   return (
     <div className="territory">
-      <section className="territory__sum" aria-label="estado del planeta">
+      <section className="territory__sum" aria-label={tr('estado del planeta', 'planet status')}>
         <div>
-          <strong>planeta restaurado · {pct.toFixed(pct < 10 ? 1 : 0)}%</strong>
+          <strong>{tr('planeta restaurado', 'planet restored')} · {pct.toFixed(pct < 10 ? 1 : 0)}%</strong>
           <small>
-            {restoration ? `${restoration.restoredCells} de ${restoration.totalCells} zonas · ${restoration.helpers} ${restoration.helpers === 1 ? 'persona ayuda' : 'personas ayudan'}` : 'cargando...'}
+            {restoration ? `${restoration.restoredCells} ${tr('de', 'of')} ${restoration.totalCells} ${tr('zonas', 'zones')} · ${restoration.helpers} ${restoration.helpers === 1 ? tr('persona ayuda', 'person helping') : tr('personas ayudan', 'people helping')}` : tr('cargando...', 'loading...')}
           </small>
         </div>
         <i aria-hidden="true"><b style={{ width: `${Math.min(100, pct)}%` }} /></i>
-        <small>{nextMilestone(pct) ? `próximo regalo para todos a ${nextMilestone(pct)!.percent}%: ${nextMilestone(pct)!.reward}` : 'el planeta brilla otra vez'}</small>
+        <small>{nextMilestone(pct) ? `${tr('próximo regalo para todos a', 'next gift for everyone at')} ${nextMilestone(pct)!.percent}%: ${nextMilestone(pct)!.reward}` : tr('el planeta brilla otra vez', 'the planet shines again')}</small>
       </section>
 
-      <section className="territory__me" aria-label="tu energía">
-        <span className="territory__dots" aria-label={`energía ${energy} de 5`}>
+      <section className="territory__me" aria-label={tr('tu energía', 'your energy')}>
+        <span className="territory__dots" aria-label={`${tr('energía', 'energy')} ${energy} ${tr('de', 'of')} 5`}>
           {Array.from({ length: 5 }, (_, i) => (
             <i key={i} className={i < energy ? 'is-on' : ''} />
           ))}
         </span>
-        <small>{me ? `${me.owned} ${me.owned === 1 ? 'parcela' : 'parcelas'} tuyas${energy < 5 ? ` · +1 energía en ${Math.ceil(me.secondsToNext / 60)} min` : ''}` : myName ? 'cargando...' : 'conecta tu cuenta para conquistar'}</small>
+        <small>{me ? `${me.owned} ${me.owned === 1 ? tr('parcela', 'plot') : tr('parcelas', 'plots')} ${tr('tuyas', 'yours')}${energy < 5 ? ` · +1 ${tr('energía en', 'energy in')} ${Math.ceil(me.secondsToNext / 60)} min` : ''}` : myName ? tr('cargando...', 'loading...') : tr('conecta tu cuenta para conquistar', 'sign in to conquer')}</small>
       </section>
 
       {cell && picked ? (
-        <section className="territory__cell" aria-label="parcela elegida">
+        <section className="territory__cell" aria-label={tr('parcela elegida', 'selected plot')}>
           <div className="territory__cellhead">
             <FlagBadge code={zone?.code ?? null} width={30} />
             <div>
-              <strong>{zone ? `zona de ${zone.name}` : 'mar abierto'} · {picked.cx},{picked.cy}</strong>
+              <strong>{zone ? `${tr('zona de', 'zone of')} ${zone.name}` : tr('mar abierto', 'open sea')} · {picked.cx},{picked.cy}</strong>
               <small>
                 {cell.owner ? (
                   <>
-                    dueño <span style={{ color: `#${ownerColor(cell.owner).toString(16).padStart(6, '0')}` }}>@{cell.owner}</span>
-                    {cell.shieldUntil > Date.now() ? ' · con escudo' : ''}
+                    {tr('dueño', 'owner')} <span style={{ color: `#${ownerColor(cell.owner).toString(16).padStart(6, '0')}` }}>@{cell.owner}</span>
+                    {cell.shieldUntil > Date.now() ? ` · ${tr('con escudo', 'shielded')}` : ''}
                   </>
                 ) : (
-                  'sin dueño'
+                  tr('sin dueño', 'no owner')
                 )}
               </small>
             </div>
           </div>
           <p className="territory__state">
-            {!cell.blight ? 'zona sana: aquí el mundo ya brilla' : cell.progress >= 100 ? `${cell.zone}: restaurada y brillante` : cell.progress > 0 ? `${cell.zone} · restaurada al ${cell.progress}%` : `${cell.zone}: gris y abandonada`}
+            {!cell.blight ? tr('zona sana: aquí el mundo ya brilla', 'healthy zone: the world already shines here') : cell.progress >= 100 ? `${cell.zone}: ${tr('restaurada y brillante', 'restored and shining')}` : cell.progress > 0 ? `${cell.zone} · ${tr('restaurada al', 'restored to')} ${cell.progress}%` : `${cell.zone}: ${tr('gris y abandonada', 'gray and abandoned')}`}
           </p>
           {cell.blight && <i className="territory__bar" aria-hidden="true"><b style={{ width: `${cell.progress}%` }} /></i>}
           <div className="territory__actions">
             <button type="button" className="vista-button" disabled={busy || !canRestore} onClick={() => void act('restaurar')}>
-              restaurar (1)
+              {tr('restaurar', 'restore')} (1)
             </button>
             {hint?.action && (
               <button type="button" className="vista-button vista-button--primary" disabled={busy} onClick={() => void act(hint.action!)}>
-                {hint.action} ({hint.action === 'capturar' ? 2 : 1})
+                {hint.action === 'capturar' ? tr('capturar', 'capture') : tr('reclamar', 'claim')} ({hint.action === 'capturar' ? 2 : 1})
               </button>
             )}
           </div>
           <small className="territory__why">
-            {cell.blight ? `restaurar es trabajo de equipo: cada persona aporta hasta ${RESTORE_CAP_PER_PERSON}%, así que hacen falta al menos 3.` : hint && !hint.action ? hint.reason : 'las zonas grises están en rincones apartados del mapa: explora para encontrarlas.'}
+            {cell.blight ? tr(`restaurar es trabajo de equipo: cada persona aporta hasta ${RESTORE_CAP_PER_PERSON}%, así que hacen falta al menos 3.`, `restoring is teamwork: each person adds up to ${RESTORE_CAP_PER_PERSON}%, so at least 3 are needed.`) : hint && !hint.action ? hint.reason : tr('las zonas grises están en rincones apartados del mapa: explora para encontrarlas.', 'gray zones sit in remote corners of the map: explore to find them.')}
           </small>
         </section>
       ) : (
-        <p className="territory__empty">toca una parcela para conquistarla. las zonas grises son escasas y están lejos de los países: encuéntralas y restáuralas en equipo.</p>
+        <p className="territory__empty">{tr('toca una parcela para conquistarla. las zonas grises son escasas y están lejos de los países: encuéntralas y restáuralas en equipo.', 'tap a plot to conquer it. gray zones are rare and far from the countries: find them and restore them as a team.')}</p>
       )}
       {msg && (
         <p className={`territory__msg${msg.error ? ' is-error' : ''}`} role={msg.error ? 'alert' : 'status'}>
@@ -210,21 +211,21 @@ export function TerritoryPanel({ sceneRef, data, picked }: Props) {
         </p>
       )}
 
-      <nav className="territory__tabs" role="tablist" aria-label="clasificaciones">
+      <nav className="territory__tabs" role="tablist" aria-label={tr('clasificaciones', 'leaderboards')}>
         {(['retos', 'jugadores', 'paises', 'restauradores'] as Tab[]).map((t) => (
           <button key={t} type="button" role="tab" aria-selected={tab === t} className={tab === t ? 'is-active' : ''} onClick={() => setTab(t)}>
-            {t === 'paises' ? 'países' : t}
+            {t === 'paises' ? tr('países', 'countries') : t === 'retos' ? tr('retos', 'challenges') : t === 'jugadores' ? tr('jugadores', 'players') : tr('restauradores', 'restorers')}
           </button>
         ))}
       </nav>
       {tab === 'retos' ? (
         <ul className="territory__list">
-          {challenges.length === 0 && <li className="territory__empty">los retos aparecen al conectar tu cuenta.</li>}
+          {challenges.length === 0 && <li className="territory__empty">{tr('los retos aparecen al conectar tu cuenta.', 'challenges appear when you sign in.')}</li>}
           {challenges.map((c) => (
             <li key={c.id}>
               <div>
                 <strong>{c.title}</strong>
-                <small>{c.description} · premio: {c.reward}</small>
+                <small>{c.description} · {tr('premio', 'reward')}: {c.reward}</small>
                 <i className="territory__bar" aria-hidden="true"><b style={{ width: `${(c.progress / c.goal) * 100}%` }} /></i>
               </div>
               <em>{c.progress}/{c.goal}</em>
@@ -233,7 +234,7 @@ export function TerritoryPanel({ sceneRef, data, picked }: Props) {
         </ul>
       ) : (
         <ol className="territory__list territory__list--rank">
-          {board.length === 0 && <li className="territory__empty">todavía no hay nadie en esta lista. sé el primero.</li>}
+          {board.length === 0 && <li className="territory__empty">{tr('todavía no hay nadie en esta lista. sé el primero.', 'nobody is on this list yet. be the first.')}</li>}
           {board.map((r, i) => (
             <li key={r.name}>
               <span>{i + 1}</span>

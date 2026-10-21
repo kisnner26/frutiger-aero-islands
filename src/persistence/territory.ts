@@ -1,6 +1,7 @@
 import { GRID, cellKey, type CellInfo } from '../world/territory';
 import { cached, invalidate } from './fastcache';
 import { supabase } from './supabase';
+import { tr } from '../i18n';
 
 export interface TerritoryMe {
   energy: number;
@@ -31,7 +32,7 @@ export interface Ranked {
 }
 
 const client = () => {
-  if (!supabase) throw new Error('supabase no está configurado');
+  if (!supabase) throw new Error(tr('supabase no está configurado', 'supabase is not configured'));
   return supabase;
 };
 

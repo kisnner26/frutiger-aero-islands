@@ -1,3 +1,4 @@
+import { tr } from '../i18n';
 /** cuadrícula global de parcelas (como r/place): el mundo se divide en 24×24 celdas dentro del círculo de la cuenca. */
 export const GRID = 24;
 export const CELL = 70;
@@ -73,13 +74,13 @@ export interface ActionHint {
 
 /** qué puede hacer una persona con una celda (el servidor valida de nuevo todo). */
 export function claimHint(cell: CellInfo, me: { name: string | null; owned: number; adjacentOwned: boolean; energy: number }, now = Date.now()): ActionHint {
-  if (!me.name) return { action: null, reason: 'conecta tu cuenta para conquistar' };
-  if (cell.owner === me.name) return { action: null, reason: 'esta parcela es tuya' };
+  if (!me.name) return { action: null, reason: tr('conecta tu cuenta para conquistar', 'sign in to conquer') };
+  if (cell.owner === me.name) return { action: null, reason: tr('esta parcela es tuya', 'this plot is yours') };
   if (cell.owner) {
-    if (cell.shieldUntil > now) return { action: null, reason: 'tiene escudo temporal' };
-    if (me.owned > 0 && !me.adjacentOwned) return { action: null, reason: 'solo puedes expandirte junto a tus parcelas' };
-    return me.energy >= 2 ? { action: 'capturar', reason: 'cuesta 2 de energía' } : { action: null, reason: 'te faltan 2 de energía' };
+    if (cell.shieldUntil > now) return { action: null, reason: tr('tiene escudo temporal', 'it has a temporary shield') };
+    if (me.owned > 0 && !me.adjacentOwned) return { action: null, reason: tr('solo puedes expandirte junto a tus parcelas', 'you can only expand next to your plots') };
+    return me.energy >= 2 ? { action: 'capturar', reason: tr('cuesta 2 de energía', 'costs 2 energy') } : { action: null, reason: tr('te faltan 2 de energía', 'you need 2 energy') };
   }
-  if (me.owned > 0 && !me.adjacentOwned) return { action: null, reason: 'solo puedes expandirte junto a tus parcelas' };
-  return me.energy >= 1 ? { action: 'reclamar', reason: 'cuesta 1 de energía' } : { action: null, reason: 'te falta energía' };
+  if (me.owned > 0 && !me.adjacentOwned) return { action: null, reason: tr('solo puedes expandirte junto a tus parcelas', 'you can only expand next to your plots') };
+  return me.energy >= 1 ? { action: 'reclamar', reason: tr('cuesta 1 de energía', 'costs 1 energy') } : { action: null, reason: tr('te falta energía', 'you are out of energy') };
 }
