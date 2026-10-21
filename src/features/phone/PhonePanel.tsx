@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { AlbumApp } from './AlbumApp';
 import { CameraApp } from './CameraApp';
 import { RadioApp } from './RadioApp';
+import { GamesApp } from './GamesApp';
+import { DuelsApp } from './DuelsApp';
 import type { PhoneApp } from './phoneBus';
 import { tr } from '../../i18n';
 
@@ -10,10 +12,12 @@ type App = PhoneApp;
 const APPS: Array<{ id: Exclude<App, 'inicio'>; label: string; glyph: string }> = [
   { id: 'radio', label: 'radio', glyph: 'M3 9h18v11H3zM7 9L17 3M8 14.500h5M16 14.500h2' },
   { id: 'camara', label: tr('cámara', 'camera'), glyph: 'M3 8h4l2-3h6l2 3h4v12H3zM12 17a4 4 0 100-8 4 4 0 000 8z' },
+  { id: 'juegos', label: tr('juegos', 'games'), glyph: 'M6 8h12a3 3 0 013 3v3a3 3 0 01-5 2l-1-1h-6l-1 1a3 3 0 01-5-2v-3a3 3 0 013-3zM8 10v4M6 12h4M16 11h.01M18 13h.01' },
+  { id: 'duelos', label: tr('duelos', 'duels'), glyph: 'M4 20L14 10M14 10l-1-4 4 1 3 3-4-1zM20 20L10 10M10 10l1-4-4 1-3 3 4-1z' },
   { id: 'album', label: tr('álbum', 'album'), glyph: 'M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4' },
 ];
 
-const TITLE: Record<App, string> = { inicio: tr('teléfono', 'phone'), radio: 'radio', camara: tr('cámara', 'camera'), album: tr('álbum', 'album') };
+const TITLE: Record<App, string> = { inicio: tr('teléfono', 'phone'), radio: 'radio', camara: tr('cámara', 'camera'), album: tr('álbum', 'album'), juegos: tr('juegos', 'games'), duelos: tr('duelos', 'duels') };
 
 /** teléfono aero: cuerpo retro con teclado decorativo y pantalla táctil grande. aplicaciones: radio, cámara y álbum. */
 export default function PhonePanel({ onClose, initialApp = 'inicio' }: { onClose: () => void; initialApp?: App }) {
@@ -68,6 +72,8 @@ export default function PhonePanel({ onClose, initialApp = 'inicio' }: { onClose
           {app === 'radio' && <RadioApp />}
           {app === 'camara' && <CameraApp onClose={onClose} />}
           {app === 'album' && <AlbumApp />}
+          {app === 'juegos' && <GamesApp onClose={onClose} />}
+          {app === 'duelos' && <DuelsApp onClose={onClose} />}
         </div>
       </div>
       <div className="phone__keys" aria-hidden="true">

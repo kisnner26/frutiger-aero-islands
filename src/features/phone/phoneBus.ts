@@ -1,5 +1,5 @@
 /** estado compartido entre el teléfono y la escena: cámara y solicitudes desde otros módulos. */
-export type PhoneApp = 'inicio' | 'radio' | 'camara' | 'album';
+export type PhoneApp = 'inicio' | 'radio' | 'camara' | 'album' | 'juegos' | 'duelos';
 
 let camera = false;
 let requestedApp: PhoneApp | null = null;
