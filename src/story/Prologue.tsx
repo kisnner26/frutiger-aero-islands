@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { PROLOGUE } from './lore';
 import './story.css';
+import { tr } from '../i18n';
 
 const KEY = 'frutiger-aero-islands:prologo';
 export const prologueSeen = () => {
@@ -37,9 +38,9 @@ export function Prologue({ onDone }: { onDone: () => void }) {
         <h2 id="prologue-title">{slide.title}</h2>
         <p className="prologue__text">{slide.text}</p>
         <div className="prologue__actions">
-          <button type="button" className="prologue__skip" onClick={finish}>saltar</button>
+          <button type="button" className="prologue__skip" onClick={finish}>{tr('saltar', 'skip')}</button>
           <button type="button" className="vista-button vista-button--primary" onClick={() => (last ? finish() : setI(i + 1))}>
-            {last ? 'encender mi faro' : 'siguiente'}
+            {last ? tr('encender mi faro', 'light my beacon') : tr('siguiente', 'next')}
           </button>
         </div>
         <div className="prologue__dots" aria-hidden="true">

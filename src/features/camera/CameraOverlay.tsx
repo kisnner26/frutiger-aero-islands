@@ -3,6 +3,7 @@ import { sfx } from '../../audio/sfx';
 import { sceneBridge } from '../../engine/sceneBridge';
 import { MemoryLimitError, addMemory } from '../../memories/store';
 import { phoneBus } from '../phone/phoneBus';
+import { tr } from '../../i18n';
 
 interface Shot {
   blob: Blob;
@@ -67,7 +68,7 @@ export function CameraOverlay() {
       window.setTimeout(() => setFlash(false), 260);
       setShot({ ...r, url: URL.createObjectURL(r.blob) });
     } catch {
-      setNote({ tone: 'error', text: 'no se pudo tomar la fotografía. inténtalo de nuevo.' });
+      setNote({ tone: 'error', text: tr('no se pudo tomar la fotografía. inténtalo de nuevo.', 'the photo could not be taken. try again.') });
     } finally {
       setBusy(false);
     }
@@ -77,19 +78,19 @@ export function CameraOverlay() {
     if (!shot || busy) return;
     setBusy(true);
     try {
-      await addMemory({ kind: 'foto', text: 'fotografía de tu isla', photo: shot.blob, width: shot.width, height: shot.height });
+      await addMemory({ kind: 'foto', text: tr('fotografía de tu isla', 'photo of your island'), photo: shot.blob, width: shot.width, height: shot.height });
       URL.revokeObjectURL(shot.url);
       setShot(null);
-      setNote({ tone: 'ok', text: 'guardada en el álbum, solo en este dispositivo.' });
+      setNote({ tone: 'ok', text: tr('guardada en el álbum, solo en este dispositivo.', 'saved to the album, only on this device.') });
     } catch (e) {
-      setNote({ tone: 'error', text: e instanceof MemoryLimitError ? e.message : 'no se pudo guardar en este navegador.' });
+      setNote({ tone: 'error', text: e instanceof MemoryLimitError ? e.message : tr('no se pudo guardar en este navegador.', 'could not save in this browser.') });
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className="camera" role="region" aria-label="cámara">
+    <div className="camera" role="region" aria-label={tr('cámara', 'camera')}>
       <div className="camera__frame" aria-hidden="true">
         <i />
         <i />
@@ -101,25 +102,25 @@ export function CameraOverlay() {
       {controls ? (
         <div className="camera__bar">
           <label className="camera__zoom">
-            <span>acercar</span>
+            <span>{tr('acercar', 'zoom')}</span>
             <input type="range" min={0.5} max={2.5} step={0.05} value={zoom} onChange={(e) => scene?.setZoom(Number(e.target.value))} />
           </label>
           <div className="camera__row">
             <button type="button" className="camera__link" onClick={() => setControls(false)}>
-              ocultar controles
+              {tr('ocultar controles', 'hide controls')}
             </button>
-            <button type="button" className="camera__shutter" aria-label="tomar fotografía" disabled={busy || !scene} onClick={() => void take()}>
+            <button type="button" className="camera__shutter" aria-label={tr('tomar fotografía', 'take photo')} disabled={busy || !scene} onClick={() => void take()}>
               <span />
             </button>
             <button type="button" className="camera__link" onClick={() => phoneBus.setCamera(false)}>
-              salir
+              {tr('salir', 'exit')}
             </button>
           </div>
-          <p className="camera__hint">arrastra para encuadrar. las fotos no se guardan hasta que tú lo decidas.</p>
+          <p className="camera__hint">{tr('arrastra para encuadrar. las fotos no se guardan hasta que tú lo decidas.', 'drag to frame the shot. photos are not saved until you decide.')}</p>
         </div>
       ) : (
         <button type="button" className="camera__show" onClick={() => setControls(true)}>
-          mostrar controles
+          {tr('mostrar controles', 'show controls')}
         </button>
       )}
 
@@ -130,14 +131,14 @@ export function CameraOverlay() {
       )}
 
       {shot && (
-        <div className="camera__preview" role="dialog" aria-label="fotografía tomada">
-          <img src={shot.url} alt="vista previa de la fotografía de tu isla" />
+        <div className="camera__preview" role="dialog" aria-label={tr('fotografía tomada', 'photo taken')}>
+          <img src={shot.url} alt={tr('vista previa de la fotografía de tu isla', 'preview of the photo of your island')} />
           <div className="camera__actions">
             <button type="button" className="vista-button vista-button--primary" disabled={busy} onClick={() => void keep()}>
-              conservar en el álbum
+              {tr('conservar en el álbum', 'keep in the album')}
             </button>
             <button type="button" className="vista-button" onClick={discard}>
-              descartar
+              {tr('descartar', 'discard')}
             </button>
           </div>
         </div>

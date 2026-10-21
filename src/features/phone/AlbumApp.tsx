@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { KIND_LABEL, MEMORY_LIMITS, formatBytes, formatTime, groupByDay, memoryFileName, type Memory } from '../../memories/logic';
 import { listMemories, removeMemory, subscribeMemories, usageOf } from '../../memories/store';
+import { tr, lang } from '../../i18n';
 
 /** álbum local: línea de tiempo de recuerdos con descarga, compartir y borrado confirmado. */
 export function AlbumApp() {
@@ -15,7 +16,7 @@ export function AlbumApp() {
       setItems(await listMemories());
       setError(null);
     } catch {
-      setError('no se pudo abrir el álbum en este navegador.');
+      setError(tr('no se pudo abrir el álbum en este navegador.', 'the album could not be opened in this browser.'));
     }
   }, []);
 
@@ -49,14 +50,14 @@ export function AlbumApp() {
     if (!m.photo) return;
     const file = new File([m.photo], memoryFileName(m), { type: 'image/jpeg' });
     if (!navigator.canShare || !navigator.canShare({ files: [file] })) {
-      setMsg('tu navegador no permite compartir imágenes. usa descargar.');
+      setMsg(tr('tu navegador no permite compartir imágenes. usa descargar.', 'your browser cannot share images. use download.'));
       return;
     }
     try {
-      await navigator.share({ files: [file], title: 'mi isla en frutiger aero islands' });
+      await navigator.share({ files: [file], title: tr('mi isla en frutiger aero islands', 'my island in frutiger aero islands') });
       setMsg(null);
     } catch (e) {
-      if (!(e instanceof DOMException && e.name === 'AbortError')) setMsg('no se pudo compartir la imagen.');
+      if (!(e instanceof DOMException && e.name === 'AbortError')) setMsg(tr('no se pudo compartir la imagen.', 'the image could not be shared.'));
     }
   };
 
@@ -67,52 +68,52 @@ export function AlbumApp() {
       setConfirm(false);
       setMsg(null);
     } catch {
-      setMsg('no se pudo eliminar el recuerdo.');
+      setMsg(tr('no se pudo eliminar el recuerdo.', 'the memory could not be deleted.'));
     }
   };
 
   if (error) return <div className="appscreen"><p role="alert">{error}</p></div>;
-  if (!items) return <div className="appscreen"><p role="status">abriendo el álbum...</p></div>;
+  if (!items) return <div className="appscreen"><p role="status">{tr('abriendo el álbum...', 'opening the album...')}</p></div>;
 
   if (open) {
     const url = urls.get(open.id);
     return (
       <div className="appscreen">
         <button type="button" className="album__back" onClick={() => { setOpenId(null); setConfirm(false); setMsg(null); }}>
-          ‹ álbum
+          ‹ {tr('álbum', 'album')}
         </button>
-        {url && <img className="album__big" src={url} alt={`${KIND_LABEL[open.kind]} del ${new Date(open.at).toLocaleDateString('es')}`} />}
+        {url && <img className="album__big" src={url} alt={`${KIND_LABEL[open.kind]} ${tr('del', 'from')} ${new Date(open.at).toLocaleDateString(lang)}`} />}
         <p className="album__cap">
           <strong>{KIND_LABEL[open.kind]}</strong>
           <span>
-            {new Date(open.at).toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })}, {formatTime(open.at)}
+            {new Date(open.at).toLocaleDateString(lang, { day: 'numeric', month: 'long', year: 'numeric' })}, {formatTime(open.at)}
           </span>
           <span>{open.text}</span>
-          <span className="album__origin">guardado solo en este dispositivo · {formatBytes(open.bytes)}</span>
+          <span className="album__origin">{tr('guardado solo en este dispositivo', 'saved only on this device')} · {formatBytes(open.bytes)}</span>
         </p>
         <div className="album__actions">
           {open.photo && (
             <>
               <button type="button" className="vista-button" onClick={() => download(open)}>
-                descargar
+                {tr('descargar', 'download')}
               </button>
               <button type="button" className="vista-button" onClick={() => void share(open)}>
-                compartir
+                {tr('compartir', 'share')}
               </button>
             </>
           )}
           {!confirm ? (
             <button type="button" className="vista-button" onClick={() => setConfirm(true)}>
-              eliminar
+              {tr('eliminar', 'delete')}
             </button>
           ) : (
-            <div className="album__confirm" role="alertdialog" aria-label="confirmar eliminación">
-              <span>¿eliminar este recuerdo? no se puede deshacer.</span>
+            <div className="album__confirm" role="alertdialog" aria-label={tr('confirmar eliminación', 'confirm deletion')}>
+              <span>{tr('¿eliminar este recuerdo? no se puede deshacer.', 'delete this memory? this cannot be undone.')}</span>
               <button type="button" className="vista-button vista-button--primary" onClick={() => void remove(open)}>
-                sí, eliminar
+                {tr('sí, eliminar', 'yes, delete')}
               </button>
               <button type="button" className="vista-button" onClick={() => setConfirm(false)}>
-                cancelar
+                {tr('cancelar', 'cancel')}
               </button>
             </div>
           )}
@@ -125,12 +126,12 @@ export function AlbumApp() {
   const usage = usageOf(items);
   return (
     <div className="appscreen">
-      <h3>álbum</h3>
+      <h3>{tr('álbum', 'album')}</h3>
       <p className="album__usage">
-        {usage.count} de {MEMORY_LIMITS.count} recuerdos · {formatBytes(usage.bytes)} de {formatBytes(MEMORY_LIMITS.bytes)} · solo en este dispositivo
+        {usage.count} {tr('de', 'of')} {MEMORY_LIMITS.count} {tr('recuerdos', 'memories')} · {formatBytes(usage.bytes)} {tr('de', 'of')} {formatBytes(MEMORY_LIMITS.bytes)} · {tr('solo en este dispositivo', 'only on this device')}
       </p>
       {items.length === 0 ? (
-        <p>todavía no hay recuerdos. toma una fotografía con la cámara; la creación de tu isla se registra sola la primera vez.</p>
+        <p>{tr('todavía no hay recuerdos. toma una fotografía con la cámara; la creación de tu isla se registra sola la primera vez.', 'there are no memories yet. take a photo with the camera; the creation of your island is recorded by itself the first time.')}</p>
       ) : (
         groupByDay(items).map((g) => (
           <section key={g.day} className="album__day" aria-label={g.day}>

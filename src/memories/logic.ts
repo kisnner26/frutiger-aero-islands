@@ -1,11 +1,12 @@
+import { tr, lang } from '../i18n';
 export type MemoryKind = 'creacion' | 'foto';
 
 /** límites explícitos del álbum local. */
 export const MEMORY_LIMITS = { count: 40, bytes: 14 * 1024 * 1024, photoBytes: 900 * 1024 } as const;
 
 export const KIND_LABEL: Record<MemoryKind, string> = {
-  creacion: 'creación de la isla',
-  foto: 'fotografía',
+  creacion: tr('creación de la isla', 'island creation'),
+  foto: tr('fotografía', 'photo'),
 };
 
 export interface Memory {
@@ -33,9 +34,9 @@ export function checkLimits(current: { count: number; bytes: number }, add: { by
 }
 
 export const LIMIT_TEXT: Record<LimitProblem, string> = {
-  cantidad: `el álbum está lleno (${MEMORY_LIMITS.count} recuerdos). elimina uno para guardar otro.`,
-  'foto-grande': 'la fotografía es demasiado pesada para guardarla.',
-  almacenamiento: 'no queda espacio en el álbum. elimina algún recuerdo.',
+  cantidad: tr(`el álbum está lleno (${MEMORY_LIMITS.count} recuerdos). elimina uno para guardar otro.`, `the album is full (${MEMORY_LIMITS.count} memories). delete one to save another.`),
+  'foto-grande': tr('la fotografía es demasiado pesada para guardarla.', 'the photo is too large to save.'),
+  almacenamiento: tr('no queda espacio en el álbum. elimina algún recuerdo.', 'there is no space left in the album. delete a memory.'),
 };
 
 export function formatBytes(n: number): string {
@@ -45,11 +46,11 @@ export function formatBytes(n: number): string {
 }
 
 export function formatDay(iso: string): string {
-  return new Date(iso).toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
+  return new Date(iso).toLocaleDateString(lang, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+  return new Date(iso).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
 }
 
 /** agrupa por día, del más reciente al más antiguo. */

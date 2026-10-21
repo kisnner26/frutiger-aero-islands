@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import './uac.css';
+import { tr } from '../i18n';
 
 interface Props {
   title: string;
@@ -14,7 +15,7 @@ interface Props {
 }
 
 /** aviso de "control de cuentas de usuario" de windows vista: oscurece el escritorio y pide permiso antes de una acción importante. */
-export function UacDialog({ title, action, children, allowLabel = 'permitir', allowDisabled, busy, onAllow, onCancel }: Props) {
+export function UacDialog({ title, action, children, allowLabel = tr('permitir', 'allow'), allowDisabled, busy, onAllow, onCancel }: Props) {
   const cancelRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     cancelRef.current?.focus();
@@ -38,8 +39,8 @@ export function UacDialog({ title, action, children, allowLabel = 'permitir', al
           {children}
         </div>
         <footer className="uac__foot">
-          <button type="button" className="uac__btn uac__btn--allow" disabled={allowDisabled || busy} onClick={onAllow}>{busy ? 'trabajando...' : allowLabel}</button>
-          <button type="button" className="uac__btn" ref={cancelRef} onClick={onCancel}>cancelar</button>
+          <button type="button" className="uac__btn uac__btn--allow" disabled={allowDisabled || busy} onClick={onAllow}>{busy ? tr('trabajando...', 'working...') : allowLabel}</button>
+          <button type="button" className="uac__btn" ref={cancelRef} onClick={onCancel}>{tr('cancelar', 'cancel')}</button>
         </footer>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { tr } from '../i18n';
 interface Props {
   tone: 'info' | 'error';
   text: string;
@@ -12,7 +13,7 @@ export function Balloon({ tone, text, title }: Props) {
         {tone === 'error' ? '×' : 'i'}
       </span>
       <div className="balloon__text">
-        <strong>{title ?? (tone === 'error' ? 'aviso' : 'frutiger aero islands')}</strong>
+        <strong>{title ?? (tone === 'error' ? tr('aviso', 'notice') : 'frutiger aero islands')}</strong>
         <span>{text}</span>
       </div>
     </div>

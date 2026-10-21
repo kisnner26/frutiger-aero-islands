@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { tr } from '../i18n';
 
 interface Props {
   title: string;
@@ -26,12 +27,12 @@ export function AeroWindow({ title, icon, collapsed = false, onMinimize, onClose
         {(onMinimize || onClose) && (
           <div className="aero-window__caption">
             {onMinimize && (
-              <button type="button" className="cap cap--min" aria-label={collapsed ? `restaurar ${title}` : `minimizar ${title}`} aria-expanded={!collapsed} onClick={onMinimize}>
+              <button type="button" className="cap cap--min" aria-label={collapsed ? `${tr('restaurar', 'restore')} ${title}` : `${tr('minimizar', 'minimize')} ${title}`} aria-expanded={!collapsed} onClick={onMinimize}>
                 <span aria-hidden="true" />
               </button>
             )}
             {onClose && (
-              <button type="button" className="cap cap--close" aria-label={`cerrar ${title}`} onClick={onClose}>
+              <button type="button" className="cap cap--close" aria-label={`${tr('cerrar', 'close')} ${title}`} onClick={onClose}>
                 <span aria-hidden="true" />
               </button>
             )}

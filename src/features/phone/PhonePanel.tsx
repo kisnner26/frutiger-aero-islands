@@ -3,16 +3,17 @@ import { AlbumApp } from './AlbumApp';
 import { CameraApp } from './CameraApp';
 import { RadioApp } from './RadioApp';
 import type { PhoneApp } from './phoneBus';
+import { tr } from '../../i18n';
 
 type App = PhoneApp;
 
 const APPS: Array<{ id: Exclude<App, 'inicio'>; label: string; glyph: string }> = [
   { id: 'radio', label: 'radio', glyph: 'M3 9h18v11H3zM7 9L17 3M8 14.500h5M16 14.500h2' },
-  { id: 'camara', label: 'cámara', glyph: 'M3 8h4l2-3h6l2 3h4v12H3zM12 17a4 4 0 100-8 4 4 0 000 8z' },
-  { id: 'album', label: 'álbum', glyph: 'M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4' },
+  { id: 'camara', label: tr('cámara', 'camera'), glyph: 'M3 8h4l2-3h6l2 3h4v12H3zM12 17a4 4 0 100-8 4 4 0 000 8z' },
+  { id: 'album', label: tr('álbum', 'album'), glyph: 'M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4' },
 ];
 
-const TITLE: Record<App, string> = { inicio: 'teléfono', radio: 'radio', camara: 'cámara', album: 'álbum' };
+const TITLE: Record<App, string> = { inicio: tr('teléfono', 'phone'), radio: 'radio', camara: tr('cámara', 'camera'), album: tr('álbum', 'album') };
 
 /** teléfono aero: cuerpo retro con teclado decorativo y pantalla táctil grande. aplicaciones: radio, cámara y álbum. */
 export default function PhonePanel({ onClose, initialApp = 'inicio' }: { onClose: () => void; initialApp?: App }) {
@@ -29,7 +30,7 @@ export default function PhonePanel({ onClose, initialApp = 'inicio' }: { onClose
   }, [onClose]);
 
   return (
-    <aside className="phone" role="dialog" aria-label="teléfono aero" tabIndex={-1} ref={ref}>
+    <aside className="phone" role="dialog" aria-label={tr('teléfono aero', 'aero phone')} tabIndex={-1} ref={ref}>
       <div className="phone__top" aria-hidden="true">
         <span className="phone__speaker" />
         <span className="phone__led" />
@@ -40,16 +41,16 @@ export default function PhonePanel({ onClose, initialApp = 'inicio' }: { onClose
             <strong>{TITLE.inicio}</strong>
           ) : (
             <button type="button" className="phone__close" onClick={() => setApp('inicio')}>
-              ‹ inicio
+              ‹ {tr('inicio', 'home')}
             </button>
           )}
-          <button type="button" className="phone__close" onClick={onClose} aria-label="cerrar teléfono">
-            cerrar
+          <button type="button" className="phone__close" onClick={onClose} aria-label={tr('cerrar teléfono', 'close phone')}>
+            {tr('cerrar', 'close')}
           </button>
         </header>
         <div className="phone__app">
           {app === 'inicio' && (
-            <ul className="phone__home" aria-label="aplicaciones">
+            <ul className="phone__home" aria-label={tr('aplicaciones', 'apps')}>
               {APPS.map((a) => (
                 <li key={a.id}>
                   <button type="button" onClick={() => setApp(a.id)}>

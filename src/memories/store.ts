@@ -1,4 +1,5 @@
 import { checkLimits, LIMIT_TEXT, type LimitProblem, type Memory, type MemoryKind } from './logic';
+import { tr } from '../i18n';
 
 const DB = 'frutiger-aero-islands';
 const STORE = 'recuerdos';
@@ -18,7 +19,7 @@ function open(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: 'id' });
     };
     req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error ?? new Error('no se pudo abrir el álbum'));
+    req.onerror = () => reject(req.error ?? new Error(tr('no se pudo abrir el álbum', 'the album could not be opened')));
   });
 }
 
