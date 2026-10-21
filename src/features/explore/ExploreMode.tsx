@@ -365,15 +365,15 @@ export function ExploreMode({ objects, level, avatar, onExit }: Props) {
     <div className="explore" role="application" aria-label={tr('exploración a pie', 'exploring on foot')}>
       <canvas ref={canvasRef} className="explore__canvas" />
       <div className="explore__bar">
-        <strong>{view === 'primera' ? 'primera persona' : 'tercera persona'}</strong>
-        <button type="button" onClick={() => setView((v) => (v === 'primera' ? 'tercera' : 'primera'))}>cambiar vista</button>
-        <button type="button" onClick={onExit}>salir</button>
+        <strong>{view === 'primera' ? tr('primera persona', 'first person') : tr('tercera persona', 'third person')}</strong>
+        <button type="button" onClick={() => setView((v) => (v === 'primera' ? 'tercera' : 'primera'))}>{tr('cambiar vista', 'change view')}</button>
+        <button type="button" onClick={onExit}>{tr('salir', 'exit')}</button>
       </div>
-      {hint && <p className="explore__hint">{touch ? 'usa la palanca para caminar y arrastra para mirar' : 'w a s d para caminar · q e o flechas para girar · arrastra para mirar · v cambia la vista · esc sale'}</p>}
+      {hint && <p className="explore__hint">{touch ? tr('usa la palanca para caminar y arrastra para mirar', 'use the stick to walk and drag to look around') : tr('w a s d para caminar · q e o flechas para girar · arrastra para mirar · v cambia la vista · esc sale', 'w a s d to walk · q e or arrows to turn · drag to look · v changes the view · esc exits')}</p>}
       <div
         ref={padRef}
         className="explore__pad"
-        aria-label="palanca de movimiento"
+        aria-label={tr('palanca de movimiento', 'movement stick')}
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId);
           setStick(e);

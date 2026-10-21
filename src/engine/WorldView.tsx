@@ -4,6 +4,7 @@ import type { WorldView as WorldViewState } from '../world/worldState';
 import { veil } from '../ui/veilStore';
 import { WorldScene, type WorldCallbacks } from './WorldScene';
 import { AeroLoader } from '../ui/AeroLoader';
+import { tr } from '../i18n';
 
 interface Props {
   islands: WorldIsland[];
@@ -71,12 +72,12 @@ export function WorldView({ islands, initial, callbacks, controlRef, rebuildKey 
   return (
     <div className="scene-view">
       <div ref={hostRef} className="scene-view__host" />
-      {status === 'cargando' && <AeroLoader variant="scene" text="preparando el mundo..." detail="desplegando el atlas interior..." />}
+      {status === 'cargando' && <AeroLoader variant="scene" text={tr('preparando el mundo...', 'preparing the world...')} detail={tr('desplegando el atlas interior...', 'unfolding the inner atlas...')} />}
       {status === 'error' && (
         <div className="scene-view__msg" role="alert">
-          <p>no se pudo cargar el mundo.</p>
+          <p>{tr('no se pudo cargar el mundo.', 'the world could not be loaded.')}</p>
           <button type="button" className="vista-button" onClick={() => setAttempt((n) => n + 1)}>
-            reintentar
+            {tr('reintentar', 'retry')}
           </button>
         </div>
       )}

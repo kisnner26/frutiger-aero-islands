@@ -361,7 +361,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
               onDelete={() => selected && dispatch({ type: 'remove', id: selected.id })}
             />
             <span className="catalog-bar__status">
-              {doc.objects.length} / 150 objetos · {saveText}
+              {doc.objects.length} / 150 {tr('objetos', 'objects')} · {saveText}
             </span>
           </div>
           <DecorationCatalog placing={placing} level={doc.maxLevel} brillos={doc.brillos} onChoose={choose} />

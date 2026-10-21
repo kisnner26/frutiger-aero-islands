@@ -80,9 +80,9 @@ export function SceneView({ scene, callbacks, controlRef }: SceneViewProps) {
       {status === 'cargando' && <AeroLoader variant="scene" text={tr('cargando la isla...', 'loading the island...')} detail={tr('acomodando tu jardín y sus reflejos...', 'arranging your garden and its reflections...')} />}
       {status === 'error' && (
         <div className="scene-view__msg" role="alert">
-          <p>no se pudo cargar la isla.</p>
+          <p>{tr('no se pudo cargar la isla.', 'the island could not be loaded.')}</p>
           <button type="button" className="vista-button" onClick={() => setAttempt((n) => n + 1)}>
-            reintentar
+            {tr('reintentar', 'retry')}
           </button>
         </div>
       )}

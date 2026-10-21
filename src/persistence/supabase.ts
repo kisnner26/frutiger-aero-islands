@@ -65,7 +65,7 @@ export async function completeProfile(username: string, displayName?: string): P
   invalidate('perfil:');
   const row = data?.[0];
   const layout = asDoc(row?.layout);
-  if (!row || !layout) throw new Error('la isla inicial no se pudo crear');
+  if (!row || !layout) throw new Error(tr('la isla inicial no se pudo crear', 'the initial island could not be created'));
   return { id: row.island_id, username: row.username, displayName: row.display_name, name: row.island_name, layout, revision: Number(row.revision), createdAt: new Date().toISOString(), avatar: null };
 }
 

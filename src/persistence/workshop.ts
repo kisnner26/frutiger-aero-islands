@@ -1,10 +1,11 @@
 import { supabase } from './supabase';
+import { tr } from '../i18n';
 
 export interface AeroResources { water: number; crystals: number; leaves: number; lastCycleAt: string | null; }
 export interface AeroRecipe { id: string; name: string; description: string; waterCost: number; crystalCost: number; leafCost: number; outputKind: 'decoracion' | 'gadget' | 'recuerdo'; outputName: string; unlockLevel: number; }
 export interface CraftResult { recipeId: string; outputName: string; amount: number; resources: AeroResources; }
 
-function client() { if (!supabase) throw new Error('la comunidad necesita supabase'); return supabase; }
+function client() { if (!supabase) throw new Error(tr('la comunidad necesita supabase', 'the community needs supabase')); return supabase; }
 function resources(row: { water: number; crystals: number; leaves: number; last_cycle_at?: string | null }): AeroResources { return { water: Number(row.water), crystals: Number(row.crystals), leaves: Number(row.leaves), lastCycleAt: row.last_cycle_at ?? null }; }
 
 export async function getAeroResources(): Promise<AeroResources> {

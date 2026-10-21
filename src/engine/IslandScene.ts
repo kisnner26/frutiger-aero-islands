@@ -13,6 +13,7 @@ import { sameAvatar, type AvatarSpec } from '../avatar/model';
 import { DEFAULT_CAMERA, clampCamera, fitScale, screenToScene, zoomAt, type Camera } from './camera';
 import { rendererResolution, tickerFrameLimit } from './devicePerformance';
 import { K, TILT, project, unproject } from './projection';
+import { tr } from '../i18n';
 
 export interface SceneCallbacks {
   onSelect(id: string | null): void;
@@ -171,7 +172,7 @@ export class IslandScene {
       this.butterflyTex = butterfly;
     } catch (e) {
       app.destroy(true, { children: true });
-      throw new Error('no se pudieron cargar las texturas');
+      throw new Error(tr('no se pudieron cargar las texturas', 'the textures could not be loaded'));
     }
     if (this.destroyed) {
       app.destroy(true, { children: true });

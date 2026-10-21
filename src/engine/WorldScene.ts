@@ -17,6 +17,7 @@ import type { Globe3D } from './Globe3D';
 import { OrbitalAccents, SeaTraffic } from './worldExtras';
 import { pencilSprite as pencilTex } from '../art/pencil';
 import { rendererResolution, tickerFrameLimit } from './devicePerformance';
+import { tr } from '../i18n';
 
 export interface WorldCallbacks {
   onSelect(id: string | null): void;
@@ -180,7 +181,7 @@ export class WorldScene {
       this.basin.texture = Texture.from(renderBasin(1600));
     } catch {
       app.destroy(true, { children: true });
-      throw new Error('no se pudo cargar el mundo');
+      throw new Error(tr('no se pudo cargar el mundo', 'the world could not be loaded'));
     }
     if (this.destroyed) {
       app.destroy(true, { children: true });

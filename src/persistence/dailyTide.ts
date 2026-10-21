@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { tr } from '../i18n';
 
 export interface DailyTideStatus {
   streak: number;
@@ -14,7 +15,7 @@ export interface DailyTideClaim extends DailyTideStatus {
 }
 
 function client() {
-  if (!supabase) throw new Error('la comunidad necesita supabase');
+  if (!supabase) throw new Error(tr('la comunidad necesita supabase', 'the community needs supabase'));
   return supabase;
 }
 

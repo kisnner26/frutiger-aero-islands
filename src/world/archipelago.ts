@@ -4,6 +4,7 @@ import { initialDoc, type Doc } from '../features/editor/commands';
 import { localRepository } from '../persistence/localDraft';
 import type { RealIsland } from '../persistence/world';
 import { countryAnchor, placeIslands } from './geoProjection';
+import { tr } from '../i18n';
 
 export type IslandKind = 'mia' | 'jugador';
 
@@ -37,7 +38,7 @@ export function buildArchipelago(mine: { objects: PlacedObject[]; level: number 
   ]);
   const at = (id: string) => pos.get(id) ?? { x: 0, y: 0 };
   const list: WorldIsland[] = [];
-  if (mine) list.push({ id: 'mia', kind: 'mia', name: 'mi isla', username: null, country, ...at('mia'), objects: mine.objects, level: mine.level });
+  if (mine) list.push({ id: 'mia', kind: 'mia', name: tr('mi isla', 'my island'), username: null, country, ...at('mia'), objects: mine.objects, level: mine.level });
   for (const o of others) list.push({ id: o.id, kind: 'jugador', name: `@${o.username}`, username: o.username, country: o.country, ...at(o.id), objects: o.objects, level: o.level });
   return list.filter((i) => i.objects.every((obj) => CATALOG_MAP.has(obj.assetId)));
 }

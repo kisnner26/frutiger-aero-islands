@@ -27,7 +27,7 @@ export function CameraApp({ onClose }: { onClose: () => void }) {
         <>
           <p>{tr('la cámara fotografía la escena de una isla. ábrela desde dentro de tu isla.', 'the camera photographs the scene of an island. open it from inside your island.')}</p>
           <a className="vista-button vista-button--primary" href={routeHref('isla')} onClick={onClose}>
-            ir a mi isla
+            {tr('ir a mi isla', 'go to my island')}
           </a>
         </>
       )}
