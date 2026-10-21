@@ -168,6 +168,72 @@ export function pencilize(canvas: HTMLCanvasElement, opts: PencilOptions = {}): 
   return canvas;
 }
 
+/** estilo de dibujo de los sprites: 'aero' (render brillante de cristal y plástico) o 'lapiz' (el trazo a lápiz original). */
+export const ART_STYLE: 'aero' | 'lapiz' = 'aero';
+
+/** render frutiger aero: color saturado, luz de borde arriba-izquierda, brillo de cristal, sombra de oclusión y contorno azul fino. modifica el canvas. */
+export function aeroize(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  const w = canvas.width;
+  const h = canvas.height;
+  const s = w / 256;
+  const out = makeCanvas(w, h);
+  const o = out.getContext('2d')!;
+  o.filter = 'saturate(1.3) contrast(1.08) brightness(1.04)';
+  o.drawImage(canvas, 0, 0);
+  o.filter = 'none';
+
+  const tinted = (src: HTMLCanvasElement, color: string) => {
+    const t = makeCanvas(w, h);
+    const tc = t.getContext('2d')!;
+    tc.drawImage(src, 0, 0);
+    tc.globalCompositeOperation = 'source-in';
+    tc.fillStyle = color;
+    tc.fillRect(0, 0, w, h);
+    return t;
+  };
+  /** borde de la silueta en una dirección: la silueta menos ella misma desplazada. */
+  const edge = (dx: number, dy: number, color: string) => {
+    const e = makeCanvas(w, h);
+    const ec = e.getContext('2d')!;
+    ec.drawImage(canvas, 0, 0);
+    ec.globalCompositeOperation = 'destination-out';
+    ec.drawImage(canvas, dx, dy);
+    return tinted(e, color);
+  };
+  const d = Math.max(1.4, 2.4 * s);
+  o.globalCompositeOperation = 'source-atop';
+  o.globalAlpha = 0.62;
+  o.drawImage(edge(d, d, '#ffffff'), 0, 0);
+  o.globalAlpha = 0.34;
+  o.drawImage(edge(-d, -d, '#0a3a78'), 0, 0);
+  o.globalAlpha = 1;
+
+  const gloss = o.createLinearGradient(0, 0, 0, h * 0.6);
+  gloss.addColorStop(0, 'rgba(255,255,255,.3)');
+  gloss.addColorStop(1, 'rgba(255,255,255,0)');
+  o.fillStyle = gloss;
+  o.fillRect(0, 0, w, h);
+  const ao = o.createLinearGradient(0, h * 0.62, 0, h);
+  ao.addColorStop(0, 'rgba(10,50,100,0)');
+  ao.addColorStop(1, 'rgba(10,50,100,.2)');
+  o.fillStyle = ao;
+  o.fillRect(0, 0, w, h);
+
+  // contorno azul fino detrás (8 direcciones)
+  o.globalCompositeOperation = 'destination-over';
+  const line = tinted(canvas, 'rgba(8,60,112,.6)');
+  const r = Math.max(1, 1.5 * s);
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    o.drawImage(line, Math.cos(a) * r, Math.sin(a) * r);
+  }
+
+  const ctx = canvas.getContext('2d')!;
+  ctx.clearRect(0, 0, w, h);
+  ctx.drawImage(out, 0, 0);
+  return canvas;
+}
+
 /** textura de papel: moteado claro/oscuro sobre todo el canvas (multiplicación suave). */
 export function paperGrain(canvas: HTMLCanvasElement, strength = 0.5, seed = 9): void {
   const w = canvas.width;
@@ -199,13 +265,13 @@ const spriteCache = new Map<string, Promise<HTMLCanvasElement>>();
 
 /** svg → canvas con estilo lápiz; cachea por url y tamaño. */
 export function pencilSprite(url: string, size = 256, opts: PencilOptions = {}): Promise<HTMLCanvasElement> {
-  const key = `${url}|${size}|${JSON.stringify(opts)}`;
+  const key = `${ART_STYLE}|${url}|${size}|${JSON.stringify(opts)}`;
   let p = spriteCache.get(key);
   if (!p) {
     p = loadImage(url).then((img) => {
       const c = makeCanvas(size, size);
       c.getContext('2d')!.drawImage(img, 0, 0, size, size);
-      return pencilize(c, opts);
+      return ART_STYLE === 'aero' ? aeroize(c) : pencilize(c, opts);
     });
     spriteCache.set(key, p);
     p.catch(() => spriteCache.delete(key));
