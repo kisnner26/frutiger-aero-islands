@@ -674,3 +674,6 @@ button, a, [role='button'], .tile, .task { touch-action: manipulation; -webkit-t
   .taskbar__tasks { scroll-snap-type: x proximity; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent); padding-right: 18px; }
   .task { scroll-snap-align: start; }
 }
+
+/* el selector de idioma es un botón, pero se ve como los demás enlaces de la portada */
+button.landing__text-link { padding: 0; border: 0; background: none; font-family: inherit; cursor: pointer; }
