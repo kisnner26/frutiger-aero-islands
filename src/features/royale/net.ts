@@ -26,7 +26,7 @@ export const newRoomCode = () => Array.from({ length: 4 }, () => ALPHABET[Math.f
 export const cleanCode = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
 export const netAvailable = () => isSupabaseConfigured && !!supabase;
 
-export class RoyaleNet {
+export class RoyaleNet<M = NetMsg> {
   private ch: RealtimeChannel | null = null;
   members: Member[] = [];
   ready = false;
@@ -34,19 +34,20 @@ export class RoyaleNet {
   constructor(
     readonly code: string,
     private me: Member,
-    private on: { members: (m: Member[]) => void; msg: (m: NetMsg) => void; error: (e: string) => void },
+    private on: { members: (m: Member[]) => void; msg: (m: M) => void; error: (e: string) => void },
+    private prefix = 'royale',
   ) {}
 
   async join(): Promise<void> {
     if (!supabase) throw new Error('sin servidor');
-    const ch = supabase.channel(`royale:${this.code}`, { config: { broadcast: { self: false, ack: false }, presence: { key: this.me.id } } });
+    const ch = supabase.channel(`${this.prefix}:${this.code}`, { config: { broadcast: { self: false, ack: false }, presence: { key: this.me.id } } });
     this.ch = ch;
     ch.on('presence', { event: 'sync' }, () => {
       const state = ch.presenceState() as Record<string, Array<Member>>;
       this.members = Object.values(state).map((v) => v[0]).filter(Boolean).sort((a, b) => (a.host === b.host ? a.id.localeCompare(b.id) : a.host ? -1 : 1));
       this.on.members(this.members);
     });
-    ch.on('broadcast', { event: 'm' }, ({ payload }) => this.on.msg(payload as NetMsg));
+    ch.on('broadcast', { event: 'm' }, ({ payload }) => this.on.msg(payload as M));
     await new Promise<void>((resolve, reject) => {
       const timer = window.setTimeout(() => reject(new Error('tiempo agotado')), 12_000);
       ch.subscribe(async (status) => {
@@ -64,7 +65,7 @@ export class RoyaleNet {
     });
   }
 
-  send(msg: NetMsg) {
+  send(msg: M) {
     void this.ch?.send({ type: 'broadcast', event: 'm', payload: msg });
   }
 

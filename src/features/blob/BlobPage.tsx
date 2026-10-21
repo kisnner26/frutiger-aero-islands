@@ -7,10 +7,12 @@ import { lang, tr } from '../../i18n';
 import { useSession } from '../../persistence/session';
 import { BrandOrb } from '../../ui/Brand';
 import { mulberry32 } from '../minigames/rng';
+import { cleanCode, netAvailable, newRoomCode, RoyaleNet, type Member } from '../royale/net';
 import { BattleResult, ProgressCard } from '../royale/BattleResult';
 import { recordMatch, type Outcome } from '../royale/progress';
 import { burst, newFx, stepFx, RoyaleArt } from '../royale/render';
 import '../royale/royale.css';
+import { applySnapshot, makeSnapshot, RemoteInputs, smoothCells, type BlobMsg, type BlobStart } from './netsync';
 import { drawBlob, drawBlobMinimap, powerInfo } from './render';
 import { center, createMatch, hazeRadius, radiusOf, ranking, step, totalMass, ROUND_TIME, type BlobEvent, type BlobInit, type Input, type Match, type PowerKind } from './sim';
 
@@ -22,7 +24,17 @@ interface Hud { mass: number; rank: number; alive: number; time: number; haze: n
 /** aero blob: royale al estilo agar. creces comiendo burbujas y células más pequeñas; la bruma cierra la arena. */
 export function BlobPage() {
   const session = useSession();
-  const [phase, setPhase] = useState<'menu' | 'play' | 'over'>('menu');
+  const [phase, setPhase] = useState<'menu' | 'lobby' | 'play' | 'over'>('menu');
+  const [members, setMembers] = useState<Member[]>([]);
+  const [roomCode, setRoomCode] = useState('');
+  const [joinCode, setJoinCode] = useState('');
+  const [lobbyMsg, setLobbyMsg] = useState<string | null>(null);
+  const [joining, setJoining] = useState(false);
+  const netRef = useRef<RoyaleNet<BlobMsg> | null>(null);
+  const msgRef = useRef<(m: BlobMsg) => void>(() => undefined);
+  const membersRef = useRef<(l: Member[]) => void>(() => undefined);
+  const cfgRef = useRef<{ seed: number; inits: BlobInit[]; specs: Record<string, AvatarSpec | null>; online: boolean; isHost: boolean } | null>(null);
+  const meId = useRef(`u${Math.random().toString(36).slice(2, 8)}`);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [help, setHelp] = useState(false);
   const [hud, setHud] = useState<Hud>({ mass: 30, rank: 12, alive: 12, time: ROUND_TIME, haze: 100, power: null, board: [], dead: false, place: 0, count: 3, banner: '' });
@@ -36,7 +48,7 @@ export function BlobPage() {
   const meName = session.username ? `@${session.username}` : tr('tú', 'you');
 
   const finish = useCallback((m: Match) => {
-    const me = m.players[0];
+    const me = m.players.find((p) => p.id === (cfgRef.current?.online ? meId.current : 'me')) ?? m.players[0];
     const placement = me.placement || 1;
     setOutcome(
       recordMatch({
@@ -44,6 +56,8 @@ export function BlobPage() {
         mass: Math.round(Math.max(stats.current.maxMass, totalMass(me))), ate: me.eaten, lowHpWin: false,
       }),
     );
+    void netRef.current?.close();
+    netRef.current = null;
     setPhase('over');
   }, []);
 
@@ -52,20 +66,22 @@ export function BlobPage() {
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext('2d')!;
     const id = ++runId.current;
-    const seed = Math.floor(Math.random() * 2_000_000_000) + 1;
-    const rnd = mulberry32(seed ^ 0x51ed270b);
-    const names = lang === 'en' ? NAMES_EN : NAMES;
-    const inits: BlobInit[] = [{ id: 'me', name: meName, hue: 190, isBot: false }];
-    const specs: Record<string, AvatarSpec | null> = { me: avatarStore.get() };
-    for (let i = 0; i < 11; i++) {
-      inits.push({ id: `b${i}`, name: names[i % names.length], hue: (i * 47 + 20) % 360, isBot: true });
-      specs[`b${i}`] = randomAvatar(rnd);
-    }
+    const cfg = cfgRef.current ?? soloConfig();
+    const { seed, inits, specs, online, isHost } = cfg;
+    const myId = online ? meId.current : 'me';
+    const net = netRef.current;
+    const remote = new RemoteInputs();
+    const sent = new Set<number>();
+    const pendingEv: BlobEvent[] = [];
+    let snapAt = 0;
+    let fullAt = 0;
+    let inAt = 0;
+    let lastSnap = performance.now();
     const m = createMatch(seed, inits);
     const art = new RoyaleArt(seed);
     const fx = newFx();
     stats.current = { powers: 0, maxMass: 0 };
-    const me = m.players[0];
+    const me = m.players.find((p) => p.id === myId)!;
     const pointer = { x: 0, y: 0, mouse: false };
     const stick = { active: false, id: -1, cx: 0, cy: 0, x: 0, y: 0 };
     const flags = { split: false, eject: false, power: false };
@@ -173,14 +189,14 @@ export function BlobPage() {
     const handle = (ev: BlobEvent) => {
       if (ev.type === 'eat') {
         burst(fx, ev.x, ev.y, 40, 14);
-        if (ev.by === 'me') {
+        if (ev.by === myId) {
           fx.floats.push({ x: ev.x, y: ev.y - 30, text: `+${Math.round(ev.mass)}`, life: 1, color: '#d8ff90' });
           sfx.coin();
         }
-        if (ev.victim === 'me') fx.shake = 12;
+        if (ev.victim === myId) fx.shake = 12;
       } else if (ev.type === 'death') {
         addFeed(ev.killer ? `${nameOf(ev.killer)} ${tr('se comió a', 'ate')} ${nameOf(ev.id)}` : `${nameOf(ev.id)} ${tr('se perdió en la bruma', 'was lost in the haze')}`);
-      } else if (ev.type === 'pickup' && ev.by === 'me') {
+      } else if (ev.type === 'pickup' && ev.by === myId) {
         stats.current.powers += 1;
         sfx.levelUp();
         const info = powerInfo[ev.kind];
@@ -188,11 +204,11 @@ export function BlobPage() {
         window.setTimeout(() => setHud((h) => ({ ...h, banner: '' })), 2200);
       } else if (ev.type === 'power') {
         burst(fx, ev.x, ev.y, 200, 18);
-        if (ev.by === 'me') sfx.levelUp();
+        if (ev.by === myId) sfx.levelUp();
       } else if (ev.type === 'pop') {
         burst(fx, ev.x, ev.y, 300, 22);
-        if (ev.by === 'me') fx.shake = 8;
-      } else if (ev.type === 'split' && ev.by === 'me') sfx.pop();
+        if (ev.by === myId) fx.shake = 8;
+      } else if (ev.type === 'split' && ev.by === myId) sfx.pop();
     };
 
     const readInput = (): Input => {
@@ -228,13 +244,41 @@ export function BlobPage() {
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
       if (countdown > 0) countdown -= dt;
-      else if (!m.over) {
-        acc += dt * speedUp;
+      else if (!online || isHost) {
+        if (!m.over) {
+          acc += dt * speedUp;
+          const input = readInput();
+          remote.set(myId, input.tx, input.ty);
+          if (input.split || input.eject || input.power) remote.act(myId, input);
+          let n = 0;
+          while (acc >= 1 / 60 && n++ < 6 * speedUp) {
+            for (const ev of step(m, 1 / 60, remote.take())) {
+              handle(ev);
+              if (online) pendingEv.push(ev);
+            }
+            acc -= 1 / 60;
+          }
+        }
+        if (online && net && now - snapAt > 80) {
+          snapAt = now;
+          const full = now - fullAt > 3000;
+          if (full) fullAt = now;
+          net.send({ k: 'snap', s: makeSnapshot(m, sent, full, pendingEv.splice(0)) });
+        }
+      } else {
         const input = readInput();
-        let n = 0;
-        while (acc >= 1 / 60 && n++ < 6 * speedUp) {
-          for (const ev of step(m, 1 / 60, { me: input })) handle(ev);
-          acc -= 1 / 60;
+        if (net && now - inAt > 50) {
+          inAt = now;
+          net.send({ k: 'in', id: myId, tx: Math.round(input.tx), ty: Math.round(input.ty) });
+        }
+        if (net && (input.split || input.eject || input.power)) net.send({ k: 'act', id: myId, split: input.split, eject: input.eject, power: input.power });
+        smoothCells(m, dt);
+        if (now - lastSnap > 7000 && !m.over) {
+          ended = true;
+          setLobbyMsg(tr('se perdió la conexión con el anfitrión.', 'the connection to the host was lost.'));
+          void net?.close();
+          netRef.current = null;
+          setPhase('menu');
         }
       }
       stats.current.maxMass = Math.max(stats.current.maxMass, totalMass(me));
@@ -247,16 +291,16 @@ export function BlobPage() {
       const mass = Math.max(30, totalMass(target));
       const wantZoom = Math.min(w, h) / (880 + Math.sqrt(mass) * 24);
       zoomNow += (wantZoom - zoomNow) * Math.min(1, dt * 3);
-      drawBlob({ ctx, w, h, m, focus, zoom: zoomNow, art, fx, specs, me: 'me', time });
+      drawBlob({ ctx, w, h, m, focus, zoom: zoomNow, art, fx, specs, me: myId, time });
       const mini = miniRef.current;
-      if (mini) drawBlobMinimap(mini.getContext('2d')!, mini.width, m, 'me');
+      if (mini) drawBlobMinimap(mini.getContext('2d')!, mini.width, m, myId);
       if (now - uiAt > 140) {
         uiAt = now;
         const order = ranking(m);
         setHud({
-          mass: Math.round(totalMass(me)), rank: me.alive ? order.findIndex((p) => p.id === 'me') + 1 : 0, alive: order.length,
+          mass: Math.round(totalMass(me)), rank: me.alive ? order.findIndex((p) => p.id === myId) + 1 : 0, alive: order.length,
           time: Math.max(0, Math.ceil(ROUND_TIME - m.t)), haze: Math.round((hazeRadius(m.t) / 2400) * 100), power: me.power,
-          board: order.slice(0, 6).map((p) => ({ id: p.id, name: p.name, mass: Math.round(totalMass(p)), me: p.id === 'me' })),
+          board: order.slice(0, 6).map((p) => ({ id: p.id, name: p.name, mass: Math.round(totalMass(p)), me: p.id === myId })),
           dead: !me.alive, place: me.placement, count: Math.max(0, Math.ceil(countdown)), banner: '',
         });
         setFeed(feedLines.filter((f) => now - f.at < 5000).map(({ id: fid, text }) => ({ id: fid, text })));
@@ -264,9 +308,26 @@ export function BlobPage() {
       if (m.over && !ended) {
         ended = true;
         window.setTimeout(() => id === runId.current && finish(m), 1100);
+        if (online && isHost) net?.send({ k: 'snap', s: makeSnapshot(m, sent, true, pendingEv.splice(0)) });
       }
       raf = requestAnimationFrame(frame);
     };
+    if (online) {
+      msgRef.current = (msg) => {
+        if (isHost && msg.k === 'in') remote.set(msg.id, msg.tx, msg.ty);
+        else if (isHost && msg.k === 'act') remote.act(msg.id, msg);
+        else if (!isHost && msg.k === 'snap') {
+          lastSnap = performance.now();
+          applySnapshot(m, msg.s);
+          for (const e of msg.s.ev) handle(e);
+        }
+      };
+      membersRef.current = (list) => {
+        if (!isHost) return;
+        const here = new Set(list.map((x) => x.id));
+        for (const p of m.players) if (!p.isBot && !here.has(p.id)) p.isBot = true;
+      };
+    }
     raf = requestAnimationFrame(frame);
     (window as unknown as { __blob?: Match; __blobSpeed?: (n: number) => void }).__blob = m;
     (window as unknown as { __blobSpeed?: (n: number) => void }).__blobSpeed = (n) => { speedUp = n; };
@@ -283,17 +344,133 @@ export function BlobPage() {
       window.removeEventListener('pointerup', pu);
       window.removeEventListener('pointercancel', pu);
       offs.forEach((o) => o());
+      msgRef.current = () => undefined;
+      membersRef.current = () => undefined;
     };
   }, [phase, meName, finish]);
 
-  const start = () => {
+  const soloConfig = () => {
+    const seed = Math.floor(Math.random() * 2_000_000_000) + 1;
+    const rnd = mulberry32(seed ^ 0x51ed270b);
+    const names = lang === 'en' ? NAMES_EN : NAMES;
+    const inits: BlobInit[] = [{ id: 'me', name: meName, hue: 190, isBot: false }];
+    const specs: Record<string, AvatarSpec | null> = { me: avatarStore.get() };
+    for (let i = 0; i < 11; i++) {
+      inits.push({ id: `b${i}`, name: names[i % names.length], hue: (i * 47 + 20) % 360, isBot: true });
+      specs[`b${i}`] = randomAvatar(rnd);
+    }
+    return { seed, inits, specs, online: false, isHost: true };
+  };
+
+  const startSolo = () => {
     sfx.click();
+    void netRef.current?.close();
+    netRef.current = null;
+    cfgRef.current = soloConfig();
     setOutcome(null);
     setFeed([]);
     setPhase('play');
   };
 
-  if (phase === 'over' && outcome) return <BattleResult outcome={outcome} onAgain={start} onMenu={() => setPhase('menu')} />;
+  const startFromMsg = useCallback((st: BlobStart, host: boolean) => {
+    cfgRef.current = {
+      seed: st.seed, specs: st.specs, online: true, isHost: host,
+      inits: st.roster.map((x) => ({ ...x, isBot: x.isBot })),
+    };
+    setOutcome(null);
+    setFeed([]);
+    setPhase('play');
+  }, []);
+
+  const hostStart = () => {
+    const net = netRef.current;
+    if (!net) return;
+    const humans = net.members.slice(0, 12);
+    const seed = Math.floor(Math.random() * 2_000_000_000) + 1;
+    const rnd = mulberry32(seed ^ 0x51ed270b);
+    const names = lang === 'en' ? NAMES_EN : NAMES;
+    const roster = humans.map((h) => ({ id: h.id, name: h.name, hue: h.hue, isBot: false }));
+    const specs: Record<string, AvatarSpec | null> = {};
+    for (const h of humans) specs[h.id] = h.spec;
+    for (let i = humans.length; i < 12; i++) {
+      roster.push({ id: `b${i}`, name: names[i % names.length], hue: (i * 47 + 20) % 360, isBot: true });
+      specs[`b${i}`] = randomAvatar(rnd);
+    }
+    const st: BlobStart = { seed, roster, specs };
+    net.send({ k: 'start', start: st });
+    startFromMsg(st, true);
+  };
+
+  const openRoom = async (code: string, host: boolean) => {
+    if (!netAvailable()) {
+      setLobbyMsg(tr('las salas en línea no están disponibles ahora.', 'online rooms are not available right now.'));
+      return;
+    }
+    setJoining(true);
+    setLobbyMsg(null);
+    const me: Member = { id: meId.current, name: meName, hue: Math.floor(Math.random() * 360), spec: avatarStore.get(), host };
+    const net = new RoyaleNet<BlobMsg>(code, me, {
+      members: (l) => {
+        setMembers(l);
+        membersRef.current(l);
+      },
+      msg: (m) => msgRef.current(m),
+      error: () => setLobbyMsg(tr('se perdió la conexión con la sala.', 'the connection to the room was lost.')),
+    }, 'blob');
+    msgRef.current = (m) => {
+      if (m.k === 'start') startFromMsg(m.start, false);
+    };
+    try {
+      await net.join();
+      if (!host && !net.members.some((x) => x.host)) {
+        await net.close();
+        setLobbyMsg(tr('no encontré esa sala. revisa el código.', 'could not find that room. check the code.'));
+        return;
+      }
+      netRef.current = net;
+      setRoomCode(code);
+      setPhase('lobby');
+    } catch {
+      void net.close();
+      setLobbyMsg(tr('no se pudo conectar con la sala. inténtalo de nuevo.', 'could not connect to the room. try again.'));
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const leaveRoom = () => {
+    void netRef.current?.close();
+    netRef.current = null;
+    setMembers([]);
+    setPhase('menu');
+  };
+
+  useEffect(() => () => { void netRef.current?.close(); }, []);
+
+  if (phase === 'lobby') {
+    const isHostMe = members.find((x) => x.id === meId.current)?.host ?? false;
+    return (
+      <main className="royale royale--menu">
+        <div className="royale__card">
+          <BrandOrb size={56} />
+          <p className="royale__kicker">{tr('sala de aero blob', 'aero blob room')}</p>
+          <h1 className="royale__code">{roomCode}</h1>
+          <p className="royale__lead">{tr('comparte este código con tus amigos. cuando estén todos, quien creó la sala empieza; los huecos hasta 12 los llenan bots.', 'share this code with your friends. when everyone is in, the room creator starts; empty slots up to 12 are filled with bots.')}</p>
+          <ul className="royale__roster">
+            {members.map((x) => <li key={x.id}><i style={{ background: `hsl(${x.hue} 80% 62%)` }} />{x.name}{x.host ? ` · ${tr('anfitrión', 'host')}` : ''}{x.id === meId.current ? ` · ${tr('tú', 'you')}` : ''}</li>)}
+          </ul>
+          <small>{members.length} {tr('de 12 jugadores', 'of 12 players')} · {12 - members.length} {tr('bots completarán', 'bots will fill in')}</small>
+          <div className="royale__actions">
+            {isHostMe ? <button type="button" className="vista-button vista-button--primary" onClick={hostStart}>{tr('empezar partida', 'start match')}</button> : <span className="royale__wait">{tr('esperando al anfitrión...', 'waiting for the host...')}</span>}
+            <button type="button" className="vista-button" onClick={leaveRoom}>{tr('salir de la sala', 'leave room')}</button>
+          </div>
+          {lobbyMsg && <small role="alert">{lobbyMsg}</small>}
+        </div>
+      </main>
+    );
+  }
+
+  if (phase === 'over' && outcome) return <BattleResult outcome={outcome} onAgain={startSolo} onMenu={() => setPhase('menu')} />;
 
   if (phase === 'menu' || phase === 'over') {
     return (
@@ -304,9 +481,18 @@ export function BlobPage() {
           <h1>aero blob</h1>
           <p className="royale__lead">{tr('eres una célula de cristal: come burbujas, crece, divídete para cazar y usa poderes. la bruma gris cierra la arena; gana quien termine con más masa.', 'you are a glass cell: eat bubbles, grow, split to hunt and use powers. the gray haze closes the arena; whoever ends with the most mass wins.')}</p>
           <div className="royale__actions">
-            <button type="button" className="vista-button vista-button--primary" onClick={start}>{tr('jugar contra 11 bots', 'play vs 11 bots')}</button>
+            <button type="button" className="vista-button vista-button--primary" onClick={startSolo}>{tr('jugar contra 11 bots', 'play vs 11 bots')}</button>
             <button type="button" className="vista-button" onClick={() => setHelp((v) => !v)} aria-expanded={help}>{tr('cómo se juega', 'how to play')}</button>
             <a className="landing__text-link" href={routeHref('inicio')}>{tr('volver', 'back')}</a>
+          </div>
+          <div className="royale__online">
+            <strong>{tr('sala en línea con amigos', 'online room with friends')}</strong>
+            <div className="royale__row">
+              <button type="button" className="vista-button" disabled={joining} onClick={() => void openRoom(newRoomCode(), true)}>{tr('crear sala', 'create room')}</button>
+              <input value={joinCode} onChange={(e) => setJoinCode(cleanCode(e.target.value))} placeholder={tr('código', 'code')} aria-label={tr('código de la sala', 'room code')} maxLength={4} />
+              <button type="button" className="vista-button" disabled={joining || joinCode.length < 4} onClick={() => void openRoom(joinCode, false)}>{joining ? '…' : tr('unirme', 'join')}</button>
+            </div>
+            {lobbyMsg && <small role="alert">{lobbyMsg}</small>}
           </div>
           {help && (
             <ul className="royale__help">
@@ -352,7 +538,7 @@ export function BlobPage() {
           <div className="royale__dead" role="status">
             <strong>{tr('te comieron', 'you were eaten')} · {tr('puesto', 'place')} {hud.place}</strong>
             <span>{tr('mirando la partida', 'spectating')}</span>
-            <button type="button" className="vista-button" onClick={() => (window as unknown as { __blobSpeed?: (n: number) => void }).__blobSpeed?.(5)}>{tr('acelerar', 'fast forward')}</button>
+            {!cfgRef.current?.online && <button type="button" className="vista-button" onClick={() => (window as unknown as { __blobSpeed?: (n: number) => void }).__blobSpeed?.(5)}>{tr('acelerar', 'fast forward')}</button>}
           </div>
         )}
         <div ref={stickRef} className="royale__stick" aria-hidden="true"><i /></div>
@@ -363,7 +549,7 @@ export function BlobPage() {
             <button id="blob-eject" type="button" aria-label={tr('soltar masa', 'eject mass')}>•</button>
           </div>
         )}
-        <button type="button" className="royale__exit vista-button" onClick={() => { runId.current++; setPhase('menu'); }}>{tr('salir', 'exit')}</button>
+        <button type="button" className="royale__exit vista-button" onClick={() => { runId.current++; leaveRoom(); }}>{tr('salir', 'exit')}</button>
       </div>
     </main>
   );

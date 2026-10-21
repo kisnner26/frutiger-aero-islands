@@ -21,7 +21,7 @@ export const speedOf = (mass: number) => 340 / Math.pow(1 + mass / 220, 0.35);
 export type PowerKind = 'dash' | 'shield' | 'magnet' | 'freeze' | 'burst' | 'feast';
 export const POWERS: PowerKind[] = ['dash', 'shield', 'magnet', 'freeze', 'burst', 'feast'];
 
-export interface Cell { id: number; owner: string; x: number; y: number; bx: number; by: number; mass: number; merge: number }
+export interface Cell { id: number; owner: string; x: number; y: number; bx: number; by: number; mass: number; merge: number; nx?: number; ny?: number }
 export interface Pellet { id: number; x: number; y: number; hue: number; mass: number; vx: number; vy: number }
 export interface Jelly { id: number; x: number; y: number; mass: number }
 export interface Pickup { id: number; x: number; y: number; kind: PowerKind }
