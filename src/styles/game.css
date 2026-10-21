@@ -850,3 +850,11 @@
 .players__list i { width: 10px; height: 10px; border-radius: 50%; background: #b8c8d2; }
 .players__list i.is-on { background: radial-gradient(circle at 35% 30%, #fff, #8bf06a 45%, #1f9a3a); box-shadow: 0 0 6px rgba(120,240,100,.8); }
 .players__search { width: auto; }
+
+/* lista de zonas grises: cada fila lleva la cámara a su parcela más dañada */
+.territory__zones { display: grid; gap: 6px; }
+.territory__zones ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; max-height: 170px; overflow-y: auto; }
+.territory__zones li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px; border-radius: 10px; background: rgba(255,255,255,.7); font-size: 12px; font-weight: 700; }
+.territory__zones li span { display: grid; }
+.territory__zones small { font-weight: 600; opacity: .75; }
+.territory__zones .vista-button { min-height: 34px; padding: 0 14px; }

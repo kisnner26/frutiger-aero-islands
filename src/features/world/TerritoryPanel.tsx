@@ -87,9 +87,11 @@ interface Props {
   sceneRef: MutableRefObject<WorldScene | null>;
   data: ReturnType<typeof useTerritory>;
   picked: CellRef | null;
+  /** selecciona una parcela desde la lista de zonas dañadas. */
+  onPick?: (cell: CellRef) => void;
 }
 
-export function TerritoryPanel({ sceneRef, data, picked }: Props) {
+export function TerritoryPanel({ sceneRef, data, picked, onPick }: Props) {
   const { myName, cells, me, restoration, challenges, refresh, patchLocal } = data;
   const [tab, setTab] = useState<Tab>('retos');
   const [board, setBoard] = useState<Ranked[]>([]);
@@ -145,6 +147,25 @@ export function TerritoryPanel({ sceneRef, data, picked }: Props) {
 
   if (!isSupabaseConfigured) return <p className="territory__empty">{tr('la conquista necesita conexión con la comunidad.', 'conquest needs a connection to the community.')}</p>;
   const pct = restoration?.percent ?? 0;
+  /** zonas grises que aún no están restauradas, agrupadas por nombre; cada una apunta a su parcela más dañada. */
+  const zones = useMemo(() => {
+    const groups = new Map<string, CellInfo[]>();
+    for (const c of cells.values()) if (c.blight && c.progress < 100 && c.zone) groups.set(c.zone, [...(groups.get(c.zone) ?? []), c]);
+    return [...groups.entries()]
+      .map(([name, list]) => ({ name, list, avg: Math.round(list.reduce((s, c) => s + c.progress, 0) / list.length), target: [...list].sort((a, b) => a.progress - b.progress)[0] }))
+      .sort((a, b) => a.avg - b.avg);
+  }, [cells]);
+  const goTo = (c: CellInfo) => {
+    const sc = sceneRef.current;
+    if (!sc) return;
+    if (sc.mode === 'lejos') sc.enter();
+    const p = cellCenter(c.cx, c.cy);
+    window.setTimeout(() => {
+      sc.focusPoint(p.x, p.y, 2.4);
+      sc.selectCell({ cx: c.cx, cy: c.cy });
+      onPick?.({ cx: c.cx, cy: c.cy });
+    }, sc.mode === 'lejos' ? 700 : 0);
+  };
   return (
     <div className="territory">
       <section className="territory__sum" aria-label={tr('estado del planeta', 'planet status')}>
@@ -158,6 +179,19 @@ export function TerritoryPanel({ sceneRef, data, picked }: Props) {
         <small>{nextMilestone(pct) ? `${tr('próximo regalo para todos a', 'next gift for everyone at')} ${nextMilestone(pct)!.percent}%: ${nextMilestone(pct)!.reward}` : tr('el planeta brilla otra vez', 'the planet shines again')}</small>
       </section>
 
+      {zones.length > 0 && (
+        <section className="territory__zones" aria-label={tr('zonas dañadas', 'damaged zones')}>
+          <strong>{tr('zonas grises por restaurar', 'gray zones to restore')} ({zones.length})</strong>
+          <ul>
+            {zones.map((z) => (
+              <li key={z.name}>
+                <span>{db(z.name)}<small>{z.list.length} {tr('parcelas', 'plots')} · {z.avg}%</small></span>
+                <button type="button" className="vista-button" onClick={() => goTo(z.target)}>{tr('ir', 'go')}</button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <section className="territory__me" aria-label={tr('tu energía', 'your energy')}>
         <span className="territory__dots" aria-label={`${tr('energía', 'energy')} ${energy} ${tr('de', 'of')} 5`}>
           {Array.from({ length: 5 }, (_, i) => (

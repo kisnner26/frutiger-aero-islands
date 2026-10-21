@@ -346,7 +346,7 @@ export function WorldPage() {
       )}
       {conquestOpen && (
         <AeroWindow className="win-territory" title={tr('conquista y restauración', 'conquest and restoration')} icon={<span className="mini-orb mini-orb--green" />} onClose={() => { setConquestOpen(false); setPickedCell(null); sceneRef.current?.selectCell(null); }}>
-          <TerritoryPanel sceneRef={sceneRef} data={territory} picked={pickedCell} />
+          <TerritoryPanel sceneRef={sceneRef} data={territory} picked={pickedCell} onPick={setPickedCell} />
         </AeroWindow>
       )}
       {atlasOpen && (
