@@ -3,12 +3,13 @@ import type { Doc } from '../features/editor/commands';
 import { invalidate } from './fastcache';
 import { normalizeAvatar, type AvatarSpec } from '../avatar/model';
 import { tr } from '../i18n';
+import { resilientFetch } from '../net/resilientFetch';
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
 
 export const isSupabaseConfigured = Boolean(url && key);
-export const supabase: SupabaseClient | null = isSupabaseConfigured ? createClient(url!, key!, { auth: { detectSessionInUrl: true, persistSession: true } }) : null;
+export const supabase: SupabaseClient | null = isSupabaseConfigured ? createClient(url!, key!, { auth: { detectSessionInUrl: true, persistSession: true }, global: { fetch: resilientFetch } }) : null;
 
 interface IslandRow {
   id: string;

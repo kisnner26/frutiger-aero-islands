@@ -207,7 +207,30 @@ function Routes() {
   );
 }
 
+/** cuando el navegador está libre, baja por adelantado las pantallas pesadas para que abrirlas sea instantáneo. */
+function useIdlePrefetch() {
+  const session = useSession();
+  useEffect(() => {
+    const idle = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+    const run = () => {
+      void import('../features/editor/EditorPage').catch(() => undefined);
+      void import('../features/phone/PhonePanel').catch(() => undefined);
+      if (session.status === 'con-sesion') {
+        void import('../features/world/WorldPage').catch(() => undefined);
+        void import('../features/community/IslandPages').catch(() => undefined);
+      }
+    };
+    const conn = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
+    if (conn?.saveData) return undefined;
+    const handle = idle ? idle(run, { timeout: 4000 }) : window.setTimeout(run, 2500);
+    return () => {
+      if (!idle) window.clearTimeout(handle);
+    };
+  }, [session.status]);
+}
+
 export function App() {
+  useIdlePrefetch();
   return (
     <>
       <Routes />

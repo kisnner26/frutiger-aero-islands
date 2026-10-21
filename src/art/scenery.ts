@@ -4,6 +4,7 @@ import type { PlacedObject } from '../domain/island';
 import { K, TILT, project } from '../engine/projection';
 import { cloudCanvas, ridgeY, softBlob } from './aero';
 import { ART_STYLE, hatch, makeCanvas, paperGrain, pencilSprite, rng, vnoise, wobbleEllipse } from './pencil';
+import { timed } from '../perf';
 
 /** metros de escena que cubre la textura del suelo: mitad de ancho y alto. */
 export const GROUND_HALF = { w: 450, h: 230 };
@@ -21,7 +22,7 @@ export function renderGround(level = 1): HTMLCanvasElement {
   const cached = groundCache.get(tier);
   if (cached) return cached;
   if (ART_STYLE === 'aero') {
-    const aero = renderGroundAero(level);
+    const aero = timed('art:suelo', () => renderGroundAero(level));
     groundCache.set(tier, aero);
     return aero;
   }
@@ -277,21 +278,24 @@ function renderGroundAero(level: number): HTMLCanvasElement {
   ctx.fillRect(0, 0, W, H);
   // briznas con degradado y flores diminutas
   ctx.lineCap = 'round';
-  for (let i = 0; i < Math.round(900 * area); i++) {
+  // brizna en dos pasadas con color sólido (base oscura y punta clara): mismo aspecto sin crear un degradado por brizna
+  const blades = Math.round(900 * area);
+  const bladeData: number[] = [];
+  for (let i = 0; i < blades; i++) {
     const a = r() * Math.PI * 2;
     const d = Math.sqrt(r()) * 0.96;
-    const x = cx + Math.cos(a) * d * ex(land.rx);
-    const y = cy + Math.sin(a) * d * ey(land.ry);
-    const h = 8 + r() * 12;
-    const lean = (r() - 0.5) * 10;
-    const gr = ctx.createLinearGradient(x, y, x + lean, y - h);
-    gr.addColorStop(0, 'rgba(36,110,36,.85)');
-    gr.addColorStop(1, 'rgba(190,245,110,.9)');
-    ctx.strokeStyle = gr;
-    ctx.lineWidth = 1.5 + r();
+    bladeData.push(cx + Math.cos(a) * d * ex(land.rx), cy + Math.sin(a) * d * ey(land.ry), 8 + r() * 12, (r() - 0.5) * 10, 1.5 + r());
+  }
+  for (const [color, part] of [['rgba(36,110,36,.7)', 0.55], ['rgba(190,245,110,.9)', 1]] as const) {
+    ctx.strokeStyle = color;
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.quadraticCurveTo(x + lean * 0.3, y - h * 0.6, x + lean, y - h);
+    for (let i = 0; i < blades; i++) {
+      const [x, y, h, lean] = [bladeData[i * 5], bladeData[i * 5 + 1], bladeData[i * 5 + 2], bladeData[i * 5 + 3]];
+      const from = part === 1 ? 0.5 : 0;
+      ctx.moveTo(x + lean * from * 0.4, y - h * from);
+      ctx.quadraticCurveTo(x + lean * 0.3, y - h * (part === 1 ? 0.8 : 0.5), x + lean * part, y - h * part);
+    }
+    ctx.lineWidth = 1.8;
     ctx.stroke();
   }
   for (let i = 0; i < Math.round(46 * area); i++) {
@@ -343,6 +347,10 @@ function renderGroundAero(level: number): HTMLCanvasElement {
 
 /** cielo, montañas y lago con reflejos, estilo frutiger aero. */
 export function renderBackdrop(w: number, h: number, dpr: number): HTMLCanvasElement {
+  return timed('art:fondo', () => renderBackdropImpl(w, h, dpr));
+}
+
+function renderBackdropImpl(w: number, h: number, dpr: number): HTMLCanvasElement {
   const pw = Math.round(w * dpr);
   const ph = Math.round(h * dpr);
   const c = makeCanvas(pw, ph);

@@ -29,6 +29,15 @@ export function SceneView({ scene, callbacks, controlRef }: SceneViewProps) {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     const onMq = () => engine?.setReducedMotion(mq.matches);
     setStatus('cargando');
+    let timedOut = false;
+    let ready = false;
+    // si el motor no arranca en 20 s se ofrece reintentar en vez de dejar la pantalla cargando
+    const deadline = window.setTimeout(() => {
+      if (ready || cancelled) return;
+      timedOut = true;
+      setStatus('error');
+      veil.hide(true);
+    }, 20_000);
 
     IslandScene.create(
       host,
@@ -43,7 +52,8 @@ export function SceneView({ scene, callbacks, controlRef }: SceneViewProps) {
       mq.matches,
     )
       .then((s) => {
-        if (cancelled) {
+        window.clearTimeout(deadline);
+        if (cancelled || timedOut) {
           s.destroy();
           return;
         }
@@ -53,15 +63,23 @@ export function SceneView({ scene, callbacks, controlRef }: SceneViewProps) {
         if (import.meta.env.DEV) (window as unknown as { __scene?: IslandScene }).__scene = s;
         s.setProps(sceneRef.current);
         mq.addEventListener('change', onMq);
+        ready = true;
         setStatus('listo');
         veil.hide();
+        // si el navegador pierde el contexto gráfico (memoria, segundo plano), la escena se vuelve a crear sola
+        host.querySelector('canvas')?.addEventListener('webglcontextlost', (e) => {
+          e.preventDefault();
+          if (!cancelled) setAttempt((n) => n + 1);
+        });
       })
       .catch(() => {
+        window.clearTimeout(deadline);
         if (!cancelled) setStatus('error');
         veil.hide(true);
       });
 
     return () => {
+      window.clearTimeout(deadline);
       cancelled = true;
       mq.removeEventListener('change', onMq);
       engine?.destroy();

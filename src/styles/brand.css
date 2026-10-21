@@ -59,3 +59,21 @@
   @keyframes fx-rays { to { transform: rotate(3deg) scale(1.05); opacity: .6; } }
   @keyframes fx-mote { 0% { transform: translate(0, 0) scale(.7); opacity: 0; } 12% { opacity: .85; } 80% { opacity: .5; } 100% { transform: translate(calc((var(--i) - 6) * 6px), -105vh) scale(1.15); opacity: 0; } }
 }
+
+/* pantalla de recuperación y aviso de carga lenta */
+.app-crash { position: fixed; inset: 0; z-index: 90; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 24px; text-align: center; color: #fff; background: linear-gradient(180deg, #3a9ae8, #8fd3f6 60%, #cdeeff); }
+.app-crash h1 { margin: 0; font-size: clamp(26px, 6vw, 40px); text-shadow: 0 2px 12px rgba(0, 60, 130, .6); }
+.app-crash p { margin: 0; max-width: 36ch; font-weight: 600; text-shadow: 0 1px 8px rgba(0, 60, 130, .6); }
+.app-crash__actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 6px; }
+.aero-loader__slow { display: grid; gap: 8px; justify-items: center; margin-top: 10px; font-size: 12px; font-weight: 700; }
+.aero-loader__slow .vista-button { min-height: 36px; padding: 0 16px; }
+
+/* equipos modestos y móviles: menos capas costosas (desenfoques grandes, mezclas y animaciones continuas) */
+@media (max-width: 680px), (hover: none) {
+  .brand-atmo__aurora { display: none; }
+  .brand-atmo__bokeh { animation: none; }
+  .scene-fx__rays { animation: none; mix-blend-mode: normal; opacity: .55; }
+  .scene-fx__bloom { mix-blend-mode: normal; opacity: .6; }
+  .scene-fx__mote:nth-of-type(n + 6) { display: none; }
+  .aero-window { -webkit-backdrop-filter: blur(10px) saturate(1.5); backdrop-filter: blur(10px) saturate(1.5); }
+}

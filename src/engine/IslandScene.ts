@@ -14,6 +14,7 @@ import { DEFAULT_CAMERA, clampCamera, fitScale, screenToScene, zoomAt, type Came
 import { rendererResolution, tickerFrameLimit } from './devicePerformance';
 import { K, TILT, project, unproject } from './projection';
 import { tr } from '../i18n';
+import { timedAsync } from '../perf';
 
 export interface SceneCallbacks {
   onSelect(id: string | null): void;
@@ -141,30 +142,30 @@ export class IslandScene {
 
   static async create(host: HTMLElement, cb: SceneCallbacks, reducedMotion: boolean): Promise<IslandScene> {
     const scene = new IslandScene(cb, reducedMotion);
-    await scene.init(host);
+    await timedAsync('escena:total', () => scene.init(host));
     return scene;
   }
 
   private async init(host: HTMLElement): Promise<void> {
     const app = new Application();
-    await app.init({
+    await timedAsync('escena:pixi-init', () => app.init({
       resizeTo: host,
       backgroundAlpha: 0,
       antialias: true,
       autoDensity: true,
       resolution: rendererResolution(),
-    });
+    }));
     if (this.destroyed) {
       app.destroy(true, { children: true });
       return;
     }
     this.app = app;
     try {
-      const [leaf, butterfly, lifeAssets] = await Promise.all([
+      const [leaf, butterfly, lifeAssets] = await timedAsync('escena:texturas', () => Promise.all([
         loadTexture(LEAF_URL, 128, { grain: 0.6 }),
         loadTexture(BUTTERFLY_URL, 192, { grain: 0.6 }),
         loadLifeAssets(),
-      ]);
+      ]));
       this.bubbleTex = Texture.from(glassBubble(160, { seed: 3 }));
       this.goldTex = Texture.from(glassBubble(160, { seed: 4, tint: [255, 200, 90] }));
       this.life = new AeroLife(lifeAssets);

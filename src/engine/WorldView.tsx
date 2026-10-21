@@ -35,6 +35,15 @@ export function WorldView({ islands, initial, callbacks, controlRef, rebuildKey 
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     const onMq = () => engine?.setReducedMotion(mq.matches);
     setStatus('cargando');
+    let timedOut = false;
+    let ready = false;
+    // si el motor no arranca en 20 s se ofrece reintentar en vez de dejar la pantalla cargando
+    const deadline = window.setTimeout(() => {
+      if (ready || cancelled) return;
+      timedOut = true;
+      setStatus('error');
+      veil.hide(true);
+    }, 20_000);
     WorldScene.create(
       host,
       { onSelect: (id) => cbRef.current.onSelect(id), onView: (v) => cbRef.current.onView(v), onMode: (m) => cbRef.current.onMode(m), onCountry: (code) => cbRef.current.onCountry(code), onCell: (cx, cy) => cbRef.current.onCell?.(cx, cy) },
@@ -43,21 +52,30 @@ export function WorldView({ islands, initial, callbacks, controlRef, rebuildKey 
       initialRef.current,
     )
       .then((s) => {
-        if (cancelled) {
+        window.clearTimeout(deadline);
+        if (cancelled || timedOut) {
           s.destroy();
           return;
         }
         engine = s;
         controlRef.current = s;
         mq.addEventListener('change', onMq);
+        ready = true;
         setStatus('listo');
         veil.hide();
+        // si el navegador pierde el contexto gráfico (memoria, segundo plano), la escena se vuelve a crear sola
+        host.querySelector('canvas')?.addEventListener('webglcontextlost', (e) => {
+          e.preventDefault();
+          if (!cancelled) setAttempt((n) => n + 1);
+        });
       })
       .catch(() => {
+        window.clearTimeout(deadline);
         if (!cancelled) setStatus('error');
         veil.hide(true);
       });
     return () => {
+      window.clearTimeout(deadline);
       cancelled = true;
       mq.removeEventListener('change', onMq);
       engine?.destroy();

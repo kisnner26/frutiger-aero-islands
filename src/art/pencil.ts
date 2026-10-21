@@ -1,3 +1,4 @@
+import { timed } from '../perf';
 /** estilo lápiz de colores: ruido, rasterizado de svg y filtro de papel/trazo.
  *  todo es procedural y propio; no depende de pixi. */
 
@@ -271,7 +272,7 @@ export function pencilSprite(url: string, size = 256, opts: PencilOptions = {}):
     p = loadImage(url).then((img) => {
       const c = makeCanvas(size, size);
       c.getContext('2d')!.drawImage(img, 0, 0, size, size);
-      return ART_STYLE === 'aero' ? aeroize(c) : pencilize(c, opts);
+      return timed('art:sprite', () => (ART_STYLE === 'aero' ? aeroize(c) : pencilize(c, opts)));
     });
     spriteCache.set(key, p);
     p.catch(() => spriteCache.delete(key));

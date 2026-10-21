@@ -17,6 +17,17 @@ export interface CacheOptions {
   stale?: boolean;
 }
 
+/** una lectura que no responde en el plazo falla en vez de dejar la pantalla esperando. */
+function withDeadline<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error('tiempo agotado')), ms);
+    p.then(
+      (v) => { clearTimeout(t); resolve(v); },
+      (e) => { clearTimeout(t); reject(e); },
+    );
+  });
+}
+
 export function cached<T>(key: string, opts: CacheOptions, fetcher: () => Promise<T>): Promise<T> {
   const now = Date.now();
   const e = (store.get(key) as Entry<T> | undefined) ?? { at: 0 };
@@ -25,7 +36,7 @@ export function cached<T>(key: string, opts: CacheOptions, fetcher: () => Promis
   if (fresh) return Promise.resolve(e.value as T);
   const run = () => {
     if (!e.inflight) {
-      e.inflight = fetcher()
+      e.inflight = withDeadline(fetcher(), 20_000)
         .then((v) => {
           e.value = v;
           e.at = Date.now();

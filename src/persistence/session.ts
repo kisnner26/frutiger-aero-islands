@@ -76,7 +76,15 @@ function start() {
   }
   if (!supabase) return;
   started = true;
-  void supabase.auth.getSession().then(({ data }) => apply(data.session));
+  // si el servidor tarda en responder, la portada no espera: se muestra como invitado y la sesión se aplica cuando llegue
+  const wait = window.setTimeout(() => {
+    if (state.status === 'cargando') set({ status: 'sin-sesion', email: null, username: null });
+  }, 6000);
+  void supabase.auth
+    .getSession()
+    .then(({ data }) => apply(data.session))
+    .catch(() => apply(null))
+    .finally(() => window.clearTimeout(wait));
   // se difiere un instante: llamar al servidor dentro de este aviso puede quedarse esperando el candado de la propia autenticación
   supabase.auth.onAuthStateChange((_event, session) => {
     window.setTimeout(() => void apply(session), 0);
