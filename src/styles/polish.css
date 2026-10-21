@@ -677,3 +677,29 @@ button, a, [role='button'], .tile, .task { touch-action: manipulation; -webkit-t
 
 /* el selector de idioma es un botón, pero se ve como los demás enlaces de la portada */
 button.landing__text-link { padding: 0; border: 0; background: none; font-family: inherit; cursor: pointer; }
+
+/* móvil: la barra de tareas muestra cada ventana con su nombre y cede espacio a las tareas */
+@media (max-width: 680px) {
+  .taskbar { padding-left: 68px; gap: 4px; }
+  .taskbar__tray { gap: 2px; padding: 0 2px; }
+  .taskbar__tray .tray-btn:not(.tray-btn--phone), .taskbar__clock { display: none; }
+  .taskbar .task { flex-direction: column; justify-content: center; gap: 2px; min-width: 58px; padding: 3px 6px; }
+  .taskbar .task__label { position: static; width: auto; height: auto; overflow: visible; clip: auto; font-size: 10px; line-height: 1.1; font-weight: 700; white-space: nowrap; }
+  .taskbar .task__ico { display: inline-flex; transform: scale(.85); }
+}
+
+/* móvil: el teléfono ocupa más alto para que los juegos y los duelos quepan sin cortarse */
+@media (max-width: 680px) {
+  .phone { right: 8px; width: calc(100vw - 16px); min-height: min(540px, calc(100svh - 74px)); }
+  .phone__screen { flex: 1; }
+  .phone__app { flex: 1; }
+  .mg__field { height: min(300px, 42svh); }
+  .phone__home { gap: 10px; }
+}
+
+/* móvil: el menú de inicio nunca supera la pantalla y se desplaza por dentro */
+@media (max-width: 680px) {
+  .start-menu { max-height: calc(100svh - 70px); overflow-y: auto; overscroll-behavior: contain; }
+  .start-menu__item { padding-block: 6px; }
+  .tile-tabs { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent); padding-right: 22px; }
+}
