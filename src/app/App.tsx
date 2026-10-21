@@ -17,6 +17,7 @@ import { everyWhileVisible } from '../persistence/fastcache';
 import { touchMyPresence } from '../persistence/presence';
 import { restorationStore, useRestoration } from '../world/restorationStore';
 import { tr, lang, setLang } from '../i18n';
+import { awardSoles } from '../persistence/soles';
 
 const TITULOS: Record<Route, string> = {
   inicio: 'frutiger aero islands',
@@ -176,7 +177,7 @@ function Routes() {
   if (route === 'reglas') return <div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text={tr('abriendo las reglas...', 'opening the rules...')} />}><RulesPage /></Suspense></main></div>;
   if (route === 'auth') return <div className="app"><Backdrop /><main className="main"><Cuenta /></main>{session.status === 'con-sesion' && <Taskbar />}</div>;
   if (route === 'personaje') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text={tr('abriendo el personaje...', 'opening the character editor...')} />}><AvatarEditor /></Suspense></main><Taskbar /></div></AccessGate>;
-  if (route === 'arcade') return <AccessGate><Suspense fallback={<AeroLoader variant="scene" text={tr('abriendo el arcade...', 'opening the arcade...')} detail={tr('preparando desafíos sobre el agua...', 'getting challenges ready on the water...')} />}><ArcadePage onExit={() => { window.location.hash = routeHref('mundo'); }} /></Suspense></AccessGate>;
+  if (route === 'arcade') return <AccessGate><Suspense fallback={<AeroLoader variant="scene" text={tr('abriendo el arcade...', 'opening the arcade...')} detail={tr('preparando desafíos sobre el agua...', 'getting challenges ready on the water...')} />}><ArcadePage onExit={() => { window.location.hash = routeHref('mundo'); }} onReward={(suns) => { awardSoles(suns); }} /></Suspense></AccessGate>;
   if (route === 'explorar') return <AccessGate><div className="app"><Backdrop /><main className="main"><Suspense fallback={<LoadingRoute text={tr('buscando islas...', 'looking for islands...')} />}><ExplorePage /></Suspense></main><Taskbar /></div></AccessGate>;
   if (route === 'visita' && routeState.username) return <AccessGate><Suspense fallback={<LoadingRoute text={tr('visitando isla...', 'visiting island...')} />}><VisitIslandPage username={routeState.username} /></Suspense></AccessGate>;
   if (route === 'mundo') {

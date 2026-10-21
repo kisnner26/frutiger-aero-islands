@@ -40,6 +40,7 @@ export type Action =
   | { type: 'redo' }
   | { type: 'select'; id: string | null }
   | { type: 'pop'; value: number; combo: number }
+  | { type: 'reward'; value: number }
   | { type: 'load'; doc: Doc };
 
 export const START_BRILLOS = 100;
@@ -157,6 +158,8 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
           stats: { pops: state.doc.stats.pops + 1, bestCombo: Math.max(state.doc.stats.bestCombo, action.combo) },
         },
       };
+    case 'reward':
+      return { ...state, doc: { ...state.doc, brillos: state.doc.brillos + Math.max(0, Math.floor(action.value)) } };
     case 'load':
       return createState(action.doc);
   }

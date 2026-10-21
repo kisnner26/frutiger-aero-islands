@@ -38,6 +38,7 @@ import { ObjectInspector } from './ObjectInspector';
 import { AeroWorkshop } from '../community/AeroWorkshop';
 import { DailyTide } from '../community/DailyTide';
 import { tr } from '../../i18n';
+import { subscribeSoles, takePendingSoles } from '../../persistence/soles';
 
 interface Float {
   id: number;
@@ -156,6 +157,20 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
     if (objectCount > prevCount.current) sfx.place();
     prevCount.current = objectCount;
   }, [objectCount]);
+
+  /* soles ganados en los minijuegos, el arcade o los duelos: la isla los cobra al abrirse y cada vez que llegan */
+  useEffect(() => {
+    if (!editable) return undefined;
+    const collect = () => {
+      const n = takePendingSoles();
+      if (n <= 0) return;
+      dispatch({ type: 'reward', value: n });
+      sfx.coin();
+      setToast({ id: Date.now(), tone: 'info', text: `+${n} ${tr('soles de tus juegos', 'suns from your games')}` });
+    };
+    collect();
+    return subscribeSoles(collect);
+  }, [editable]);
 
   useEffect(() => {
     if (!state.levelUp) return;
