@@ -5,6 +5,7 @@ import { claimAeroCycle, craftAeroRecipe, getAeroResources, listAeroRecipes, typ
 import './workshop.css';
 import { AeroLoader } from '../../ui/AeroLoader';
 import { tr } from '../../i18n';
+import { db } from '../../i18n/dbText';
 
 const EMPTY: AeroResources = { water: 0, crystals: 0, leaves: 0, lastCycleAt: null };
 
@@ -45,7 +46,7 @@ export function AeroWorkshop({ level, onOpenArcade }: { level: number; onOpenArc
   };
   const craft = async (recipe: AeroRecipe) => {
     setWorking(recipe.id); setMessage('');
-    try { const result = await craftAeroRecipe(recipe.id); setResources(result.resources); sfx.levelUp(); setMessage(tr(`creaste ${result.outputName}. colección: ${result.amount}.`, `you made ${result.outputName}. collection: ${result.amount}.`)); }
+    try { const result = await craftAeroRecipe(recipe.id); setResources(result.resources); sfx.levelUp(); setMessage(tr(`creaste ${db(result.outputName)}. colección: ${result.amount}.`, `you made ${db(result.outputName)}. collection: ${result.amount}.`)); }
     catch (error) { setMessage(readableSupabaseError(error, tr('no se pudo completar la receta.', 'could not complete the recipe.'))); }
     finally { setWorking(null); }
   };
@@ -62,7 +63,7 @@ export function AeroWorkshop({ level, onOpenArcade }: { level: number; onOpenArc
       {(recipes ?? []).map((recipe) => {
         const locked = level < recipe.unlockLevel;
         const ready = canCraft(recipe, available);
-        return <article key={recipe.id} className={locked ? 'is-locked' : ''}><div className={`workshop__recipe-icon workshop__recipe-icon--${recipe.outputKind}`} aria-hidden="true" /><div><strong>{recipe.name}</strong><small>{recipe.description}</small><em>{recipe.waterCost} {tr('agua', 'water')} · {recipe.crystalCost} {tr('cristal', 'crystal')} · {recipe.leafCost} {tr('hojas', 'leaves')}</em></div>{locked ? <span className="workshop__lock">{tr('nivel', 'level')} {recipe.unlockLevel}</span> : <button type="button" disabled={!ready || working !== null} onClick={() => void craft(recipe)}>{working === recipe.id ? tr('creando...', 'crafting...') : ready ? tr('crear', 'craft') : tr('faltan recursos', 'not enough resources')}</button>}</article>;
+        return <article key={recipe.id} className={locked ? 'is-locked' : ''}><div className={`workshop__recipe-icon workshop__recipe-icon--${recipe.outputKind}`} aria-hidden="true" /><div><strong>{db(recipe.name)}</strong><small>{db(recipe.description)}</small><em>{recipe.waterCost} {tr('agua', 'water')} · {recipe.crystalCost} {tr('cristal', 'crystal')} · {recipe.leafCost} {tr('hojas', 'leaves')}</em></div>{locked ? <span className="workshop__lock">{tr('nivel', 'level')} {recipe.unlockLevel}</span> : <button type="button" disabled={!ready || working !== null} onClick={() => void craft(recipe)}>{working === recipe.id ? tr('creando...', 'crafting...') : ready ? tr('crear', 'craft') : tr('faltan recursos', 'not enough resources')}</button>}</article>;
       })}
     </div>
     {!recipes && !message && <AeroLoader variant="inline" text={tr('cargando recetas...', 'loading recipes...')} />}

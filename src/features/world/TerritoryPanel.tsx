@@ -11,6 +11,7 @@ import { nextMilestone } from '../../story/lore';
 import { restorationStore } from '../../world/restorationStore';
 import { CELL, RESTORE_CAP_PER_PERSON, cellCenter, cellKey, claimHint, ownerColor, type CellInfo, type CellRef } from '../../world/territory';
 import { tr } from '../../i18n';
+import { db } from '../../i18n/dbText';
 
 type Tab = 'retos' | 'jugadores' | 'paises' | 'restauradores';
 
@@ -185,7 +186,7 @@ export function TerritoryPanel({ sceneRef, data, picked }: Props) {
             </div>
           </div>
           <p className="territory__state">
-            {!cell.blight ? tr('zona sana: aquí el mundo ya brilla', 'healthy zone: the world already shines here') : cell.progress >= 100 ? `${cell.zone}: ${tr('restaurada y brillante', 'restored and shining')}` : cell.progress > 0 ? `${cell.zone} · ${tr('restaurada al', 'restored to')} ${cell.progress}%` : `${cell.zone}: ${tr('gris y abandonada', 'gray and abandoned')}`}
+            {!cell.blight ? tr('zona sana: aquí el mundo ya brilla', 'healthy zone: the world already shines here') : cell.progress >= 100 ? `${db(cell.zone ?? '')}: ${tr('restaurada y brillante', 'restored and shining')}` : cell.progress > 0 ? `${db(cell.zone ?? '')} · ${tr('restaurada al', 'restored to')} ${cell.progress}%` : `${db(cell.zone ?? '')}: ${tr('gris y abandonada', 'gray and abandoned')}`}
           </p>
           {cell.blight && <i className="territory__bar" aria-hidden="true"><b style={{ width: `${cell.progress}%` }} /></i>}
           <div className="territory__actions">
@@ -224,8 +225,8 @@ export function TerritoryPanel({ sceneRef, data, picked }: Props) {
           {challenges.map((c) => (
             <li key={c.id}>
               <div>
-                <strong>{c.title}</strong>
-                <small>{c.description} · {tr('premio', 'reward')}: {c.reward}</small>
+                <strong>{db(c.title)}</strong>
+                <small>{db(c.description)} · {tr('premio', 'reward')}: {db(c.reward)}</small>
                 <i className="territory__bar" aria-hidden="true"><b style={{ width: `${(c.progress / c.goal) * 100}%` }} /></i>
               </div>
               <em>{c.progress}/{c.goal}</em>

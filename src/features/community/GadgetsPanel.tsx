@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { listGadgets, type Gadget } from '../../persistence/community';
 import './social.css';
 import { tr } from '../../i18n';
+import { db } from '../../i18n/dbText';
 
 /** gadgets del catálogo: se desbloquean al alcanzar el nivel de tu isla. */
 export function GadgetsPanel({ level, onUse }: { level: number; onUse: (gadget: Gadget) => void }) {
@@ -14,9 +15,9 @@ export function GadgetsPanel({ level, onUse }: { level: number; onUse: (gadget: 
         const open = level >= g.unlockLevel;
         return (
           <li key={g.id} className={open ? 'is-open' : ''}>
-            <strong>{g.name}</strong>
-            <small>{g.description}</small>
-            {open ? <button type="button" onClick={() => onUse(g)}>usar gadget</button> : <em>se desbloquea en el nivel {g.unlockLevel}</em>}
+            <strong>{db(g.name)}</strong>
+            <small>{db(g.description)}</small>
+            {open ? <button type="button" onClick={() => onUse(g)}>{tr('usar gadget', 'use gadget')}</button> : <em>{tr('se desbloquea en el nivel', 'unlocks at level')} {g.unlockLevel}</em>}
           </li>
         );
       })}
