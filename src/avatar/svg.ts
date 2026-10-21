@@ -10,8 +10,8 @@ export function shade(hex: string, amt: number): string {
   return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
 }
 
-export type AvatarCrop = 'completo' | 'cabeza';
-export const VIEWBOX: Record<AvatarCrop, string> = { completo: '0 0 120 200', cabeza: '18 6 84 96' };
+export type AvatarCrop = 'completo' | 'cabeza' | 'torso' | 'piernas' | 'pies';
+export const VIEWBOX: Record<AvatarCrop, string> = { completo: '0 0 120 200', cabeza: '18 0 84 102', torso: '8 90 104 64', piernas: '16 124 88 70', pies: '22 156 76 38' };
 
 /** dibuja el personaje como svg; todo se compone con formas simples y degradados de cristal. */
 export function avatarSvg(spec: AvatarSpec, crop: AvatarCrop = 'completo'): string {
@@ -52,6 +52,7 @@ export function avatarSvg(spec: AvatarSpec, crop: AvatarCrop = 'completo'): stri
   if (spec.hair === 7) hairBack.push(`<circle cx="60" cy="48" r="46" fill="url(#gh)" ${line}/>`);
   if (spec.hair === 4) for (const [x, y, r] of [[34, 38, 14], [50, 24, 15], [70, 24, 15], [86, 38, 14], [28, 60, 12], [92, 60, 12]]) hairBack.push(`<circle cx="${x}" cy="${y}" r="${r}" fill="url(#gh)" ${line}/>`);
   if (spec.hair === 6) hairBack.push(`<circle cx="60" cy="16" r="11" fill="url(#gh)" ${line}/>`);
+  if (spec.hair === 10) for (const x of [24, 96]) hairBack.push(`<ellipse cx="${x}" cy="88" rx="7" ry="30" fill="url(#gh)" ${line}/><path d="M${x - 5} 70 H${x + 5} M${x - 5} 84 H${x + 5} M${x - 5} 98 H${x + 5}" stroke="${hairD}" stroke-width="1.4"/><circle cx="${x}" cy="118" r="4" fill="${acc}" ${line}/>`);
   parts.push(...hairBack);
   if (spec.top === 1) parts.push(`<ellipse cx="60" cy="96" rx="${bw / 2 - 3}" ry="9" fill="${shade(top, -0.12)}" ${line}/>`); // capucha
 
@@ -71,8 +72,8 @@ export function avatarSvg(spec: AvatarSpec, crop: AvatarCrop = 'completo'): stri
 
   // brazos (detrás del torso)
   const armX = [lx - 9, lx + bw - 1];
-  const longSleeve = spec.top === 1 || spec.top === 2;
-  const shortSleeve = spec.top === 0;
+  const longSleeve = spec.top === 1 || spec.top === 2 || spec.top === 6;
+  const shortSleeve = spec.top === 0 || spec.top === 7;
   for (const x of armX) {
     parts.push(`<rect x="${x}" y="100" width="10" height="38" rx="5" fill="url(#gs)" ${line}/>`);
     if (longSleeve) parts.push(`<rect x="${x - 0.5}" y="99" width="11" height="34" rx="5" fill="url(#gt)" ${line}/>`);
@@ -88,6 +89,8 @@ export function avatarSvg(spec: AvatarSpec, crop: AvatarCrop = 'completo'): stri
   if (spec.top === 2) parts.push(`<path d="M50 96 L60 108 L70 96 L66 94 L60 100 L54 94 Z" fill="#fff" ${line}/><path d="M60 108 V140" stroke="${topD}" stroke-width="1.3"/><circle cx="60" cy="118" r="1.3" fill="${topD}"/><circle cx="60" cy="128" r="1.3" fill="${topD}"/>`);
   if (spec.top === 4) parts.push(`<path d="M${lx + 6} 96 V104 M${lx + bw - 6} 96 V104" stroke="${topD}" stroke-width="3"/><path d="M${lx} 100 Q60 110 ${lx + bw} 100" stroke="${shade(skin, -0.05)}" stroke-width="0" fill="none"/>`);
   if (spec.top === 5) parts.push(`<path d="M${lx} 96 L60 124 L${lx + bw} 96 L${lx + bw} 142 L${lx} 142 Z" fill="url(#gt)" ${line}/><path d="M${lx + 2} 96 L60 118 L${lx + bw - 2} 96 L60 130 Z" fill="#fff" opacity=".9"/>`);
+  if (spec.top === 6) parts.push(`<rect x="53" y="96" width="14" height="46" fill="#fff" ${line}/><path d="M${lx} 96 H55 V142 H${lx}Z" fill="url(#gt)" ${line}/><path d="M65 96 H${lx + bw} V142 H65Z" fill="url(#gt)" ${line}/><path d="M55 96 L60 110 L65 96" fill="none" stroke="${topD}" stroke-width="1.6"/><circle cx="${lx + 6}" cy="132" r="1.4" fill="${topD}"/><circle cx="${lx + bw - 6}" cy="132" r="1.4" fill="${topD}"/>`);
+  if (spec.top === 7) parts.push(`<path d="M${lx + 2} 106 H${lx + bw - 2} M${lx} 116 H${lx + bw} M${lx} 126 H${lx + bw} M${lx + 2} 136 H${lx + bw - 2}" stroke="#fff" stroke-width="3.4" opacity=".85"/>`);
   parts.push(`<path d="M${lx + 6} 100 Q${lx + 10} 118 ${lx + 8} 136" stroke="#fff" stroke-width="3" opacity=".35" fill="none" stroke-linecap="round"/>`);
 
   /* ---- cabeza ---- */
@@ -155,9 +158,10 @@ export function avatarSvg(spec: AvatarSpec, crop: AvatarCrop = 'completo'): stri
   /* ---- pelo delantero ---- */
   const cap = `<path d="M28 58 Q26 22 60 22 Q94 22 92 58 Q86 40 72 36 Q60 44 44 36 Q32 42 28 58Z" fill="url(#gh)" ${line}/>`;
   if (spec.hair === 1) parts.push(cap);
-  if (spec.hair === 2 || spec.hair === 9 || spec.hair === 3) parts.push(`<path d="M27 66 Q22 20 60 20 Q98 20 93 66 Q88 38 66 34 Q56 46 40 38 Q32 46 27 66Z" fill="url(#gh)" ${line}/>`);
+  if (spec.hair === 2 || spec.hair === 9 || spec.hair === 3 || spec.hair === 10) parts.push(`<path d="M27 66 Q22 20 60 20 Q98 20 93 66 Q88 38 66 34 Q56 46 40 38 Q32 46 27 66Z" fill="url(#gh)" ${line}/>`);
   if (spec.hair === 4 || spec.hair === 7) parts.push(`<path d="M30 52 Q34 28 60 28 Q86 28 90 52 Q78 40 60 42 Q42 40 30 52Z" fill="url(#gh)" ${line}/>`);
   if (spec.hair === 5 || spec.hair === 6) parts.push(cap);
+  if (spec.hair === 11) parts.push(`<path d="M28 56 L30 26 L42 38 L48 14 L58 34 L66 12 L74 34 L84 16 L88 38 L94 28 L92 56 Q84 40 60 42 Q36 40 28 56Z" fill="url(#gh)" ${line}/>`);
   if (spec.hair === 8) parts.push(`<path d="M52 30 Q60 4 68 30 Q64 36 60 34 Q56 36 52 30Z" fill="url(#gh)" ${line}/><path d="M30 50 Q34 30 52 26 M90 50 Q86 30 68 26" stroke="${hairD}" stroke-width="3" fill="none" opacity=".6"/>`);
 
   /* ---- accesorios ---- */
@@ -168,6 +172,11 @@ export function avatarSvg(spec: AvatarSpec, crop: AvatarCrop = 'completo'): stri
   if (spec.accessory === 5) parts.push(`<g transform="translate(86 30)"><circle r="6" cx="0" cy="-7" fill="${acc}" ${line}/><circle r="6" cx="7" cy="0" fill="${acc}" ${line}/><circle r="6" cx="0" cy="7" fill="${acc}" ${line}/><circle r="6" cx="-7" cy="0" fill="${acc}" ${line}/><circle r="4" fill="#ffd23a" ${line}/></g>`);
   if (spec.accessory === 6) parts.push(`<path d="M26 60 Q24 14 60 14 Q96 14 94 60" fill="none" stroke="${accD}" stroke-width="4" stroke-linecap="round"/><rect x="19" y="54" width="11" height="20" rx="5" fill="${acc}" ${line}/><rect x="90" y="54" width="11" height="20" rx="5" fill="${acc}" ${line}/>`);
   if (spec.accessory === 7) parts.push(`<ellipse cx="60" cy="34" rx="50" ry="11" fill="#e8cf8a" ${line}/><path d="M34 34 Q34 8 60 8 Q86 8 86 34Z" fill="#f2dc9c" ${line}/><path d="M34 30 H86" stroke="${acc}" stroke-width="5"/>`);
+
+  if (spec.accessory === 8) parts.push(`<path d="M32 34 L36 12 L48 26 L60 8 L72 26 L84 12 L88 34 Z" fill="${acc}" ${line}/><rect x="32" y="30" width="56" height="7" rx="3" fill="${shade(acc, -0.18)}" ${line}/><circle cx="60" cy="10" r="3" fill="#fff" ${line}/><circle cx="36" cy="13" r="2.4" fill="#fff"/><circle cx="84" cy="13" r="2.4" fill="#fff"/>`);
+  if (spec.accessory === 9) parts.push(`<path d="M78 26 L98 12 L98 40Z M78 26 L58 12 L58 40Z" fill="${acc}" ${line}/><circle cx="78" cy="26" r="5" fill="${accD}" ${line}/>`);
+  if (spec.accessory === 10) parts.push(`<path d="M30 40 L32 6 L54 24Z" fill="${acc}" ${line}/><path d="M36 30 L36 14 L47 24Z" fill="#ffb0c0"/><path d="M90 40 L88 6 L66 24Z" fill="${acc}" ${line}/><path d="M84 30 L84 14 L73 24Z" fill="#ffb0c0"/>`);
+  if (spec.accessory === 11) parts.push(`<path d="M48 24 Q46 10 36 6 M72 24 Q74 10 84 6" stroke="${accD}" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="36" cy="6" r="4.5" fill="${acc}" ${line}/><circle cx="84" cy="6" r="4.5" fill="${acc}" ${line}/>`);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[crop]}">${defs}${parts.join('')}</svg>`;
 }

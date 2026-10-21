@@ -2,9 +2,9 @@ import { tr } from '../i18n';
 /** personaje original de frutiger aero islands: proporciones caricaturescas, cabeza grande y rasgos legibles.
  *  todas las opciones básicas (tonos de piel, rostro, peinados, ropa) son gratuitas y no dependen del cuerpo. */
 
-export const SKIN = ['#fde3cf', '#f6c9a6', '#e9ad82', '#d08c5e', '#b06a3e', '#8a4b2a', '#6a3418', '#4a2410', '#f3d2b8', '#c4885a'] as const;
+export const SKIN = ['#fde3cf', '#f6c9a6', '#e9ad82', '#d08c5e', '#b06a3e', '#8a4b2a', '#6a3418', '#4a2410', '#f3d2b8', '#c4885a', '#ffe9dc', '#9a5f3e'] as const;
 export const HAIR_COLORS = ['#1a1410', '#3a2414', '#6a3c1c', '#a8642c', '#d8a24c', '#e8d08a', '#b8b8c0', '#c43a2a', '#3a6ad8', '#9a4ad8', '#2aa88a', '#ff7ab8'] as const;
-export const EYE_COLORS = ['#3a2414', '#6a4a2a', '#2a6aa8', '#3a8a5a', '#6a6a76', '#7a3aa8'] as const;
+export const EYE_COLORS = ['#3a2414', '#6a4a2a', '#2a6aa8', '#3a8a5a', '#6a6a76', '#7a3aa8', '#1c1c24', '#d89a2a', '#2a9a9a', '#c43a5a', '#8a8a30', '#3a3a9a'] as const;
 export const CLOTH_COLORS = ['#ffffff', '#e84a4a', '#ff9a3a', '#ffd23a', '#7ad04a', '#2aa86a', '#3ac8d8', '#3a8ae8', '#3a4ad8', '#9a5ad8', '#e86ab8', '#2a2a3a'] as const;
 
 export const CATEGORIES = {
@@ -13,12 +13,12 @@ export const CATEGORIES = {
   brows: [tr('rectas', 'straight'), tr('arqueadas', 'arched'), tr('gruesas', 'thick'), tr('finas', 'thin'), tr('inclinadas', 'slanted')],
   nose: [tr('punto', 'dot'), tr('pequeña', 'small'), tr('redonda', 'round'), tr('botón', 'button')],
   mouth: [tr('sonrisa', 'smile'), tr('sonrisa grande', 'big smile'), tr('neutra', 'neutral'), tr('pequeña', 'small'), tr('de lado', 'sideways'), tr('sorpresa', 'surprised')],
-  hair: [tr('sin pelo', 'bald'), tr('corto', 'short'), tr('largo liso', 'long straight'), tr('ondulado', 'wavy'), tr('rizado', 'curly'), tr('coleta', 'ponytail'), tr('moño', 'bun'), tr('afro', 'afro'), tr('cresta', 'mohawk'), tr('media melena', 'bob')],
+  hair: [tr('sin pelo', 'bald'), tr('corto', 'short'), tr('largo liso', 'long straight'), tr('ondulado', 'wavy'), tr('rizado', 'curly'), tr('coleta', 'ponytail'), tr('moño', 'bun'), tr('afro', 'afro'), tr('cresta', 'mohawk'), tr('media melena', 'bob'), tr('trenzas', 'braids'), tr('puntas', 'spiky')],
   beard: [tr('ninguno', 'none'), tr('barba corta', 'short beard'), tr('bigote', 'mustache'), tr('perilla', 'goatee'), tr('barba completa', 'full beard')],
-  top: [tr('camiseta', 't-shirt'), tr('sudadera', 'hoodie'), tr('camisa', 'shirt'), tr('vestido', 'dress'), tr('tirantes', 'tank top'), tr('chaleco', 'vest')],
+  top: [tr('camiseta', 't-shirt'), tr('sudadera', 'hoodie'), tr('camisa', 'shirt'), tr('vestido', 'dress'), tr('tirantes', 'tank top'), tr('chaleco', 'vest'), tr('chaqueta', 'jacket'), tr('rayas', 'stripes')],
   bottom: [tr('pantalón', 'pants'), tr('shorts', 'shorts'), tr('falda', 'skirt')],
   shoes: [tr('tenis', 'sneakers'), tr('sandalias', 'sandals'), tr('botas', 'boots'), tr('descalzo', 'barefoot')],
-  accessory: [tr('ninguno', 'none'), tr('gafas redondas', 'round glasses'), tr('gafas cuadradas', 'square glasses'), tr('gorro', 'beanie'), tr('gorra', 'cap'), tr('flor', 'flower'), tr('auriculares', 'headphones'), tr('sombrero de paja', 'straw hat')],
+  accessory: [tr('ninguno', 'none'), tr('gafas redondas', 'round glasses'), tr('gafas cuadradas', 'square glasses'), tr('gorro', 'beanie'), tr('gorra', 'cap'), tr('flor', 'flower'), tr('auriculares', 'headphones'), tr('sombrero de paja', 'straw hat'), tr('corona', 'crown'), tr('lazo', 'bow'), tr('orejas de gato', 'cat ears'), tr('antenas', 'antennae')],
   body: [tr('delgado', 'slim'), tr('medio', 'medium'), tr('ancho', 'wide')],
   freckles: [tr('sin pecas', 'no freckles'), tr('con pecas', 'freckles')],
 } as const;
