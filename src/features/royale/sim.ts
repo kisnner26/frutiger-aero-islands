@@ -55,6 +55,17 @@ export interface Player {
   skill: number;
   /** solo bots: dispara en ráfagas, no sin parar. */
   trig: boolean;
+  /** frenesí (0 a 100): sube al hacer clic rápido y baja si dejas de pulsar. */
+  frenzy: number;
+  lastTap: number;
+  /** golpes seguidos y cuándo fue el último. */
+  combo: number;
+  comboAt: number;
+  bestCombo: number;
+  maxHp: number;
+  /** segundos que quedan de ráfaga triple y de "aero rush". */
+  triple: number;
+  rush: number;
 }
 
 export interface Bullet {
@@ -65,6 +76,8 @@ export interface Bullet {
   vx: number;
   vy: number;
   life: number;
+  /** daño de esta burbuja: sube con el frenesí. */
+  dmg: number;
 }
 
 export interface Pickup {
@@ -78,7 +91,10 @@ export interface Input {
   mx: number;
   my: number;
   aim: number;
+  /** mantener pulsado: dispara al ritmo base. */
   fire: boolean;
+  /** un clic nuevo: dispara y construye frenesí si llega rápido. */
+  tap?: boolean;
 }
 
 export type RoyaleEvent =
@@ -87,6 +103,9 @@ export type RoyaleEvent =
   | { type: 'pickup'; player: string; kind: PickupKind; id: number }
   | { type: 'fall'; player: string }
   | { type: 'phase'; phase: number }
+  | { type: 'combo'; player: string; combo: number; reward: 'heal' | 'shield' | 'triple' | 'ring' | 'life' | null }
+  | { type: 'comboEnd'; player: string; combo: number }
+  | { type: 'frenzy'; player: string; tier: number }
   | { type: 'end'; winner: string | null };
 
 export interface Match {
@@ -155,7 +174,7 @@ function makePlayer(init: PlayerInit, i: number, n: number, rnd: () => number): 
     id: init.id, name: init.name, hue: init.hue, isBot: init.isBot, auth: init.auth,
     x: Math.cos(a) * d, y: Math.sin(a) * d, vx: 0, vy: 0, aim: a + Math.PI,
     hp: MAX_HP, shield: 0, alive: true, kills: 0, cd: 1.2 + rnd(), rapid: 0, speed: 0, placement: 0,
-    think: rnd() * 0.3, tx: 0, ty: 0, strafe: rnd() < 0.5 ? 1 : -1, trig: false, skill: init.skill ?? 0.35 + rnd() * 0.35,
+    think: rnd() * 0.3, tx: 0, ty: 0, strafe: rnd() < 0.5 ? 1 : -1, trig: false, frenzy: 0, lastTap: -9, combo: 0, comboAt: -9, bestCombo: 0, maxHp: MAX_HP, triple: 0, rush: 0, skill: init.skill ?? 0.35 + rnd() * 0.35,
   };
 }
 
@@ -176,9 +195,9 @@ export function alive(m: Match): Player[] {
   return m.players.filter((p) => p.alive);
 }
 
-export function spawnBullet(m: Match, owner: Player, aim: number, id?: number): Bullet {
+export function spawnBullet(m: Match, owner: Player, aim: number, id?: number, dmg = BULLET_DMG): Bullet {
   const b: Bullet = {
-    id: id ?? m.nextId++, owner: owner.id,
+    id: id ?? m.nextId++, owner: owner.id, dmg,
     x: owner.x + Math.cos(aim) * (PLAYER_R + 4), y: owner.y + Math.sin(aim) * (PLAYER_R + 4),
     vx: Math.cos(aim) * BULLET_SPEED, vy: Math.sin(aim) * BULLET_SPEED, life: BULLET_LIFE,
   };
@@ -214,11 +233,51 @@ export function eliminate(m: Match, victim: Player, killerId: string | null) {
 }
 
 function applyPickup(p: Player, kind: PickupKind) {
-  if (kind === 'heart') p.hp = Math.min(MAX_HP, p.hp + 45);
+  if (kind === 'heart') p.hp = Math.min(p.maxHp, p.hp + 45);
   if (kind === 'shield') p.shield = Math.min(60, p.shield + 40);
   if (kind === 'rapid') p.rapid = 9;
   if (kind === 'speed') p.speed = 8;
 }
+
+/** umbrales de golpes seguidos y su premio. */
+export const COMBO_STEPS: ReadonlyArray<{ at: number; reward: 'heal' | 'shield' | 'triple' | 'ring' | 'life' }> = [
+  { at: 3, reward: 'heal' },
+  { at: 5, reward: 'shield' },
+  { at: 8, reward: 'triple' },
+  { at: 12, reward: 'ring' },
+  { at: 16, reward: 'life' },
+];
+export const COMBO_WINDOW = 1.8;
+export const MAX_HP_CAP = 260;
+
+/** sube el combo de quien acierta y le da el premio del escalón que cruza. */
+export function registerHit(m: Match, shooter: Player, killed: boolean): RoyaleEvent[] {
+  const ev: RoyaleEvent[] = [];
+  if (!shooter.alive) return ev;
+  shooter.combo = m.t - shooter.comboAt <= COMBO_WINDOW ? shooter.combo + 1 : 1;
+  shooter.comboAt = m.t + (killed ? 0.8 : 0);
+  shooter.bestCombo = Math.max(shooter.bestCombo, shooter.combo);
+  if (killed) shooter.hp = Math.min(shooter.maxHp, shooter.hp + 25);
+  const step = COMBO_STEPS.find((s) => s.at === shooter.combo);
+  if (step) {
+    if (step.reward === 'heal') shooter.hp = Math.min(shooter.maxHp, shooter.hp + 18);
+    else if (step.reward === 'shield') shooter.shield = Math.min(80, shooter.shield + 35);
+    else if (step.reward === 'triple') shooter.triple = 10;
+    else if (step.reward === 'ring') {
+      for (let i = 0; i < 12; i++) spawnBullet(m, shooter, (i / 12) * Math.PI * 2 + shooter.aim);
+    } else if (step.reward === 'life') {
+      shooter.maxHp = Math.min(MAX_HP_CAP, shooter.maxHp + 40);
+      shooter.hp = Math.min(shooter.maxHp, shooter.hp + 40);
+    }
+  }
+  ev.push({ type: 'combo', player: shooter.id, combo: shooter.combo, reward: step ? step.reward : null });
+  return ev;
+}
+
+/** cuánto se acorta la espera entre disparos según el frenesí. */
+export const frenzyTier = (frenzy: number) => (frenzy >= 100 ? 4 : frenzy >= 75 ? 3 : frenzy >= 50 ? 2 : frenzy >= 25 ? 1 : 0);
+const CD_MULT = [1, 0.8, 0.62, 0.48, 0.34];
+const DMG_MULT = [1, 1, 1.25, 1.4, 1.6];
 
 /** pensamiento de un bot: elige hacia dónde ir y si dispara. */
 function botInput(m: Match, b: Player, dt: number, z: { radius: number }, c: { x: number; y: number }): Input {
@@ -312,9 +371,31 @@ export function step(m: Match, dt: number, inputs: Record<string, Input>): Royal
     p.cd = Math.max(0, p.cd - dt);
     p.rapid = Math.max(0, p.rapid - dt);
     p.speed = Math.max(0, p.speed - dt);
-    if (inp.fire && p.cd <= 0) {
-      p.cd = (p.rapid > 0 ? RAPID_CD : FIRE_CD) * (p.isBot ? 2.1 : 1);
-      events.push({ type: 'shot', bullet: spawnBullet(m, p, p.aim) });
+    p.triple = Math.max(0, p.triple - dt);
+    p.rush = Math.max(0, p.rush - dt);
+    // frenesí: solo lo construyen los clics nuevos y rápidos; mantener pulsado no lo sube
+    if (inp.tap && !p.isBot) {
+      const prevTier = frenzyTier(p.frenzy);
+      p.frenzy = Math.min(100, p.frenzy + (m.t - p.lastTap < 0.4 ? 9 : 3));
+      p.lastTap = m.t;
+      if (p.frenzy >= 100 && p.rush <= 0) {
+        p.rush = 4;
+        p.shield = Math.max(p.shield, 30);
+        p.frenzy = 70;
+      }
+      const tier = frenzyTier(p.frenzy);
+      if (tier > prevTier) events.push({ type: 'frenzy', player: p.id, tier });
+    } else if (m.t - p.lastTap > 0.5) p.frenzy = Math.max(0, p.frenzy - 26 * dt);
+    if (m.t - p.comboAt > COMBO_WINDOW && p.combo > 0) {
+      events.push({ type: 'comboEnd', player: p.id, combo: p.combo });
+      p.combo = 0;
+    }
+    const tier = p.rush > 0 ? 4 : frenzyTier(p.frenzy);
+    if ((inp.fire || inp.tap) && p.cd <= 0) {
+      p.cd = (p.rapid > 0 ? RAPID_CD : FIRE_CD) * (p.isBot ? 2.1 : 1) * CD_MULT[tier];
+      const dmg = BULLET_DMG * DMG_MULT[tier];
+      const angles = p.triple > 0 ? [-0.17, 0, 0.17] : [0];
+      for (const off of angles) events.push({ type: 'shot', bullet: spawnBullet(m, p, p.aim + off, undefined, dmg) });
     }
     // fuera de la zona: la opacidad hace daño; fuera de la isla: cae al lago
     if (dist(p.x, p.y, c.x, c.y) > z.radius) {
@@ -348,8 +429,13 @@ export function step(m: Match, dt: number, inputs: Record<string, Input>): Royal
         if (!p.alive || p.id === b.owner || dist(b.x, b.y, p.x, p.y) > PLAYER_R + BULLET_R) continue;
         used = true;
         if (p.auth) {
-          const ev = damage(m, p, b.owner, BULLET_DMG, (b.vx / BULLET_SPEED) * 150, (b.vy / BULLET_SPEED) * 150);
-          if (ev) events.push(ev);
+          const ev = damage(m, p, b.owner, b.dmg, (b.vx / BULLET_SPEED) * 150, (b.vy / BULLET_SPEED) * 150);
+          if (ev) {
+            events.push(ev);
+            const shooter = m.players.find((q) => q.id === b.owner);
+            // los premios de combo los cobra quien dispara; si dispara otra máquina, los cobra al recibir el aviso del golpe
+            if (shooter && shooter.auth && !shooter.isBot && ev.type === 'hit') events.push(...registerHit(m, shooter, ev.dead));
+          }
         }
         break;
       }

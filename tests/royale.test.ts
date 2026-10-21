@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ARENA_R, MAX_HP, createMatch, damage, step, zoneAt, alive, type PlayerInit } from '../src/features/royale/sim';
+import { ARENA_R, MAX_HP, MAX_HP_CAP, createMatch, damage, frenzyTier, registerHit, step, zoneAt, alive, type PlayerInit } from '../src/features/royale/sim';
 
 const inits = (n: number, humanAuth = true): PlayerInit[] =>
   Array.from({ length: n }, (_, i) => ({ id: `p${i}`, name: `p${i}`, isBot: i > 0, auth: i > 0 || humanAuth, hue: i * 30 }));
@@ -66,7 +66,7 @@ describe('aero royale', () => {
     const remote = m.players[2];
     remote.auth = false;
     const hp = remote.hp;
-    m.bullets.push({ id: 99, owner: 'p0', x: remote.x - 10, y: remote.y, vx: 600, vy: 0, life: 1 });
+    m.bullets.push({ id: 99, owner: 'p0', x: remote.x - 10, y: remote.y, vx: 600, vy: 0, life: 1, dmg: 10 });
     step(m, 0.05, { p0: { mx: 0, my: 0, aim: 0, fire: false } });
     expect(remote.hp).toBe(hp);
   });
@@ -83,5 +83,54 @@ describe('aero royale', () => {
     const spawned = (m: typeof a) => m.pickups.filter((k) => k.id > 16).map((k) => [k.id, k.kind, Math.round(k.x), Math.round(k.y)]);
     expect(Math.max(...ids(a))).toBeGreaterThanOrEqual(17);
     expect(spawned(a).filter((s) => spawned(b).some((t) => t[0] === s[0]))).toEqual(spawned(b).filter((t) => spawned(a).some((s) => s[0] === t[0])));
+  });
+
+  it('el frenesí solo lo construyen los clics rápidos y no mantener pulsado', () => {
+    const held = createMatch(3, inits(3));
+    const tapped = createMatch(3, inits(3));
+    for (let i = 0; i < 60 * 2; i++) {
+      step(held, 1 / 60, { p0: { mx: 0, my: 0, aim: 0, fire: true } });
+      step(tapped, 1 / 60, { p0: { mx: 0, my: 0, aim: 0, fire: false, tap: i % 15 === 0 } });
+    }
+    expect(held.players[0].frenzy).toBe(0);
+    expect(tapped.players[0].frenzy).toBeGreaterThan(25);
+    expect(frenzyTier(tapped.players[0].frenzy)).toBeGreaterThanOrEqual(1);
+  });
+
+  it('a más frenesí se dispara más rápido', () => {
+    const slow = createMatch(3, inits(3));
+    const fast = createMatch(3, inits(3));
+    fast.players[0].frenzy = 80;
+    fast.players[0].lastTap = 0;
+    const count = (m: typeof slow) => {
+      let shots = 0;
+      for (let i = 0; i < 60 * 3; i++) {
+        m.players[0].lastTap = m.t;
+        shots += step(m, 1 / 60, { p0: { mx: 0, my: 0, aim: 0, fire: true } }).filter((e) => e.type === 'shot').length;
+        m.players[0].frenzy = m === fast ? 80 : m.players[0].frenzy;
+      }
+      return shots;
+    };
+    expect(count(fast)).toBeGreaterThan(count(slow));
+  });
+
+  it('los golpes seguidos dan premios en sus escalones y el combo se corta si pasa el tiempo', () => {
+    const m = createMatch(8, inits(3));
+    const me = m.players[0];
+    me.hp = 50;
+    const rewards: Array<string | null> = [];
+    for (let i = 1; i <= 16; i++) {
+      m.t += 0.5;
+      for (const e of registerHit(m, me, false)) if (e.type === 'combo') rewards.push(e.reward);
+    }
+    expect(rewards.filter(Boolean)).toEqual(['heal', 'shield', 'triple', 'ring', 'life']);
+    expect(me.maxHp).toBeGreaterThan(MAX_HP);
+    expect(me.maxHp).toBeLessThanOrEqual(MAX_HP_CAP);
+    expect(me.triple).toBeGreaterThan(0);
+    expect(me.bestCombo).toBe(16);
+    m.t += 5;
+    const ev = step(m, 0.05, { p0: { mx: 0, my: 0, aim: 0, fire: false } });
+    expect(ev.some((e) => e.type === 'comboEnd')).toBe(true);
+    expect(me.combo).toBe(0);
   });
 });

@@ -16,7 +16,7 @@ export type NetMsg =
   | { k: 'start'; start: StartMsg }
   | { k: 'state'; s: StateMsg }
   | { k: 'bots'; list: StateMsg[] }
-  | { k: 'shot'; owner: string; x: number; y: number; vx: number; vy: number }
+  | { k: 'shot'; owner: string; x: number; y: number; vx: number; vy: number; dmg?: number }
   | { k: 'hit'; victim: string; killer: string; dmg: number; dead: boolean }
   | { k: 'fall'; player: string }
   | { k: 'pickup'; id: number; player: string; kind: PickupKind };
