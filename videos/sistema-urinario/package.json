@@ -1,9 +1,0 @@
-{
-  "name": "sistema-urinario",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "check": "node --check js/main.js && node --check js/simulation.js && node --check js/ui.js"
-  }
-}

@@ -1,8 +1,0 @@
-haz una animacion super realista basado en libros de medicina real acerca delo sistema urinario del hombnre y como funcionan los riñones al filtrarliquidos, todo el proceso, orinarlos, procesarlos, como se ve la oprina, que pasa cuando tomamos agua, si tiene piedras o calculos renales, si hay infeccion en las vias, etc, todo eso anima usando html, css y js modular y usa cualquier tecnologia posible para que se vea lo mas realista posible
-
-Fuentes de contenido verificadas para la producción:
-- NIDDK, Your Kidneys & How They Work.
-- NIDDK, The Urinary Tract & How It Works.
-- NIDDK, Symptoms & Causes of Kidney Stones.
-- NIDDK, Symptoms & Causes of Bladder Infection in Adults.
-- MedlinePlus, Urine - abnormal color.
