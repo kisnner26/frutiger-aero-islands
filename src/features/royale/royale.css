@@ -1,0 +1,48 @@
+/* ===== aero royale ===== */
+.royale { position: fixed; inset: 0; z-index: 5; font-family: var(--fuente, system-ui, sans-serif); color: #fff; }
+.royale--menu { display: grid; place-items: center; padding: 18px; background: radial-gradient(120% 90% at 20% 0%, #bfeaff 0, #4aa8ec 45%, #1858a8 100%); overflow-y: auto; }
+.royale__card { width: min(560px, 100%); display: grid; justify-items: center; gap: 10px; padding: 26px 22px; text-align: center; border-radius: 26px; border: 1px solid rgba(255,255,255,.7); background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,.12)); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 24px 60px rgba(0,50,120,.45); }
+.royale__kicker { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .34em; text-transform: uppercase; color: #d8ff90; text-shadow: 0 1px 8px rgba(0,70,30,.5); }
+.royale__card h1 { margin: 0; font-size: clamp(38px, 9vw, 64px); font-weight: 800; letter-spacing: -.02em; text-transform: lowercase; text-shadow: 0 3px 0 rgba(30,110,200,.55), 0 0 28px rgba(140,230,255,.8); }
+.royale__lead { margin: 0; max-width: 40ch; font-weight: 600; text-shadow: 0 1px 8px rgba(0,70,140,.6); }
+.royale__actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; margin-top: 6px; }
+.royale__help { margin: 4px 0 0; padding: 12px 14px; list-style: none; display: grid; gap: 6px; text-align: left; font-size: 13px; font-weight: 600; border-radius: 16px; background: rgba(0,40,100,.28); }
+.royale__help b { margin-right: 6px; color: #d8ff90; }
+.royale__stats { margin: 4px 0 0; font-size: 12px; font-weight: 700; opacity: .9; }
+.royale__result { display: grid; gap: 4px; }
+.royale__result strong { font-size: 30px; text-shadow: 0 2px 10px rgba(0,60,130,.6); }
+.royale--play { background: #14589a; touch-action: none; user-select: none; -webkit-user-select: none; }
+.royale__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.royale__hud { position: absolute; inset: 0; pointer-events: none; }
+.royale__hud > * { pointer-events: none; }
+.royale__chips { position: absolute; top: max(12px, env(safe-area-inset-top)); left: 12px; display: flex; gap: 8px; }
+.royale__chips span { padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; background: rgba(0,50,110,.5); border: 1px solid rgba(255,255,255,.5); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.royale__chips b { font-size: 17px; margin-right: 3px; }
+.royale__zone { position: absolute; top: max(14px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 800; white-space: nowrap; background: rgba(110,120,134,.7); border: 1px solid rgba(255,255,255,.55); }
+.royale__mini { position: absolute; right: 12px; bottom: max(14px, env(safe-area-inset-bottom)); width: 112px; height: 112px; border-radius: 50%; box-shadow: 0 6px 18px rgba(0,40,100,.45); }
+.royale__feed { position: absolute; top: max(56px, calc(env(safe-area-inset-top) + 44px)); right: 12px; margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; justify-items: end; max-width: 60vw; }
+.royale__feed li { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: rgba(0,50,110,.55); border: 1px solid rgba(255,255,255,.4); }
+.royale__vitals { position: absolute; left: 12px; bottom: max(14px, env(safe-area-inset-bottom)); width: min(260px, 52vw); display: grid; gap: 6px; }
+.royale__bar { position: relative; height: 18px; border-radius: 999px; background: rgba(0,40,90,.55); border: 1px solid rgba(255,255,255,.6); overflow: hidden; }
+.royale__bar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(180deg, #b6ff9a, #3cc83c 55%, #2a9a2a); border-radius: inherit; transition: width 120ms linear; }
+.royale__bar--shield i { background: linear-gradient(180deg, #bfeaff, #2c9cf0 55%, #1a6ac8); }
+.royale__bar span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 11px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,40,90,.8); }
+.royale__count { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(90px, 22vw, 200px); font-weight: 800; text-shadow: 0 6px 30px rgba(0,60,140,.7), 0 0 50px rgba(140,230,255,.9); animation: royale-pop 1s ease-out infinite; }
+@keyframes royale-pop { from { transform: scale(1.4); opacity: 0; } 25% { opacity: 1; } to { transform: scale(.9); opacity: .2; } }
+.royale__dead { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); display: grid; gap: 8px; justify-items: center; padding: 14px 20px; border-radius: 20px; text-align: center; background: rgba(0,40,100,.62); border: 1px solid rgba(255,255,255,.6); pointer-events: auto !important; }
+.royale__dead button { pointer-events: auto; }
+.royale__stick { position: absolute; display: none; width: 110px; height: 110px; border-radius: 50%; background: rgba(255,255,255,.2); border: 2px solid rgba(255,255,255,.7); }
+.royale__stick i { position: absolute; left: 35px; top: 35px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #8fd8ff); box-shadow: 0 4px 10px rgba(0,50,120,.5); }
+.royale__fire { position: absolute; right: 22px; bottom: 150px; width: 84px; height: 84px; border-radius: 50%; border: 3px solid #fff; font-size: 34px; color: #fff; background: radial-gradient(circle at 35% 28%, #fff 0, #7fe0ff 30%, #1a8fe0 100%); box-shadow: 0 8px 20px rgba(0,50,120,.55), inset 0 -6px 10px rgba(0,60,140,.4); pointer-events: auto !important; touch-action: none; }
+.royale__fire:active { transform: scale(.94); }
+.royale__exit { position: absolute; top: max(12px, env(safe-area-inset-top)); right: 12px; pointer-events: auto !important; min-height: 34px; padding: 0 14px; }
+@media (max-width: 680px) { .royale__feed { top: max(104px, calc(env(safe-area-inset-top) + 90px)); } .royale__mini { width: 92px; height: 92px; } }
+
+.royale__online { display: grid; gap: 8px; width: 100%; padding: 12px; border-radius: 16px; background: rgba(0,40,100,.24); }
+.royale__row { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; }
+.royale__row input { width: 92px; padding: 9px 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,.7); background: rgba(255,255,255,.85); color: #0a4a78; font: 800 16px system-ui, sans-serif; letter-spacing: .2em; text-align: center; text-transform: uppercase; }
+.royale__code { letter-spacing: .22em; }
+.royale__roster { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; width: min(320px, 100%); }
+.royale__roster li { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; font-weight: 700; background: rgba(255,255,255,.2); text-align: left; }
+.royale__roster i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; flex: none; }
+.royale__wait { font-weight: 700; opacity: .9; }
