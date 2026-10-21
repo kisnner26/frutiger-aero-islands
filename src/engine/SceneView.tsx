@@ -77,6 +77,12 @@ export function SceneView({ scene, callbacks, controlRef }: SceneViewProps) {
   return (
     <div className="scene-view">
       <div ref={hostRef} className="scene-view__host" />
+      <div className="scene-fx" aria-hidden="true">
+        <i className="scene-fx__rays" />
+        <i className="scene-fx__bloom" />
+        {Array.from({ length: 12 }, (_, i) => <b key={i} className="scene-fx__mote" style={{ '--i': i } as React.CSSProperties} />)}
+        <i className="scene-fx__vignette" />
+      </div>
       {status === 'cargando' && <AeroLoader variant="scene" text={tr('cargando la isla...', 'loading the island...')} detail={tr('acomodando tu jardín y sus reflejos...', 'arranging your garden and its reflections...')} />}
       {status === 'error' && (
         <div className="scene-view__msg" role="alert">

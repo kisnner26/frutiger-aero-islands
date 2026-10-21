@@ -46,3 +46,16 @@
 .landing > :not(.brand-atmo) { position: relative; z-index: 1; }
 .brand-atmo__flare { background: radial-gradient(circle at 50% 50%, rgba(255, 255, 240, .6) 0, rgba(255, 250, 200, .22) 16%, rgba(255, 250, 200, 0) 44%); }
 .brand-atmo__aurora { opacity: .4; }
+
+/* ===== efectos de luz sobre la escena de la isla: rayos, bloom, partículas y viñeta ===== */
+.scene-fx { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+.scene-fx__rays { position: absolute; inset: -20% -20% 30% -20%; background: conic-gradient(from 196deg at 82% 8%, rgba(255,255,230,0) 0deg, rgba(255,255,230,.16) 6deg, rgba(255,255,230,0) 14deg, rgba(255,255,230,.12) 24deg, rgba(255,255,230,0) 34deg, rgba(255,255,230,.14) 46deg, rgba(255,255,230,0) 58deg, rgba(255,255,230,.1) 70deg, rgba(255,255,230,0) 84deg); mix-blend-mode: screen; opacity: .9; }
+.scene-fx__bloom { position: absolute; inset: 0; background: radial-gradient(circle at 82% 8%, rgba(255,255,235,.42) 0, rgba(255,255,235,.12) 22%, rgba(255,255,235,0) 52%); mix-blend-mode: screen; }
+.scene-fx__vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 52%, rgba(0,30,80,0) 55%, rgba(0,30,90,.32) 100%); }
+.scene-fx__mote { position: absolute; left: calc(var(--i) * 8.3% + 2%); bottom: -4%; width: calc(6px + (var(--i) * 7px) % 22px); height: calc(6px + (var(--i) * 7px) % 22px); border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.95), rgba(190,240,255,.4) 55%, rgba(255,255,255,0) 72%); border: 1px solid rgba(255,255,255,.45); opacity: .0; }
+@media (prefers-reduced-motion: no-preference) {
+  .scene-fx__rays { animation: fx-rays 14s ease-in-out infinite alternate; }
+  .scene-fx__mote { animation: fx-mote calc(11s + var(--i) * 1.3s) linear infinite; animation-delay: calc(var(--i) * -1.7s); }
+  @keyframes fx-rays { to { transform: rotate(3deg) scale(1.05); opacity: .6; } }
+  @keyframes fx-mote { 0% { transform: translate(0, 0) scale(.7); opacity: 0; } 12% { opacity: .85; } 80% { opacity: .5; } 100% { transform: translate(calc((var(--i) - 6) * 6px), -105vh) scale(1.15); opacity: 0; } }
+}
