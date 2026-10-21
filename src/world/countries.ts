@@ -1,13 +1,24 @@
+import { lang } from '../i18n';
 /** países seleccionables: código iso 3166-1 alfa-2, nombre en español y un punto de referencia (lat, lon) aproximado.
  *  las coordenadas son aproximaciones propias para ubicar la zona de cada isla; no son datos cartográficos oficiales. */
 export interface Country {
   code: string;
   name: string;
+  /** nombre en español, para que la búsqueda también lo encuentre en inglés. */
+  nameEs: string;
   lat: number;
   lon: number;
 }
 
-const c = (code: string, name: string, lat: number, lon: number): Country => ({ code, name, lat, lon });
+const regionNames = lang === 'en' && typeof Intl !== 'undefined' && 'DisplayNames' in Intl ? new Intl.DisplayNames(['en'], { type: 'region' }) : null;
+const localName = (code: string, es: string) => {
+  try {
+    return regionNames?.of(code.toUpperCase())?.toLowerCase() ?? es;
+  } catch {
+    return es;
+  }
+};
+const c = (code: string, name: string, lat: number, lon: number): Country => ({ code, name: localName(code, name), nameEs: name, lat, lon });
 
 export const COUNTRIES: readonly Country[] = [
   // américa
@@ -56,7 +67,7 @@ export function normalize(s: string): string {
 
 export function searchCountries(query: string): Country[] {
   const q = normalize(query);
-  const sorted = [...COUNTRIES].sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  const sorted = [...COUNTRIES].sort((a, b) => a.name.localeCompare(b.name, lang));
   if (!q) return sorted;
-  return sorted.filter((x) => normalize(x.name).includes(q) || x.code === q);
+  return sorted.filter((x) => normalize(x.name).includes(q) || normalize(x.nameEs).includes(q) || x.code === q);
 }
