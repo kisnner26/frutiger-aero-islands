@@ -97,15 +97,22 @@ export function BlobPage() {
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
 
+    const held = new Set<string>();
+    const MOVE = ['w', 'a', 's', 'd', 'arrowup', 'arrowleft', 'arrowdown', 'arrowright'];
     const kd = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
-      if ([' ', 'w', 'e'].includes(k)) e.preventDefault();
+      if (MOVE.includes(k) || [' ', 'e', 'q', 'r', 'shift'].includes(k)) e.preventDefault();
+      if (MOVE.includes(k)) held.add(k);
       if (e.repeat) return;
       if (k === ' ') flags.split = true;
-      if (k === 'w') flags.eject = true;
+      if (k === 'r' || k === 'shift') flags.eject = true;
       if (k === 'e' || k === 'q') flags.power = true;
     };
+    const ku = (e: KeyboardEvent) => held.delete(e.key.toLowerCase());
+    const clearKeys = () => held.clear();
     window.addEventListener('keydown', kd);
+    window.addEventListener('keyup', ku);
+    window.addEventListener('blur', clearKeys);
     const rect = () => canvas.getBoundingClientRect();
     const pm = (e: PointerEvent) => {
       const r = rect();
@@ -189,17 +196,24 @@ export function BlobPage() {
     };
 
     const readInput = (): Input => {
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
       const c = me.alive ? center(me) : { x: focus.x, y: focus.y };
       let tx = me.tx;
       let ty = me.ty;
       if (stick.active && (stick.x || stick.y)) {
         tx = c.x + stick.x * 900;
         ty = c.y + stick.y * 900;
-      } else if (pointer.mouse) {
-        tx = focus.x + (pointer.x - w / 2) / zoomNow;
-        ty = focus.y + (pointer.y - h / 2) / zoomNow;
+      } else {
+        const dx = (held.has('d') || held.has('arrowright') ? 1 : 0) - (held.has('a') || held.has('arrowleft') ? 1 : 0);
+        const dy = (held.has('s') || held.has('arrowdown') ? 1 : 0) - (held.has('w') || held.has('arrowup') ? 1 : 0);
+        if (dx || dy) {
+          const len = Math.hypot(dx, dy);
+          tx = c.x + (dx / len) * 900;
+          ty = c.y + (dy / len) * 900;
+        } else {
+          // sin teclas: la célula se queda quieta
+          tx = c.x;
+          ty = c.y;
+        }
       }
       const inp: Input = { tx, ty, split: flags.split && countdown <= 0, eject: flags.eject && countdown <= 0, power: flags.power && countdown <= 0 };
       flags.split = flags.eject = flags.power = false;
@@ -262,6 +276,8 @@ export function BlobPage() {
       cancelAnimationFrame(raf);
       ro.disconnect();
       window.removeEventListener('keydown', kd);
+      window.removeEventListener('keyup', ku);
+      window.removeEventListener('blur', clearKeys);
       canvas.removeEventListener('pointerdown', pd);
       canvas.removeEventListener('pointermove', pm);
       window.removeEventListener('pointerup', pu);
@@ -294,9 +310,9 @@ export function BlobPage() {
           </div>
           {help && (
             <ul className="royale__help">
-              <li><b>{tr('mover', 'move')}</b> {touch ? tr('joystick a la izquierda', 'left joystick') : tr('tu célula sigue al ratón', 'your cell follows the mouse')}</li>
+              <li><b>{tr('mover', 'move')}</b> {touch ? tr('joystick a la izquierda', 'left joystick') : tr('WASD o flechas', 'WASD or arrow keys')}</li>
               <li><b>{tr('dividirte', 'split')}</b> {touch ? tr('botón ÷', '÷ button') : tr('espacio: lanzas la mitad hacia delante; vuelven a unirse solas', 'space: throws half forward; the halves merge back on their own')}</li>
-              <li><b>{tr('soltar masa', 'eject mass')}</b> {touch ? tr('botón •', '• button') : tr('W: lanzas una burbuja de masa', 'W: shoots a mass bubble')}</li>
+              <li><b>{tr('soltar masa', 'eject mass')}</b> {touch ? tr('botón •', '• button') : tr('R o Shift: lanzas una burbuja de masa', 'R or Shift: shoots a mass bubble')}</li>
               <li><b>{tr('poderes', 'powers')}</b> » {tr('impulso', 'dash')} · ◆ {tr('escudo', 'shield')} · ◎ {tr('imán', 'magnet')} · ✱ {tr('congelar', 'freeze')} · ✺ {tr('estallido', 'burst')} · ★ {tr('festín', 'feast')} — {touch ? tr('botón de poder', 'power button') : tr('recoge uno y pulsa E', 'pick one up and press E')}</li>
               <li><b>{tr('peligros', 'hazards')}</b> {tr('las medusas moradas rompen a las células grandes en pedazos; la bruma gris te quita masa', 'purple jellyfish split big cells into pieces; the gray haze eats your mass')}</li>
             </ul>
