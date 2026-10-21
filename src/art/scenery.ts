@@ -3,7 +3,7 @@ import { LAND_RADII, landRadii, landTier } from '../domain/geometry';
 import type { PlacedObject } from '../domain/island';
 import { K, TILT, project } from '../engine/projection';
 import { cloudCanvas, ridgeY, softBlob } from './aero';
-import { hatch, makeCanvas, paperGrain, pencilSprite, rng, vnoise, wobbleEllipse } from './pencil';
+import { ART_STYLE, hatch, makeCanvas, paperGrain, pencilSprite, rng, vnoise, wobbleEllipse } from './pencil';
 
 /** metros de escena que cubre la textura del suelo: mitad de ancho y alto. */
 export const GROUND_HALF = { w: 450, h: 230 };
@@ -20,6 +20,11 @@ export function renderGround(level = 1): HTMLCanvasElement {
   const tier = landTier(level);
   const cached = groundCache.get(tier);
   if (cached) return cached;
+  if (ART_STYLE === 'aero') {
+    const aero = renderGroundAero(level);
+    groundCache.set(tier, aero);
+    return aero;
+  }
   const land = landRadii(level);
   const grow = land.rx - LAND_RADII.rx;
   const growY = land.ry - LAND_RADII.ry;
@@ -144,6 +149,198 @@ export function renderGround(level = 1): HTMLCanvasElement {
   return c;
 }
 
+/** isla frutiger aero: césped suave con luz, borde de arena y roca con volumen, espuma y anillos de agua. */
+function renderGroundAero(level: number): HTMLCanvasElement {
+  const land = landRadii(level);
+  const grow = land.rx - LAND_RADII.rx;
+  const growY = land.ry - LAND_RADII.ry;
+  const area = (land.rx * land.ry) / (LAND_RADII.rx * LAND_RADII.ry);
+  const W = GROUND_HALF.w * 2 * S;
+  const H = GROUND_HALF.h * 2 * S;
+  const c = makeCanvas(W, H);
+  const ctx = c.getContext('2d', { willReadFrequently: true })!;
+  const r = rng(21);
+  const cx = W / 2;
+  const cy = H / 2;
+  const ell = (dy: number, rx: number, ry: number) => {
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + dy * S, rx, ry, 0, 0, Math.PI * 2);
+  };
+  const sandRx = ex(392 + grow);
+  const sandRy = ey(312 + growY);
+
+  // sombra suave y resplandor del agua alrededor
+  ctx.save();
+  ctx.filter = 'blur(22px)';
+  ctx.fillStyle = 'rgba(4, 44, 92, .42)';
+  ell(34, ex(404 + grow), ey(326 + growY));
+  ctx.fill();
+  ctx.restore();
+  ctx.save();
+  // elíptico y contenido dentro del lienzo, para que no se vean sus bordes
+  ctx.translate(cx, cy + 8 * S);
+  ctx.scale(1, sandRy / sandRx);
+  const halo = ctx.createRadialGradient(0, 0, sandRx * 0.9, 0, 0, sandRx * 1.13);
+  halo.addColorStop(0, 'rgba(190,245,255,0)');
+  halo.addColorStop(0.3, 'rgba(190,245,255,.45)');
+  halo.addColorStop(1, 'rgba(190,245,255,0)');
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(0, 0, sandRx * 1.13, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // costado: roca y arena con estratos y volumen
+  ctx.save();
+  ell(24, sandRx, sandRy);
+  const side = ctx.createLinearGradient(0, cy, 0, cy + sandRy + 28 * S);
+  side.addColorStop(0, '#e9cd92');
+  side.addColorStop(0.45, '#b9884a');
+  side.addColorStop(1, '#6e4a26');
+  ctx.fillStyle = side;
+  ctx.fill();
+  ctx.clip();
+  ctx.lineWidth = 2;
+  for (let i = 1; i < 6; i++) {
+    ctx.strokeStyle = `rgba(90, 56, 24, ${0.1 + i * 0.03})`;
+    ell(6 + i * 4.4, sandRx * (1 - i * 0.004), sandRy * (1 - i * 0.004));
+    ctx.stroke();
+  }
+  const sideShade = ctx.createLinearGradient(cx - sandRx, 0, cx + sandRx, 0);
+  sideShade.addColorStop(0, 'rgba(255,255,255,.22)');
+  sideShade.addColorStop(0.5, 'rgba(255,255,255,0)');
+  sideShade.addColorStop(1, 'rgba(20,30,70,.3)');
+  ctx.fillStyle = sideShade;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+
+  // arena de la orilla
+  ctx.save();
+  ell(0, sandRx, sandRy);
+  const sand = ctx.createRadialGradient(cx - ex(120), cy - ey(100), 10, cx, cy, sandRx);
+  sand.addColorStop(0, '#fff3c8');
+  sand.addColorStop(0.7, '#f1d794');
+  sand.addColorStop(1, '#dcb56a');
+  ctx.fillStyle = sand;
+  ctx.fill();
+  ctx.clip();
+  for (let i = 0; i < 260; i++) {
+    const a = r() * Math.PI * 2;
+    ctx.fillStyle = r() < 0.5 ? 'rgba(255,255,255,.35)' : 'rgba(190,140,60,.25)';
+    ctx.fillRect(cx + Math.cos(a) * sandRx * (0.9 + r() * 0.1), cy + Math.sin(a) * sandRy * (0.9 + r() * 0.1), 2.4, 2.4);
+  }
+  ctx.restore();
+
+  // césped: degradado con luz, manchas suaves y rayas de corte
+  ctx.save();
+  ell(0, ex(land.rx), ey(land.ry));
+  const grass = ctx.createRadialGradient(cx - ex(land.rx) * 0.35, cy - ey(land.ry) * 0.4, 20, cx, cy, ex(land.rx) * 1.05);
+  grass.addColorStop(0, '#b7ef6a');
+  grass.addColorStop(0.45, '#7ccd3e');
+  grass.addColorStop(1, '#3f9a2c');
+  ctx.fillStyle = grass;
+  ctx.fill();
+  ctx.clip();
+  // franjas anchas de cortacésped, muy suaves
+  ctx.globalAlpha = 0.07;
+  ctx.fillStyle = '#ffffff';
+  for (let i = -6; i < 8; i++) {
+    ctx.save();
+    ctx.translate(cx + i * ex(70), cy);
+    ctx.rotate(-0.5);
+    ctx.fillRect(-ex(18), -H, ex(36), H * 2);
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+  for (let i = 0; i < Math.round(60 * area); i++) {
+    const a = r() * Math.PI * 2;
+    const d = Math.sqrt(r()) * 0.9;
+    const px = cx + Math.cos(a) * d * ex(land.rx);
+    const py = cy + Math.sin(a) * d * ey(land.ry);
+    const rad = 50 + r() * 90;
+    const g2 = ctx.createRadialGradient(px, py, 0, px, py, rad);
+    g2.addColorStop(0, r() < 0.5 ? 'rgba(30,110,40,.22)' : 'rgba(230,255,140,.28)');
+    g2.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g2;
+    ctx.fillRect(px - rad, py - rad, rad * 2, rad * 2);
+  }
+  // brillo solar y viñeta interior
+  const sun = ctx.createRadialGradient(cx - ex(130), cy - ey(120), 10, cx - ex(130), cy - ey(120), ex(260));
+  sun.addColorStop(0, 'rgba(255,255,210,.5)');
+  sun.addColorStop(1, 'rgba(255,255,210,0)');
+  ctx.fillStyle = sun;
+  ctx.fillRect(0, 0, W, H);
+  const rim = ctx.createRadialGradient(cx, cy, ex(land.rx) * 0.6, cx, cy, ex(land.rx));
+  rim.addColorStop(0, 'rgba(20,90,40,0)');
+  rim.addColorStop(1, 'rgba(20,90,40,.4)');
+  ctx.fillStyle = rim;
+  ctx.fillRect(0, 0, W, H);
+  // briznas con degradado y flores diminutas
+  ctx.lineCap = 'round';
+  for (let i = 0; i < Math.round(900 * area); i++) {
+    const a = r() * Math.PI * 2;
+    const d = Math.sqrt(r()) * 0.96;
+    const x = cx + Math.cos(a) * d * ex(land.rx);
+    const y = cy + Math.sin(a) * d * ey(land.ry);
+    const h = 8 + r() * 12;
+    const lean = (r() - 0.5) * 10;
+    const gr = ctx.createLinearGradient(x, y, x + lean, y - h);
+    gr.addColorStop(0, 'rgba(36,110,36,.85)');
+    gr.addColorStop(1, 'rgba(190,245,110,.9)');
+    ctx.strokeStyle = gr;
+    ctx.lineWidth = 1.5 + r();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.quadraticCurveTo(x + lean * 0.3, y - h * 0.6, x + lean, y - h);
+    ctx.stroke();
+  }
+  for (let i = 0; i < Math.round(46 * area); i++) {
+    const a = r() * Math.PI * 2;
+    const d = Math.sqrt(r()) * 0.9;
+    const fx = cx + Math.cos(a) * d * ex(land.rx);
+    const fy = cy + Math.sin(a) * d * ey(land.ry);
+    ctx.fillStyle = ['#ffffff', '#ffe46a', '#ff9ac4', '#c6a8ff'][Math.floor(r() * 4)];
+    ctx.beginPath();
+    ctx.arc(fx, fy, 2.2 + r() * 1.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // luz de borde: arriba-izquierda clara, abajo-derecha en sombra
+  ctx.save();
+  const edgeG = ctx.createLinearGradient(cx - ex(land.rx), cy - ey(land.ry), cx + ex(land.rx), cy + ey(land.ry));
+  edgeG.addColorStop(0, 'rgba(255,255,255,.95)');
+  edgeG.addColorStop(0.5, 'rgba(255,255,255,.12)');
+  edgeG.addColorStop(1, 'rgba(10,70,40,.7)');
+  ctx.strokeStyle = edgeG;
+  ctx.lineWidth = 5;
+  ell(0, ex(land.rx), ey(land.ry));
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(30,70,30,.55)';
+  ctx.lineWidth = 2;
+  ell(0, ex(land.rx) + 3, ey(land.ry) + 3);
+  ctx.stroke();
+  ctx.restore();
+
+  // espuma suave y anillos de agua
+  ctx.save();
+  ctx.filter = 'blur(2px)';
+  ctx.strokeStyle = 'rgba(255,255,255,.8)';
+  ctx.lineWidth = 6;
+  ell(8, sandRx + 10, sandRy + 8);
+  ctx.stroke();
+  ctx.restore();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2.6;
+  for (const [rx, ry, al] of [[430 + grow, 350 + growY, 0.7], [470 + grow, 385 + growY, 0.42], [515 + grow, 425 + growY, 0.22]] as const) {
+    ctx.globalAlpha = al;
+    ell(10, ex(rx), ey(ry));
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  return c;
+}
+
 /** cielo, montañas y lago con reflejos, estilo frutiger aero. */
 export function renderBackdrop(w: number, h: number, dpr: number): HTMLCanvasElement {
   const pw = Math.round(w * dpr);
@@ -170,6 +367,49 @@ export function renderBackdrop(w: number, h: number, dpr: number): HTMLCanvasEle
   glow.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, pw, horizon);
+  // haces de luz que parten del sol y destellos de lente
+  ctx.save();
+  ctx.globalCompositeOperation = 'screen';
+  const reach = Math.max(pw, ph) * 1.1;
+  for (let i = 0; i < 13; i++) {
+    const a = Math.PI * (0.06 + (i / 13) * 0.62) + (r() - 0.5) * 0.05;
+    const half = 0.018 + r() * 0.03;
+    const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, reach);
+    g.addColorStop(0, `rgba(255,255,235,${0.2 + r() * 0.14})`);
+    g.addColorStop(0.5, 'rgba(255,255,235,.05)');
+    g.addColorStop(1, 'rgba(255,255,235,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(sx + Math.cos(a - half) * reach, sy + Math.sin(a - half) * reach);
+    ctx.lineTo(sx + Math.cos(a + half) * reach, sy + Math.sin(a + half) * reach);
+    ctx.closePath();
+    ctx.fill();
+  }
+  const dx = pw / 2 - sx;
+  const dy = ph * 0.45 - sy;
+  for (const [t, rad, col] of [[0.35, 0.05, '255,255,200'], [0.55, 0.09, '170,240,255'], [0.8, 0.04, '255,210,255'], [1.15, 0.12, '190,255,220']] as const) {
+    const fx = sx + dx * t;
+    const fy = sy + dy * t;
+    const rr = Math.min(pw, ph) * rad;
+    const fg = ctx.createRadialGradient(fx, fy, 0, fx, fy, rr);
+    fg.addColorStop(0, `rgba(${col},.28)`);
+    fg.addColorStop(0.7, `rgba(${col},.1)`);
+    fg.addColorStop(1, `rgba(${col},0)`);
+    ctx.fillStyle = fg;
+    ctx.beginPath();
+    ctx.arc(fx, fy, rr, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // disco solar
+  const disc = ctx.createRadialGradient(sx, sy, 0, sx, sy, Math.min(pw, ph) * 0.03);
+  disc.addColorStop(0, 'rgba(255,255,255,1)');
+  disc.addColorStop(1, 'rgba(255,250,210,0)');
+  ctx.fillStyle = disc;
+  ctx.beginPath();
+  ctx.arc(sx, sy, Math.min(pw, ph) * 0.03, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 
   // nubes cúmulo: más grandes arriba, pequeñas hacia el horizonte
   const clouds: Array<[number, number, number, number]> = [
@@ -252,6 +492,18 @@ export function renderBackdrop(w: number, h: number, dpr: number): HTMLCanvasEle
     ctx.translate(x, y);
     ctx.scale(len / 20, (0.5 + t * 1.2) * dpr * 0.35);
     softBlob(ctx, 0, 0, 20, [255, 255, 255], 0.22 + r() * 0.3);
+    ctx.restore();
+  }
+  // camino de destellos del sol sobre el agua
+  for (let i = 0; i < 90; i++) {
+    const t = Math.pow(r(), 1.2);
+    const y = horizon + t * (ph - horizon) * 0.8;
+    const spread = (0.04 + t * 0.2) * pw;
+    const x = sx + (r() - 0.5) * 2 * spread * (0.4 + r());
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale((18 + r() * 40) * dpr / 20, (0.35 + t * 0.6) * dpr * 0.28);
+    softBlob(ctx, 0, 0, 20, [255, 255, 245], 0.35 + r() * 0.4);
     ctx.restore();
   }
   ctx.globalAlpha = 1;
