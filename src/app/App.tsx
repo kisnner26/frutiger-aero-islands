@@ -30,6 +30,7 @@ const TITULOS: Record<Route, string> = {
   ranking: 'ranking | frutiger aero islands',
   probar: `${tr('probar sin cuenta', 'try without an account')} | frutiger aero islands`,
   royale: 'aero royale | frutiger aero islands',
+  blob: 'aero blob | frutiger aero islands',
   isla: `${tr('tu isla', 'your island')} | frutiger aero islands`,
   auth: `${tr('cuenta', 'account')} | frutiger aero islands`,
   explorar: `${tr('explorar', 'explore')} | frutiger aero islands`,
@@ -49,6 +50,7 @@ const RulesPage = lazy(() => import('../features/legal/RulesPage').then((m) => (
 const ArcadePage = lazy(() => import('../features/arcade/ArcadePage').then((m) => ({ default: m.ArcadePage })));
 const AvatarEditor = lazy(() => import('../features/avatar/AvatarEditor').then((m) => ({ default: m.AvatarEditor })));
 const ExplorePage = lazy(() => import('../features/community/ExplorePage').then((m) => ({ default: m.ExplorePage })));
+const BlobPage = lazy(() => import('../features/blob/BlobPage').then((m) => ({ default: m.BlobPage })));
 const RoyalePage = lazy(() => import('../features/royale/RoyalePage').then((m) => ({ default: m.RoyalePage })));
 const EditorPage = lazy(() => import('../features/editor/EditorPage').then((m) => ({ default: m.EditorPage })));
 const MyIslandPage = lazy(() => import('../features/community/IslandPages').then((m) => ({ default: m.MyIslandPage })));
@@ -191,6 +193,7 @@ function Routes() {
     );
   }
 
+  if (route === 'blob') return <Suspense fallback={<LoadingRoute text={tr('preparando la arena...', 'getting the arena ready...')} />}><BlobPage /></Suspense>;
   if (route === 'royale') return <Suspense fallback={<LoadingRoute text={tr('preparando la arena...', 'getting the arena ready...')} />}><RoyalePage /></Suspense>;
 
   /* modo prueba: la isla funciona sin cuenta y se guarda solo en este dispositivo */

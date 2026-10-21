@@ -56,6 +56,7 @@ export function GamesApp({ onClose }: { onClose: () => void }) {
       <div className="mg__menu">
         <button type="button" onClick={() => start('bubbles')}><b>{tr('burbuja rápida', 'bubble rush')}</b><small>{tr('20 segundos · revienta burbujas', '20 seconds · pop bubbles')}</small></button>
         <button type="button" onClick={() => start('memory')}><b>{tr('memoria aero', 'aero memory')}</b><small>{tr('encuentra las 8 parejas', 'find the 8 pairs')}</small></button>
+        <a href="#/blob" onClick={onClose}><b>aero blob</b><small>{tr('come, crece y usa poderes', 'eat, grow and use powers')}</small></a>
         <a href="#/royale" onClick={onClose}><b>aero royale</b><small>{tr('batalla de 12 orbes de cristal', 'battle of 12 glass orbs')}</small></a>
         <a href={routeHref('arcade')} onClick={onClose}><b>{tr('arcade completo', 'full arcade')}</b><small>aqua racer · crystal drop · {tr('pez fuera del agua', 'fish out of water')}</small></a>
       </div>
