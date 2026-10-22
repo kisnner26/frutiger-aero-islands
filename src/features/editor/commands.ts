@@ -154,7 +154,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         ...state,
         doc: {
           ...state.doc,
-          brillos: state.doc.brillos + action.value,
+          brillos: state.doc.brillos + Math.max(0, Math.floor(action.value)),
           stats: { pops: state.doc.stats.pops + 1, bestCombo: Math.max(state.doc.stats.bestCombo, action.combo) },
         },
       };

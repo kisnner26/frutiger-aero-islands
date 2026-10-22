@@ -50,7 +50,13 @@ function asDoc(layout: unknown): Doc | null {
   if (!layout || typeof layout !== 'object') return null;
   const d = layout as Partial<Doc>;
   if (!Array.isArray(d.objects) || !Number.isFinite(d.brillos) || !Number.isFinite(d.maxLevel) || !d.stats) return null;
-  return d as Doc;
+  return sanitizeDoc(d as Doc);
+}
+
+/** el servidor exige enteros >= 0; un decimal heredado de un combo bloqueaba todos los guardados. */
+export function sanitizeDoc(d: Doc): Doc {
+  const int = (n: unknown) => Math.max(0, Math.floor(Number(n) || 0));
+  return { ...d, brillos: int(d.brillos), stats: { ...d.stats, pops: int(d.stats?.pops), bestCombo: int(d.stats?.bestCombo) } };
 }
 
 export async function currentSession(): Promise<Session | null> {
@@ -89,7 +95,7 @@ export async function myIsland(): Promise<PublicIsland | null> {
 
 export async function saveIsland(id: string, revision: number, layout: Doc): Promise<number> {
   if (!supabase) throw new Error(tr('supabase no está configurado', 'supabase is not configured'));
-  const { data, error } = await supabase.rpc('save_island', { p_island_id: id, p_expected_revision: revision, p_layout: layout });
+  const { data, error } = await supabase.rpc('save_island', { p_island_id: id, p_expected_revision: revision, p_layout: sanitizeDoc(layout) });
   if (error) throw error;
   return Number(data?.[0]?.revision);
 }

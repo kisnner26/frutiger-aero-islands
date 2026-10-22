@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Doc } from '../editor/commands';
 import { routeHref } from '../../app/useHashRoute';
-import { completeProfile, currentSession, getIsland, isSupabaseConfigured, myIsland, readableSupabaseError, saveIsland, type PublicIsland } from '../../persistence/supabase';
+import { completeProfile, currentSession, getIsland, isSupabaseConfigured, myIsland, readableSupabaseError, type PublicIsland } from '../../persistence/supabase';
 import { touchIslandPresence } from '../../persistence/community';
 import { IslandSocialControls } from './IslandSocialControls';
 import { VisitBanner } from './VisitBanner';
@@ -10,6 +10,7 @@ import { AeroWindow } from '../../ui/AeroWindow';
 import { EditorPage } from '../editor/EditorPage';
 import { AeroLoader } from '../../ui/AeroLoader';
 import { createLatestQueue } from '../../persistence/latestQueue';
+import { saveIslandResilient } from '../../persistence/resilientSave';
 import { tr } from '../../i18n';
 
 function Loading({ text }: { text: string }) { return <AeroLoader variant="scene" text={text} detail={tr('la marea está preparando la visita...', 'the tide is preparing the visit...')} />; }
@@ -22,7 +23,7 @@ export function MyIslandPage() {
   const remoteSave = useMemo(() => {
     if (!island) return async (_doc: Doc) => undefined;
     return createLatestQueue(async (doc: Doc) => {
-      revision.current = await saveIsland(island.id, revision.current, doc);
+      await saveIslandResilient(island.id, revision, doc);
     });
   }, [island]);
   useEffect(() => {

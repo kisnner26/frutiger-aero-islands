@@ -14,6 +14,7 @@ import { phoneBus } from '../phone/phoneBus';
 import { AeroWindow } from '../../ui/AeroWindow';
 import { Balloon } from '../../ui/Balloon';
 import { Taskbar } from '../../ui/Taskbar';
+import { describeSaveError } from '../../persistence/resilientSave';
 import { ExploreMode } from '../explore/ExploreMode';
 import { VistaSidebar } from './VistaSidebar';
 import { LeaderboardPanel } from '../world/LeaderboardPanel';
@@ -81,6 +82,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
     boot.current.corrupt ? { id: -1, text: tr('el borrador guardado estaba dañado; se empezó una isla nueva', 'the saved draft was damaged; a new island was started'), tone: 'error' } : null,
   );
   const [saveStatus, setSaveStatus] = useState<SaveResult | 'pendiente' | 'remoto-error'>('ok');
+  const [saveDetail, setSaveDetail] = useState('');
   const sceneRef = useRef<IslandScene | null>(null);
   const comboRef = useRef({ count: 0, last: 0 });
   const floatId = useRef(0);
@@ -129,16 +131,29 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
       return;
     }
     setSaveStatus('pendiente');
+    let retries = 0;
+    let retryTimer = 0;
     const persist = () => {
       const local = localRepository.save(doc);
       if (!saveRemote) return setSaveStatus(local);
-      saveRemote(doc).then(() => setSaveStatus(local)).catch(() => setSaveStatus('remoto-error'));
+      saveRemote(doc)
+        .then(() => {
+          setSaveStatus(local);
+          setSaveDetail('');
+        })
+        .catch((error) => {
+          setSaveStatus('remoto-error');
+          setSaveDetail(describeSaveError(error));
+          // si falla, se vuelve a intentar solo cada pocos segundos (el trabajo ya está a salvo en este dispositivo)
+          if (retries++ < 8) retryTimer = window.setTimeout(persist, 5000 + retries * 2000);
+        });
     };
     const t = window.setTimeout(persist, 700);
     const flush = () => localRepository.save(doc);
     window.addEventListener('pagehide', flush);
     return () => {
       window.clearTimeout(t);
+      window.clearTimeout(retryTimer);
       window.removeEventListener('pagehide', flush);
     };
   }, [doc, saveRemote]);
@@ -284,7 +299,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
   }, [state.selectedId, editable]);
 
   const sceneProps = useMemo(() => ({ objects: doc.objects, level: doc.maxLevel, selectedId: state.selectedId, placing, country: editable ? country : null, avatar: editable ? avatar : ownerAvatar ?? null }), [doc.objects, doc.maxLevel, state.selectedId, placing, country, editable, avatar, ownerAvatar]);
-  const saveText = saveStatus === 'cuota' ? tr('sin espacio en este dispositivo', 'no space left on this device') : saveStatus === 'error' || saveStatus === 'remoto-error' ? tr('no se pudo guardar en la nube', 'could not save to the cloud') : saveStatus === 'pendiente' ? tr('guardando...', 'saving...') : saveRemote ? tr('guardado en la nube', 'saved to the cloud') : tr('guardado en este dispositivo', 'saved on this device');
+  const saveText = saveStatus === 'cuota' ? tr('sin espacio en este dispositivo', 'no space left on this device') : saveStatus === 'error' || saveStatus === 'remoto-error' ? `${tr('no se pudo guardar en la nube', 'could not save to the cloud')}${saveDetail ? ` (${saveDetail})` : ''}` : saveStatus === 'pendiente' ? tr('guardando...', 'saving...') : saveRemote ? tr('guardado en la nube', 'saved to the cloud') : tr('guardado en este dispositivo', 'saved on this device');
   const placingItem = placing ? CATALOG_MAP.get(placing) : null;
 
   const toggleWin = (key: 'catalog' | 'objects' | 'workshop' | 'daily') =>
