@@ -636,7 +636,7 @@
 /* ===== teléfono: ventanas como hojas inferiores, botones táctiles y sin zoom accidental ===== */
 @media (max-width: 680px) {
   .win-territory, .win-leader, .win-missions, .win-world-atlas, .win-world-list, .win-world-country, .win-world-card,
-  .win-objects, .win-workshop, .win-daily, .win-report, .win-players {
+  .win-objects, .win-workshop, .win-daily, .win-report, .win-players, .win-pass {
     position: fixed !important;
     left: 8px !important;
     right: 8px !important;
@@ -650,7 +650,7 @@
   }
   .win-report { top: 50% !important; bottom: auto !important; transform: translateY(-50%) !important; max-height: 80svh !important; }
   .win-territory .aero-window__body, .win-leader .aero-window__body, .win-missions .aero-window__body, .win-world-atlas .aero-window__body,
-  .win-world-list .aero-window__body, .win-world-country .aero-window__body { max-height: calc(58svh - 44px); overflow-y: auto; }
+  .win-world-list .aero-window__body, .win-world-country .aero-window__body, .win-pass .aero-window__body { max-height: calc(58svh - 44px); overflow-y: auto; }
   .win-territory .territory, .win-leader .leader, .win-missions .missions { max-height: none; }
 
   /* el texto largo del encabezado del mundo estorba en pantallas pequeñas */

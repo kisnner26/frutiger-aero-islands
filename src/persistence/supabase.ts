@@ -76,7 +76,8 @@ export function sanitizeDoc(d: Doc): Doc {
         rotation: item.orientations.includes(o.rotation) ? o.rotation : item.orientations[0],
       };
     });
-  return { ...d, objects, brillos: int(d.brillos), stats: { ...d.stats, pops: int(d.stats?.pops), bestCombo: int(d.stats?.bestCombo) } };
+  const extra = Math.min(4, int(d.landExtra));
+  return { ...d, ...(extra ? { landExtra: extra } : { landExtra: undefined }), objects, brillos: int(d.brillos), stats: { ...d.stats, pops: int(d.stats?.pops), bestCombo: int(d.stats?.bestCombo) } };
 }
 
 export async function currentSession(): Promise<Session | null> {

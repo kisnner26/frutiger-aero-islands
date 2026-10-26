@@ -46,14 +46,15 @@ describe('geometría', () => {
 
 describe('expansión del terreno', () => {
   it('el tamaño depende del nivel y nunca encoge', () => {
-    expect([1, 3, 4, 6, 7, 10].map(landTier)).toEqual([0, 0, 1, 1, 2, 2]);
+    expect([1, 3, 4, 6, 7, 10].map(landTier)).toEqual([0, 0, 1, 1, 2, 3]);
     for (let l = 1; l < 12; l++) {
       expect(landRadii(l + 1).rx).toBeGreaterThanOrEqual(landRadii(l).rx);
       expect(landRadii(l + 1).ry).toBeGreaterThanOrEqual(landRadii(l).ry);
     }
     expect(nextExpansionLevel(1)).toBe(4);
     expect(nextExpansionLevel(5)).toBe(7);
-    expect(nextExpansionLevel(7)).toBeNull();
+    expect(nextExpansionLevel(7)).toBe(10);
+    expect(nextExpansionLevel(14)).toBeNull();
   });
 
   it('la tierra llega más lejos en cada tamaño', () => {
@@ -128,5 +129,20 @@ describe('proyección y cámara', () => {
     const after = screenToScene(at, cam2, vp);
     expect(after.x).toBeCloseTo(before.x, 5);
     expect(after.y).toBeCloseTo(before.y, 5);
+  });
+});
+
+import { landIndexOf, landLevelOf, landPrice, MAX_LAND_EXTRA } from '../src/domain/geometry';
+describe('terreno comprado', () => {
+  it('suma tamaños comprados con tope y nunca baja del nivel', () => {
+    expect(landIndexOf(1, 0)).toBe(0);
+    expect(landIndexOf(1, 2)).toBe(2);
+    expect(landIndexOf(7, 9)).toBe(MAX_LAND_EXTRA);
+    expect(landLevelOf(20, 0)).toBe(20);
+    expect(landTier(landLevelOf(1, 1))).toBe(1);
+  });
+  it('el descuento baja el precio', () => {
+    expect(landPrice(1)).toBe(400);
+    expect(landPrice(1, 0.25)).toBe(300);
   });
 });

@@ -1,6 +1,6 @@
 import { CATALOG_MAP } from '../../catalog/catalog';
 import { computeCharm, levelFor, LEVEL_UP_BONUS } from '../../domain/charm';
-import { ERROR_TEXT, validateObject, validatePlacement } from '../../domain/geometry';
+import { ERROR_TEXT, MAX_LAND_EXTRA, landIndexOf, landLevelOf, validateObject, validatePlacement } from '../../domain/geometry';
 import { MAX_HISTORY, type PlacedObject } from '../../domain/island';
 
 export interface Stats {
@@ -14,7 +14,12 @@ export interface Doc {
   brillos: number;
   maxLevel: number;
   stats: Stats;
+  /** tamaños de terreno comprados con brillos además de los que da el nivel. */
+  landExtra?: number;
 }
+
+export const landLevelOfDoc = (d: Pick<Doc, 'maxLevel' | 'landExtra'>) => landLevelOf(d.maxLevel, d.landExtra);
+export const landIndexOfDoc = (d: Pick<Doc, 'maxLevel' | 'landExtra'>) => landIndexOf(d.maxLevel, d.landExtra);
 
 type Command =
   | { kind: 'place'; obj: PlacedObject; cost: number }
@@ -41,6 +46,7 @@ export type Action =
   | { type: 'select'; id: string | null }
   | { type: 'pop'; value: number; combo: number }
   | { type: 'reward'; value: number }
+  | { type: 'buyLand'; cost: number }
   | { type: 'load'; doc: Doc };
 
 export const START_BRILLOS = 100;
@@ -115,7 +121,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
   switch (action.type) {
     case 'place': {
       const item = CATALOG_MAP.get(action.obj.assetId);
-      const err = validatePlacement(item, action.obj, state.doc.objects.length, state.doc.maxLevel);
+      const err = validatePlacement(item, action.obj, state.doc.objects.length, landLevelOfDoc(state.doc));
       if (err) return { ...state, notice: note(ERROR_TEXT[err]) };
       if (item!.unlockLevel > state.doc.maxLevel) return { ...state, notice: note(`se desbloquea en el nivel ${item!.unlockLevel}`) };
       if (state.doc.objects.some((o) => o.id === action.obj.id)) return { ...state, notice: note('identificador repetido') };
@@ -158,6 +164,12 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
           stats: { pops: state.doc.stats.pops + 1, bestCombo: Math.max(state.doc.stats.bestCombo, action.combo) },
         },
       };
+    case 'buyLand': {
+      const cost = Math.max(0, Math.floor(action.cost));
+      if (landIndexOfDoc(state.doc) >= MAX_LAND_EXTRA) return { ...state, notice: note('tu isla ya tiene el terreno más grande') };
+      if (state.doc.brillos < cost) return { ...state, notice: note(`faltan ${cost - state.doc.brillos} brillos`) };
+      return { ...state, doc: { ...state.doc, brillos: state.doc.brillos - cost, landExtra: (state.doc.landExtra ?? 0) + 1 }, notice: note('compraste más terreno', 'info') };
+    }
     case 'reward':
       return { ...state, doc: { ...state.doc, brillos: state.doc.brillos + Math.max(0, Math.floor(action.value)) } };
     case 'load':
@@ -169,7 +181,7 @@ function patchObject(state: EditorState, id: string, patch: Partial<PlacedObject
   const current = state.doc.objects.find((o) => o.id === id);
   if (!current) return state;
   const next = { ...current, ...patch };
-  const err = validateObject(CATALOG_MAP.get(current.assetId), next, state.doc.maxLevel);
+  const err = validateObject(CATALOG_MAP.get(current.assetId), next, landLevelOfDoc(state.doc));
   if (err) return { ...state, notice: note(ERROR_TEXT[err]) };
   const from: Partial<PlacedObject> = {};
   const to: Partial<PlacedObject> = {};

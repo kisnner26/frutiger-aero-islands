@@ -904,3 +904,9 @@
 }
 .tide-together i { width: 90px; height: 7px; border-radius: 4px; background: rgba(0, 60, 110, 0.15); overflow: hidden; }
 .tide-together b { display: block; height: 100%; background: linear-gradient(90deg, #5fd4ff, #7be37b); transition: width 0.25s; }
+
+.land-panel { display: grid; gap: 6px; padding: 10px 14px; font-size: 13px; color: #134a73; }
+.land-panel p { margin: 0; }
+.land-panel small { opacity: 0.75; }
+
+.hud__title { display: block; font-size: 11px; font-style: normal; font-weight: 700; color: #8a5a00; }

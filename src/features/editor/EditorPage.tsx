@@ -32,10 +32,13 @@ import { AvatarImg } from '../../avatar/AvatarFace';
 import { useAvatar } from '../../avatar/store';
 import type { AvatarSpec } from '../../avatar/model';
 import { prepareFromIsland } from '../../world/worldState';
-import { createState, editorReducer, newObjectId, type Doc } from './commands';
+import { createState, editorReducer, landIndexOfDoc, landLevelOfDoc, newObjectId, type Doc } from './commands';
 import { DecorationCatalog } from './DecorationCatalog';
 import { EditorToolbar } from './EditorToolbar';
 import { SkyVeil } from './SkyVeil';
+import { PassWindow } from '../pass/PassWindow';
+import { addPassXp, perks } from '../../persistence/pass';
+import { paletteTint, titleName, useCosmetics } from '../../persistence/cosmetics';
 import { MessageBottle } from './MessageBottle';
 import { TideTogether, tideBus } from './TideTogether';
 import { claimNew } from '../../persistence/milestones';
@@ -78,6 +81,8 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
   const [exploring, setExploring] = useState(false);
   const [missionsOpen, setMissionsOpen] = useState(false);
   const [rankOpen, setRankOpen] = useState(false);
+  const [passOpen, setPassOpen] = useState(false);
+  const look = useCosmetics();
   const [prologue, setPrologue] = useState(() => editable && !prologueSeen());
   useEffect(() => void restorationStore.refresh(), []);
   const [floats, setFloats] = useState<Float[]>([]);
@@ -174,7 +179,10 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
   const objectCount = doc.objects.length;
   const prevCount = useRef(objectCount);
   useEffect(() => {
-    if (objectCount > prevCount.current) sfx.place();
+    if (objectCount > prevCount.current) {
+      sfx.place();
+      addPassXp(10);
+    }
     prevCount.current = objectCount;
   }, [objectCount]);
 
@@ -273,7 +281,9 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
         c.last = now;
         setCombo(c.count);
         const multiplier = bonus ? 1 : Math.min(c.count, 5);
-        const value = bonus ? (kind === 'pez' ? 15 : 10) * (3 + progress.level) : (3 + progress.level) * multiplier * (kind === 'dorada' ? 5 : 1);
+        const base = bonus ? (kind === 'pez' ? 15 : 10) * (3 + progress.level) : (3 + progress.level) * multiplier * (kind === 'dorada' ? 5 : 1);
+        const value = Math.floor(base * (1 + perks().popBonus));
+        addPassXp(bonus ? 6 : 2);
         dispatch({ type: 'pop', value, combo: c.count });
         tideBus.pop();
         if (kind === 'pez') sfx.splash();
@@ -321,7 +331,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
     return () => window.removeEventListener('keydown', onKey);
   }, [state.selectedId, editable]);
 
-  const sceneProps = useMemo(() => ({ objects: doc.objects, level: doc.maxLevel, selectedId: state.selectedId, placing, country: editable ? country : null, avatar: editable ? avatar : ownerAvatar ?? null }), [doc.objects, doc.maxLevel, state.selectedId, placing, country, editable, avatar, ownerAvatar]);
+  const sceneProps = useMemo(() => ({ objects: doc.objects, level: landLevelOfDoc(doc), selectedId: state.selectedId, placing, country: editable ? country : null, avatar: editable ? avatar : ownerAvatar ?? null, groundTint: editable ? paletteTint(look.palette) : 0xffffff }), [look.palette, doc.objects, doc.maxLevel, doc.landExtra, state.selectedId, placing, country, editable, avatar, ownerAvatar]);
   const saveText = saveStatus === 'cuota' ? tr('sin espacio en este dispositivo', 'no space left on this device') : saveStatus === 'error' || saveStatus === 'remoto-error' ? `${tr('no se pudo guardar en la nube', 'could not save to the cloud')}${saveDetail ? ` (${saveDetail})` : ''}` : saveStatus === 'pendiente' ? tr('guardando...', 'saving...') : saveRemote ? tr('guardado en la nube', 'saved to the cloud') : tr('guardado en este dispositivo', 'saved on this device');
   const placingItem = placing ? CATALOG_MAP.get(placing) : null;
 
@@ -334,7 +344,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
   const patchWin = (key: 'catalog' | 'objects' | 'workshop' | 'daily', v: Partial<{ open: boolean; min: boolean }>) => setWin((w) => ({ ...w, [key]: { ...w[key], ...v } }));
 
   useExclusiveWindows(
-    { catalogo: win.catalog.open && !win.catalog.min, objetos: win.objects.open && !win.objects.min, laboratorio: win.workshop.open && !win.workshop.min, marea: win.daily.open && !win.daily.min, misiones: missionsOpen, ranking: rankOpen },
+    { catalogo: win.catalog.open && !win.catalog.min, objetos: win.objects.open && !win.objects.min, laboratorio: win.workshop.open && !win.workshop.min, marea: win.daily.open && !win.daily.min, misiones: missionsOpen, ranking: rankOpen, pase: passOpen },
     {
       catalogo: () => setWin((w) => ({ ...w, catalog: { ...w.catalog, min: true } })),
       objetos: () => setWin((w) => ({ ...w, objects: { ...w.objects, min: true } })),
@@ -342,6 +352,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
       marea: () => setWin((w) => ({ ...w, daily: { ...w.daily, min: true } })),
       misiones: () => setMissionsOpen(false),
       ranking: () => setRankOpen(false),
+      pase: () => setPassOpen(false),
     },
   );
 
@@ -385,6 +396,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
           {editable && country && <FlagBadge code={country} width={40} />}
           <div className="hud__who">
             <strong>{ownerLabel}</strong>
+            {editable && look.title !== 'recien-llegado' && <em className="hud__title">{titleName(look.title)}</em>}
             <span>{editable ? (saveRemote ? tr('cuenta conectada', 'account connected') : tr('modo local', 'local mode')) : tr('visita', 'visit')}</span>
           </div>
           <div className="hud__coins" aria-label={`${doc.brillos} ${tr('brillos', 'sparkles')}`}>
@@ -437,7 +449,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
               {doc.objects.length} / 150 {tr('objetos', 'objects')} · {saveText}
             </span>
           </div>
-          <DecorationCatalog placing={placing} level={doc.maxLevel} brillos={doc.brillos} onChoose={choose} />
+          <DecorationCatalog placing={placing} level={doc.maxLevel} brillos={doc.brillos} onChoose={choose} landIndex={landIndexOfDoc(doc)} onBuyLand={(cost) => dispatch({ type: 'buyLand', cost })} />
         </AeroWindow>
       )}
 
@@ -461,6 +473,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
         tasks={[
           { id: 'catalog', label: tr('decoraciones', 'decorations'), icon: <span className="mini-orb" />, active: win.catalog.open && !win.catalog.min, onClick: () => toggleWin('catalog') },
           { id: 'missions', label: tr('misiones', 'missions'), icon: <span className="mini-orb" />, active: missionsOpen, onClick: () => setMissionsOpen((v) => !v) },
+          { id: 'pass', label: tr('pase aero', 'aero pass'), icon: <span className="mini-orb mini-orb--gold" />, active: passOpen, onClick: () => setPassOpen((v) => !v) },
           { id: 'ranking', label: 'ranking', icon: <span className="mini-orb" />, active: rankOpen, onClick: () => setRankOpen((v) => !v) },
           { id: 'explore', label: tr('caminar', 'walk'), icon: <span className="mini-orb mini-orb--green" />, active: exploring, onClick: () => setExploring(true) },
           {
@@ -484,13 +497,18 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
           <MissionsPanel ctx={{ objects: doc.objects, level: doc.maxLevel, country, visitedWorld: worldVisit.get() }} />
         </AeroWindow>
       )}
+      {passOpen && (
+        <AeroWindow className="win-pass" title={tr('pase aero', 'aero pass')} icon={orbIcon} onClose={() => setPassOpen(false)}>
+          <PassWindow />
+        </AeroWindow>
+      )}
       {rankOpen && (
         <AeroWindow className="win-leader" title={tr('ranking · top 100', 'ranking · top 100')} icon={orbIcon} onClose={() => setRankOpen(false)}>
           <LeaderboardPanel />
         </AeroWindow>
       )}
       {editable && !exploring && <VistaSidebar mission={mission ? `${mission.mission.text} (${mission.value}/${mission.mission.goal})` : null} />}
-      {exploring && <ExploreMode objects={doc.objects} level={doc.maxLevel} avatar={avatar} onExit={() => setExploring(false)} />}
+      {exploring && <ExploreMode objects={doc.objects} level={landLevelOfDoc(doc)} avatar={avatar} onExit={() => setExploring(false)} />}
       <CameraOverlay />
       {editable && !demo && <CountryGate />}
       <span className="sr-only" aria-live="polite">

@@ -3,25 +3,30 @@ import { CATALOG } from '../../catalog/catalog';
 import type { CatalogItem } from '../../domain/island';
 import { useRestoration } from '../../world/restorationStore';
 import { tr } from '../../i18n';
+import { LAND_TIERS, MAX_LAND_EXTRA, landPrice } from '../../domain/geometry';
+import { perks } from '../../persistence/pass';
 
 interface Props {
   placing: string | null;
   level: number;
   brillos: number;
   onChoose: (id: string | null) => void;
+  landIndex: number;
+  onBuyLand: (cost: number) => void;
 }
 
-type Group = 'todo' | 'naturaleza' | 'hogar' | 'mar' | 'cielo';
+type Group = 'terreno' | 'todo' | 'naturaleza' | 'hogar' | 'mar' | 'cielo';
 const GROUPS: Array<{ id: Group; label: string; has: (i: CatalogItem) => boolean }> = [
   { id: 'todo', label: tr('todo', 'all'), has: () => true },
   { id: 'naturaleza', label: tr('naturaleza', 'nature'), has: (i) => ['vegetacion', 'roca', 'cristal'].includes(i.category) },
   { id: 'hogar', label: tr('hogar y ocio', 'home and leisure'), has: (i) => ['arquitectura', 'mobiliario', 'ocio'].includes(i.category) || i.id === 'fuente' },
   { id: 'mar', label: tr('mar', 'sea'), has: (i) => i.placementZone === 'water' },
   { id: 'cielo', label: tr('cielo y magia', 'sky and magic'), has: (i) => i.category === 'cielo' },
+  { id: 'terreno', label: tr('terreno', 'land'), has: () => false },
 ];
 
 /** fichas al estilo del menú de la wii u: cuadrados brillantes con etiqueta. */
-export function DecorationCatalog({ placing, level, brillos, onChoose }: Props) {
+export function DecorationCatalog({ placing, level, brillos, onChoose, landIndex, onBuyLand }: Props) {
   const [group, setGroup] = useState<Group>('todo');
   const planet = useRestoration();
   const shown = CATALOG.filter(GROUPS.find((g) => g.id === group)!.has).sort((a, b) => a.unlockLevel - b.unlockLevel || a.cost - b.cost);
@@ -34,6 +39,24 @@ export function DecorationCatalog({ placing, level, brillos, onChoose }: Props) 
         </button>
       ))}
     </div>
+    {group === 'terreno' && (
+      <div className="land-panel">
+        <strong>{tr('tamaño de tu isla', 'your island size')}: {landIndex + 1}/{MAX_LAND_EXTRA + 1}</strong>
+        {landIndex >= MAX_LAND_EXTRA ? (
+          <p>{tr('tu isla ya tiene todo el terreno.', 'your island has all the land.')}</p>
+        ) : (
+          <>
+            <p>
+              {tr('más terreno, más espacio para decorar. también crece sola en el nivel', 'more land, more room to decorate. it also grows on its own at level')} {LAND_TIERS[landIndex + 1].minLevel}.
+            </p>
+            <button type="button" className="chipbtn" disabled={brillos < landPrice(landIndex + 1, perks().landDiscount)} onClick={() => onBuyLand(landPrice(landIndex + 1, perks().landDiscount))}>
+              {tr('ampliar terreno', 'expand land')} · {landPrice(landIndex + 1, perks().landDiscount)}
+            </button>
+            {perks().landDiscount > 0 && <small>{tr('descuento del pase aero aplicado', 'aero pass discount applied')}</small>}
+          </>
+        )}
+      </div>
+    )}
     <ul className="tiles" aria-label={tr('decoraciones', 'decorations')}>
       {shown.map((item) => {
         const lockedByPlanet = Boolean(item.unlockPercent && planet < item.unlockPercent);

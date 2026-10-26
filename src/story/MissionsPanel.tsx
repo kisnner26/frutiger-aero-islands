@@ -1,7 +1,5 @@
 import { MILESTONES, nextMilestone } from './lore';
 import { missionStatus, type MissionContext } from './missions';
-import { useState } from 'react';
-import { TIERS, claim, claimedTiers, currentTier, hasPremium, tiers, SEASON } from '../persistence/pass';
 import { useRestoration } from '../world/restorationStore';
 import './story.css';
 import { tr } from '../i18n';
@@ -14,11 +12,6 @@ export function MissionsPanel({ ctx }: { ctx: MissionContext }) {
   const done = list.filter((s) => s.done).length;
   const next = nextMilestone(percent);
   const got = claimed();
-  const [passTick, setPassTick] = useState(0);
-  const tier = currentTier();
-  const taken = claimedTiers();
-  const pending = tiers.filter((t) => t.n <= tier && !taken.free.includes(t.n)).length;
-  void passTick;
   return (
     <div className="missions">
       <header className="missions__guide">
@@ -42,22 +35,6 @@ export function MissionsPanel({ ctx }: { ctx: MissionContext }) {
           </li>
         ))}
       </ul>
-      <section className="missions__world" aria-label={tr('pase de temporada', 'season pass')}>
-        <strong>{SEASON.name} · {tr('escalón', 'tier')} {tier}/{TIERS}</strong>
-        <small>{tr('sube de rango jugando las batallas del aero arena', 'rank up by playing aero arena battles')}</small>
-        <ol>
-          {tiers.map((t) => (
-            <li key={t.n} className={taken.free.includes(t.n) ? 'is-done' : ''}>
-              <b>{t.n}</b> +{t.free} {tr('gratis', 'free')} · {hasPremium() ? `+${t.premium}` : tr(`premium +${t.premium} (próximamente)`, `premium +${t.premium} (coming soon)`)}
-            </li>
-          ))}
-        </ol>
-        {pending > 0 && (
-          <button type="button" onClick={() => { claim('free'); setPassTick((n) => n + 1); }}>
-            {tr(`cobrar ${pending} ${pending === 1 ? 'escalón' : 'escalones'}`, `claim ${pending} ${pending === 1 ? 'tier' : 'tiers'}`)}
-          </button>
-        )}
-      </section>
       <section className="missions__world" aria-label={tr('logros de tu isla', 'island achievements')}>
         <strong>{tr('logros de tu isla', 'island achievements')}</strong>
         <ol>

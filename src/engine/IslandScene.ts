@@ -36,6 +36,8 @@ export interface SceneProps {
   country?: string | null;
   /** personaje que habita la isla (solo en la isla propia). */
   avatar?: AvatarSpec | null;
+  /** tinte del suelo (cosmético); 0xffffff deja los colores originales. */
+  groundTint?: number;
 }
 
 interface Entry {
@@ -267,6 +269,7 @@ export class IslandScene {
     this.props = props;
     if (!this.app) return;
     if (grew) this.setupGround();
+    this.ground.tint = props.groundTint ?? 0xffffff;
     this.syncFlag();
     void this.syncAvatar();
     if (placingChanged) this.endGhost();
@@ -403,6 +406,7 @@ export class IslandScene {
     this.ground.texture = Texture.from(canvas);
     this.ground.anchor.set(0.5);
     this.ground.scale.set(GROUND_HALF.w / (canvas.width / 2));
+    this.ground.tint = this.props.groundTint ?? 0xffffff;
   }
 
   private setupAmbient() {

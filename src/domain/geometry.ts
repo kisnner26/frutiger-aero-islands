@@ -13,7 +13,26 @@ export const LAND_TIERS: readonly (LandRadii & { readonly minLevel: number })[] 
   { rx: 360, ry: 280, minLevel: 1 },
   { rx: 400, ry: 310, minLevel: 4 },
   { rx: 440, ry: 340, minLevel: 7 },
+  { rx: 456, ry: 352, minLevel: 10 },
+  { rx: 470, ry: 372, minLevel: 14 },
 ];
+
+/** tamaños extra que se pueden comprar con brillos antes de llegar a su nivel. */
+export const MAX_LAND_EXTRA = LAND_TIERS.length - 1;
+
+/** tamaño efectivo de la isla: el que da el nivel más los que se compraron (con tope). */
+export function landIndexOf(level: number, extra = 0): number {
+  return Math.min(LAND_TIERS.length - 1, landTier(level) + Math.max(0, Math.floor(extra || 0)));
+}
+
+/** "nivel" equivalente al tamaño efectivo, para las funciones de geometría que piden nivel. */
+export function landLevelOf(level: number, extra = 0): number {
+  return Math.max(level, LAND_TIERS[landIndexOf(level, extra)].minLevel);
+}
+
+/** precio en brillos de pasar al tamaño de índice `idx` comprándolo. */
+export const LAND_PRICES: readonly number[] = [0, 400, 900, 1800, 3200];
+export const landPrice = (idx: number, discount = 0) => Math.round((LAND_PRICES[idx] ?? 0) * (1 - discount));
 
 /** tamaño inicial (nivel 1). */
 export const LAND_RADII: LandRadii = LAND_TIERS[0];
