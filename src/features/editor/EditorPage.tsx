@@ -35,6 +35,7 @@ import { prepareFromIsland } from '../../world/worldState';
 import { createState, editorReducer, newObjectId, type Doc } from './commands';
 import { DecorationCatalog } from './DecorationCatalog';
 import { EditorToolbar } from './EditorToolbar';
+import { SkyVeil } from './SkyVeil';
 import { ObjectInspector } from './ObjectInspector';
 import { AeroWorkshop } from '../community/AeroWorkshop';
 import { DailyTide } from '../community/DailyTide';
@@ -329,6 +330,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
     <div className={`game${cameraOn ? ' game--camera' : ''}`}>
       <Backdrop withIsland={false} />
       <SceneView scene={sceneProps} callbacks={callbacks} controlRef={sceneRef} />
+      {!cameraOn && <SkyVeil />}
 
       <header className="hud">
         <div className="hud__bar glass-panel">
