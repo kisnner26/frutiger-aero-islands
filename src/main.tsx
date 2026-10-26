@@ -13,6 +13,7 @@ import './styles/brand.css';
 import './features/avatar/avatar.css';
 
 import './persistence/installApp';
+import { reloadOnceForNewVersion } from './ui/ErrorBoundary';
 
 performance.mark('app:inicio');
 // caché sin conexión: solo en producción; la versión cambia en cada compilación para que se renueve sola
@@ -29,6 +30,8 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   if (document.readyState === 'complete') register();
   else window.addEventListener('load', register);
 }
+// versión nueva publicada mientras la pestaña seguía abierta: recarga una vez en vez de dejar un error
+window.addEventListener('vite:preloadError', () => void reloadOnceForNewVersion('Failed to fetch dynamically imported module'));
 // un error suelto nunca debe dejar el velo de transición tapando el juego
 window.addEventListener('unhandledrejection', () => veil.hide(true));
 window.addEventListener('error', () => veil.hide(true));
