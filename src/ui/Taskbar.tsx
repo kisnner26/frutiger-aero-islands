@@ -10,6 +10,7 @@ import { AvatarImg } from '../avatar/AvatarFace';
 import { prepareFromIsland } from '../world/worldState';
 import { phoneBus, type PhoneApp } from '../features/phone/phoneBus';
 import { tr, lang, setLang } from '../i18n';
+import { install, manualSteps, useInstallState } from '../persistence/installApp';
 
 const PhonePanel = lazy(() => import('../features/phone/PhonePanel'));
 
@@ -42,6 +43,8 @@ function StartMenu({ onClose }: { onClose: () => void }) {
   const sounds = useSyncExternalStore(sfx.subscribe, sfx.isEnabled);
   const session = useSession();
   const country = useCountry();
+  const installApp = { state: useInstallState() };
+  const [showSteps, setShowSteps] = useState(false);
   const current = parseHash(window.location.hash).route;
   const loggedIn = session.status === 'con-sesion';
   const who = loggedIn ? (session.username ? `@${session.username}` : session.email ?? tr('sesión iniciada', 'signed in')) : tr('invitado', 'guest');
@@ -96,6 +99,22 @@ function StartMenu({ onClose }: { onClose: () => void }) {
           <button type="button" role="menuitemcheckbox" aria-checked={sounds} className="start-menu__toggle" onClick={() => sfx.setEnabled(!sounds)}>
             {sounds ? tr('silenciar efectos', 'mute effects') : tr('activar efectos', 'turn effects on')}
           </button>
+          {installApp.state !== 'instalada' && (
+            <>
+              <button
+                type="button"
+                role="menuitem"
+                className="start-menu__toggle"
+                onClick={() => {
+                  if (installApp.state === 'lista') void install();
+                  else setShowSteps((v) => !v);
+                }}
+              >
+                {tr('instalar en tu equipo', 'install on your device')}
+              </button>
+              {showSteps && installApp.state === 'manual' && <p className="start-menu__note">{manualSteps()}</p>}
+            </>
+          )}
           <p className="start-menu__note">{loggedIn ? tr('tu isla se guarda en tu cuenta', 'your island is saved to your account') : tr('tu isla se guarda en este dispositivo', 'your island is saved on this device')}</p>
           <button type="button" role="menuitem" className="start-menu__toggle" lang={lang === 'es' ? 'en' : 'es'} onClick={() => setLang(lang === 'es' ? 'en' : 'es')}>{lang === 'es' ? 'English' : 'Español'}</button>
         </div>

@@ -12,6 +12,8 @@ import './styles/polish.css';
 import './styles/brand.css';
 import './features/avatar/avatar.css';
 
+import './persistence/installApp';
+
 performance.mark('app:inicio');
 // caché sin conexión: solo en producción; la versión cambia en cada compilación para que se renueve sola
 if ('serviceWorker' in navigator && import.meta.env.PROD) {

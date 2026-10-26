@@ -1,0 +1,17 @@
+{
+  "name": "frutiger aero islands",
+  "short_name": "aero islands",
+  "description": "decora tu isla frutiger aero y visita las de otras personas.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#3aa8f0",
+  "theme_color": "#3aa8f0",
+  "lang": "es",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
