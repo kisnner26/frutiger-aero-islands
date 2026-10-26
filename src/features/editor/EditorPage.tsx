@@ -37,7 +37,9 @@ import { DecorationCatalog } from './DecorationCatalog';
 import { EditorToolbar } from './EditorToolbar';
 import { SkyVeil } from './SkyVeil';
 import { PassWindow } from '../pass/PassWindow';
-import { addPassXp, perks } from '../../persistence/pass';
+import { addPassXp, perks, setTesterMode, totalXp } from '../../persistence/pass';
+import { TESTER_BRILLOS, TESTER_LEVEL, isTester } from '../../persistence/tester';
+import { useSession } from '../../persistence/session';
 import { paletteTint, titleName, useCosmetics } from '../../persistence/cosmetics';
 import { MessageBottle } from './MessageBottle';
 import { TideTogether, tideBus } from './TideTogether';
@@ -83,6 +85,8 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
   const [rankOpen, setRankOpen] = useState(false);
   const [passOpen, setPassOpen] = useState(false);
   const look = useCosmetics();
+  const session = useSession();
+  const tester = editable && !demo && isTester(session.username);
   const [prologue, setPrologue] = useState(() => editable && !prologueSeen());
   useEffect(() => void restorationStore.refresh(), []);
   const [floats, setFloats] = useState<Float[]>([]);
@@ -185,6 +189,14 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
     }
     prevCount.current = objectCount;
   }, [objectCount]);
+
+  /* cuenta de prueba: brillos al tope, nivel alto y pase aero abierto */
+  useEffect(() => {
+    setTesterMode(tester);
+    if (!tester) return;
+    if (totalXp() < 3000) addPassXp(3000);
+    if (doc.brillos < TESTER_BRILLOS * 0.9 || doc.maxLevel < TESTER_LEVEL) dispatch({ type: 'tester', brillos: TESTER_BRILLOS, level: TESTER_LEVEL });
+  }, [tester, doc.brillos, doc.maxLevel]);
 
   /* hitos: logros de la isla que regalan brillos una sola vez */
   useEffect(() => {

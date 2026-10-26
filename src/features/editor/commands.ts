@@ -47,6 +47,7 @@ export type Action =
   | { type: 'pop'; value: number; combo: number }
   | { type: 'reward'; value: number }
   | { type: 'buyLand'; cost: number }
+  | { type: 'tester'; brillos: number; level: number }
   | { type: 'load'; doc: Doc };
 
 export const START_BRILLOS = 100;
@@ -164,6 +165,8 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
           stats: { pops: state.doc.stats.pops + 1, bestCombo: Math.max(state.doc.stats.bestCombo, action.combo) },
         },
       };
+    case 'tester':
+      return { ...state, doc: { ...state.doc, brillos: Math.max(state.doc.brillos, action.brillos), maxLevel: Math.max(state.doc.maxLevel, action.level) } };
     case 'buyLand': {
       const cost = Math.max(0, Math.floor(action.cost));
       if (landIndexOfDoc(state.doc) >= MAX_LAND_INDEX) return { ...state, notice: note('tu isla ya tiene el terreno más grande') };

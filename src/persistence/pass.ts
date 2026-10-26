@@ -35,7 +35,14 @@ export const tiers: readonly Tier[] = Array.from({ length: TIERS }, (_, i) => {
   return { n, free: FREE_SPECIAL[n] ?? b(20 + n * 4), aero: AERO_SPECIAL[n] ?? b(60 + n * 14) };
 });
 
+let testerMode = false;
+/** lo activa el editor para las cuentas de prueba (ver tester.ts). */
+export const setTesterMode = (on: boolean) => {
+  testerMode = on;
+};
+
 export const hasPremium = (): boolean => {
+  if (testerMode) return true;
   try {
     return Boolean(import.meta.env.DEV) && window.localStorage.getItem(DEV_KEY) === '1';
   } catch {
