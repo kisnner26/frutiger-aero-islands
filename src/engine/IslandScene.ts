@@ -1,6 +1,6 @@
 import { Application, Container, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
 import { CATALOG_MAP } from '../catalog/catalog';
-import { ERROR_TEXT, clampToWorld, landTier, validateObject } from '../domain/geometry';
+import { ERROR_TEXT, LAND_TIERS, clampToWorld, landRadii, landTier, levelOfIndex, validateObject } from '../domain/geometry';
 import type { CatalogItem, PlacedObject } from '../domain/island';
 import { glassBubble } from '../art/aero';
 import { pencilSprite } from '../art/pencil';
@@ -376,7 +376,7 @@ export class IslandScene {
   }
 
   private viewport() {
-    return { width: this.app.screen.width, height: this.app.screen.height };
+    return { width: this.app.screen.width, height: this.app.screen.height, reach: landRadii(this.props.level ?? 1).rx };
   }
 
   private applyCamera() {
@@ -402,10 +402,14 @@ export class IslandScene {
   /* ---------- dibujo ---------- */
 
   private setupGround() {
-    const canvas = renderGround(this.props.level ?? 1);
+    // pasado el último tamaño dibujado, se reutiliza su arte y se agranda la imagen
+    const level = this.props.level ?? 1;
+    const artIdx = Math.min(landTier(level), LAND_TIERS.length - 1);
+    const canvas = renderGround(levelOfIndex(artIdx));
+    const grow = landRadii(level).rx / LAND_TIERS[artIdx].rx;
     this.ground.texture = Texture.from(canvas);
     this.ground.anchor.set(0.5);
-    this.ground.scale.set(GROUND_HALF.w / (canvas.width / 2));
+    this.ground.scale.set((GROUND_HALF.w / (canvas.width / 2)) * grow);
     this.ground.tint = this.props.groundTint ?? 0xffffff;
   }
 

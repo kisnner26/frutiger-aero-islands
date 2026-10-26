@@ -76,7 +76,7 @@ describe('comandos y historial', () => {
     expect(s.doc.objects).toHaveLength(150);
     s = editorReducer(s, { type: 'place', obj: obj('extra') });
     expect(s.doc.objects).toHaveLength(150);
-    expect(s.notice?.text).toMatch(/150/);
+    expect(s.notice?.text).toMatch(/llena|full/);
   });
 
   it('subir de nivel concede brillos y el nivel no baja al borrar', () => {

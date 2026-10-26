@@ -1,6 +1,6 @@
 import { CATALOG_MAP } from '../../catalog/catalog';
 import { computeCharm, levelFor, LEVEL_UP_BONUS } from '../../domain/charm';
-import { ERROR_TEXT, MAX_LAND_EXTRA, landIndexOf, landLevelOf, validateObject, validatePlacement } from '../../domain/geometry';
+import { ERROR_TEXT, MAX_LAND_INDEX, landIndexOf, landLevelOf, validateObject, validatePlacement } from '../../domain/geometry';
 import { MAX_HISTORY, type PlacedObject } from '../../domain/island';
 
 export interface Stats {
@@ -166,7 +166,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       };
     case 'buyLand': {
       const cost = Math.max(0, Math.floor(action.cost));
-      if (landIndexOfDoc(state.doc) >= MAX_LAND_EXTRA) return { ...state, notice: note('tu isla ya tiene el terreno más grande') };
+      if (landIndexOfDoc(state.doc) >= MAX_LAND_INDEX) return { ...state, notice: note('tu isla ya tiene el terreno más grande') };
       if (state.doc.brillos < cost) return { ...state, notice: note(`faltan ${cost - state.doc.brillos} brillos`) };
       return { ...state, doc: { ...state.doc, brillos: state.doc.brillos - cost, landExtra: (state.doc.landExtra ?? 0) + 1 }, notice: note('compraste más terreno', 'info') };
     }

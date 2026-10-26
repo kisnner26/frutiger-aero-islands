@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncE
 import { sfx } from '../../audio/sfx';
 import { CATALOG, CATALOG_MAP } from '../../catalog/catalog';
 import { computeCharm, progressForLevel, LEVEL_UP_BONUS } from '../../domain/charm';
-import { LAND_TIERS, clampToWorld, nextExpansionLevel } from '../../domain/geometry';
+import { LAND_TIERS, clampToWorld, maxObjectsFor, nextExpansionLevel } from '../../domain/geometry';
 import type { IslandScene, SceneCallbacks } from '../../engine/IslandScene';
 import { SceneView } from '../../engine/SceneView';
 import { localRepository, quarantineCorrupt, type SaveResult } from '../../persistence/localDraft';
@@ -446,7 +446,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
               onDelete={() => selected && dispatch({ type: 'remove', id: selected.id })}
             />
             <span className="catalog-bar__status">
-              {doc.objects.length} / 150 {tr('objetos', 'objects')} · {saveText}
+              {doc.objects.length} / {maxObjectsFor(landLevelOfDoc(doc))} {tr('objetos', 'objects')} · {saveText}
             </span>
           </div>
           <DecorationCatalog placing={placing} level={doc.maxLevel} brillos={doc.brillos} onChoose={choose} landIndex={landIndexOfDoc(doc)} onBuyLand={(cost) => dispatch({ type: 'buyLand', cost })} />

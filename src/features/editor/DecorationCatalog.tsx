@@ -3,7 +3,7 @@ import { CATALOG } from '../../catalog/catalog';
 import type { CatalogItem } from '../../domain/island';
 import { useRestoration } from '../../world/restorationStore';
 import { tr } from '../../i18n';
-import { LAND_TIERS, MAX_LAND_EXTRA, landPrice } from '../../domain/geometry';
+import { LAND_TIERS, landPrice } from '../../domain/geometry';
 import { perks } from '../../persistence/pass';
 
 interface Props {
@@ -41,20 +41,15 @@ export function DecorationCatalog({ placing, level, brillos, onChoose, landIndex
     </div>
     {group === 'terreno' && (
       <div className="land-panel">
-        <strong>{tr('tamaño de tu isla', 'your island size')}: {landIndex + 1}/{MAX_LAND_EXTRA + 1}</strong>
-        {landIndex >= MAX_LAND_EXTRA ? (
-          <p>{tr('tu isla ya tiene todo el terreno.', 'your island has all the land.')}</p>
-        ) : (
-          <>
-            <p>
-              {tr('más terreno, más espacio para decorar. también crece sola en el nivel', 'more land, more room to decorate. it also grows on its own at level')} {LAND_TIERS[landIndex + 1].minLevel}.
-            </p>
-            <button type="button" className="chipbtn" disabled={brillos < landPrice(landIndex + 1, perks().landDiscount)} onClick={() => onBuyLand(landPrice(landIndex + 1, perks().landDiscount))}>
-              {tr('ampliar terreno', 'expand land')} · {landPrice(landIndex + 1, perks().landDiscount)}
-            </button>
-            {perks().landDiscount > 0 && <small>{tr('descuento del pase aero aplicado', 'aero pass discount applied')}</small>}
-          </>
-        )}
+        <strong>{tr('tamaño de tu isla', 'your island size')}: {landIndex + 1}</strong>
+        <p>
+          {tr('más terreno, más espacio y más objetos. no tiene límite: cada ampliación cuesta un poco más que la anterior.', 'more land, more room and more objects. there is no limit: each expansion costs a bit more than the last.')}
+          {landIndex < LAND_TIERS.length - 1 ? ` ${tr('también crece sola en el nivel', 'it also grows on its own at level')} ${LAND_TIERS[landIndex + 1].minLevel}.` : ''}
+        </p>
+        <button type="button" className="chipbtn" disabled={brillos < landPrice(landIndex + 1, perks().landDiscount)} onClick={() => onBuyLand(landPrice(landIndex + 1, perks().landDiscount))}>
+          {tr('ampliar terreno', 'expand land')} · {landPrice(landIndex + 1, perks().landDiscount).toLocaleString()}
+        </button>
+        {perks().landDiscount > 0 && <small>{tr('descuento del pase aero aplicado', 'aero pass discount applied')}</small>}
       </div>
     )}
     <ul className="tiles" aria-label={tr('decoraciones', 'decorations')}>

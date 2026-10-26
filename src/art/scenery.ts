@@ -1,5 +1,5 @@
 import { CATALOG_MAP } from '../catalog/catalog';
-import { LAND_RADII, landRadii, landTier } from '../domain/geometry';
+import { LAND_RADII, LAND_TIERS, landRadii, landTier, levelOfIndex } from '../domain/geometry';
 import type { PlacedObject } from '../domain/island';
 import { K, TILT, project } from '../engine/projection';
 import { cloudCanvas, ridgeY, softBlob } from './aero';
@@ -17,8 +17,10 @@ const ey = (ry: number) => ry * K * TILT * S;
 const groundCache = new Map<number, HTMLCanvasElement>();
 
 /** el terreno crece con el nivel; el lienzo mide siempre lo mismo y se redibuja al cambiar de tamaño. */
-export function renderGround(level = 1): HTMLCanvasElement {
-  const tier = landTier(level);
+export function renderGround(requested = 1): HTMLCanvasElement {
+  // los tamaños comprados reutilizan el arte del último tamaño dibujado
+  const tier = Math.min(landTier(requested), LAND_TIERS.length - 1);
+  const level = levelOfIndex(tier);
   const cached = groundCache.get(tier);
   if (cached) return cached;
   if (ART_STYLE === 'aero') {

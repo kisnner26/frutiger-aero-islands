@@ -12,7 +12,12 @@ export interface Camera {
 export interface Viewport {
   width: number;
   height: number;
+  /** radio horizontal de la tierra en unidades de mundo; las islas ampliadas se alejan solas para caber. */
+  reach?: number;
 }
+
+const BASE_REACH = 440;
+const grown = (vp: Viewport) => Math.max(1, (vp.reach ?? BASE_REACH) / BASE_REACH);
 
 export const DEFAULT_CAMERA: Camera = { zoom: 1, panX: 0, panY: 0 };
 
@@ -20,7 +25,7 @@ export const DEFAULT_CAMERA: Camera = { zoom: 1, panX: 0, panY: 0 };
 export function fitScale(vp: Viewport): number {
   const byWidth = (vp.width * 0.96) / 820;
   const byHeight = (vp.height * 0.6) / 480;
-  return Math.max(0.2, Math.min(byWidth, byHeight, 1.4));
+  return Math.max(0.01, Math.min(Math.max(0.2 / grown(vp), Math.min(byWidth, byHeight) / grown(vp)), 1.4));
 }
 
 export function clampZoom(z: number): number {
@@ -30,8 +35,8 @@ export function clampZoom(z: number): number {
 export function clampCamera(cam: Camera, vp: Viewport): Camera {
   const zoom = clampZoom(cam.zoom);
   const s = fitScale(vp) * zoom;
-  const limitX = 450 * s + vp.width * 0.2;
-  const limitY = 300 * s + vp.height * 0.2;
+  const limitX = 450 * grown(vp) * s + vp.width * 0.2;
+  const limitY = 300 * grown(vp) * s + vp.height * 0.2;
   return {
     zoom,
     panX: Math.min(limitX, Math.max(-limitX, cam.panX)),

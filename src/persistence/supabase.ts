@@ -60,7 +60,7 @@ export function sanitizeDoc(d: Doc): Doc {
   const seen = new Set<string>();
   const objects = (Array.isArray(d.objects) ? d.objects : [])
     .filter((o) => o && CATALOG_MAP.has(o.assetId))
-    .slice(0, 150)
+    .slice(0, 1000)
     .map((o) => {
       const item = CATALOG_MAP.get(o.assetId)!;
       let id = typeof o.id === 'string' && o.id.length >= 1 && o.id.length <= 80 && !seen.has(o.id) ? o.id : `o-${Math.random().toString(36).slice(2, 12)}`;
@@ -70,13 +70,13 @@ export function sanitizeDoc(d: Doc): Doc {
       return {
         ...o,
         id,
-        x: Math.min(1000, Math.max(0, Math.round(num(o.x, 500)))),
-        y: Math.min(1000, Math.max(0, Math.round(num(o.y, 500)))),
+        x: Math.min(51_000, Math.max(-50_000, Math.round(num(o.x, 500)))),
+        y: Math.min(51_000, Math.max(-50_000, Math.round(num(o.y, 500)))),
         scale: Math.round(Math.min(2, Math.max(0.7, num(o.scale, 1))) * 100) / 100,
         rotation: item.orientations.includes(o.rotation) ? o.rotation : item.orientations[0],
       };
     });
-  const extra = Math.min(4, int(d.landExtra));
+  const extra = Math.min(400, int(d.landExtra));
   return { ...d, ...(extra ? { landExtra: extra } : { landExtra: undefined }), objects, brillos: int(d.brillos), stats: { ...d.stats, pops: int(d.stats?.pops), bestCombo: int(d.stats?.bestCombo) } };
 }
 

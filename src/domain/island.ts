@@ -1,5 +1,7 @@
 export const WORLD_SIZE = 1000;
 export const MAX_OBJECTS = 150;
+/** tope absoluto (isla muy ampliada); el límite real depende del terreno. */
+export const ABSOLUTE_MAX_OBJECTS = 1000;
 export const MAX_HISTORY = 50;
 
 export type PlacementZone = 'land' | 'water';

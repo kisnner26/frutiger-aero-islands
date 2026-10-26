@@ -1,6 +1,6 @@
 import { CATALOG_MAP } from '../catalog/catalog';
-import { validateSaved } from '../domain/geometry';
-import { MAX_OBJECTS, type PlacedObject } from '../domain/island';
+import { landLevelOf, validateSaved } from '../domain/geometry';
+import { ABSOLUTE_MAX_OBJECTS, type PlacedObject } from '../domain/island';
 import type { Doc } from '../features/editor/commands';
 
 const KEY = 'frutiger-aero-islands:borrador';
@@ -22,14 +22,14 @@ export function parseDraft(raw: string): Doc | null {
     return null;
   }
   if (!isObj(data) || data.version !== DRAFT_VERSION || !Array.isArray(data.objects)) return null;
-  if (data.objects.length > MAX_OBJECTS) return null;
+  if (data.objects.length > ABSOLUTE_MAX_OBJECTS) return null;
   const maxLevel = Number(data.maxLevel);
   const ids = new Set<string>();
   const objects: PlacedObject[] = [];
   for (const o of data.objects) {
     if (!isObj(o) || typeof o.id !== 'string' || typeof o.assetId !== 'string') return null;
     const obj: PlacedObject = { id: o.id, assetId: o.assetId, x: Number(o.x), y: Number(o.y), scale: Number(o.scale), rotation: Number(o.rotation) };
-    if (ids.has(obj.id) || validateSaved(CATALOG_MAP.get(obj.assetId), obj, Number.isInteger(maxLevel) ? maxLevel : 1)) return null;
+    if (ids.has(obj.id) || validateSaved(CATALOG_MAP.get(obj.assetId), obj, landLevelOf(Number.isInteger(maxLevel) ? maxLevel : 1, Number(data.landExtra) || 0))) return null;
     ids.add(obj.id);
     objects.push(obj);
   }
@@ -40,6 +40,7 @@ export function parseDraft(raw: string): Doc | null {
     objects,
     brillos: Math.floor(brillos),
     maxLevel,
+    ...(Number.isInteger(Number(data.landExtra)) && Number(data.landExtra) > 0 ? { landExtra: Math.min(400, Number(data.landExtra)) } : {}),
     stats: { pops: Math.max(0, Math.floor(Number(stats.pops) || 0)), bestCombo: Math.max(0, Math.floor(Number(stats.bestCombo) || 0)) },
   };
 }

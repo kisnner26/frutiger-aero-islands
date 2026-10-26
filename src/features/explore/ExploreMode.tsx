@@ -309,7 +309,7 @@ export function ExploreMode({ objects, level, avatar, onExit }: Props) {
       ctx.fill();
       ctx.stroke();
       ctx.clip();
-      const ms = mm / 760;
+      const ms = mm / Math.max(760, radii.rx * 2 * 1.08);
       ctx.fillStyle = '#7cc84a';
       ctx.beginPath();
       ctx.ellipse(mx + mm / 2, my + mm / 2, radii.rx * ms, radii.ry * ms, 0, 0, Math.PI * 2);

@@ -24,7 +24,7 @@ describe('geometría', () => {
     // radio 14: elipse ampliada rx 374
     expect(isInWater(874, 500, 14)).toBe(true);
     expect(isInWater(873, 500, 14)).toBe(false);
-    expect(isInWater(5, 500, 14)).toBe(false);
+    expect(isInWater(-60000, 500, 14)).toBe(false);
   });
 
   it('valida catálogo, escala, orientación y zona', () => {
@@ -132,17 +132,41 @@ describe('proyección y cámara', () => {
   });
 });
 
-import { landIndexOf, landLevelOf, landPrice, MAX_LAND_EXTRA } from '../src/domain/geometry';
+import { landIndexOf, landLevelOf, landPrice, maxObjectsFor, radiiOfIndex } from '../src/domain/geometry';
 describe('terreno comprado', () => {
   it('suma tamaños comprados con tope y nunca baja del nivel', () => {
     expect(landIndexOf(1, 0)).toBe(0);
     expect(landIndexOf(1, 2)).toBe(2);
-    expect(landIndexOf(7, 9)).toBe(MAX_LAND_EXTRA);
+    expect(landIndexOf(7, 9)).toBe(11);
+    expect(landTier(landLevelOf(1, 9))).toBe(9);
     expect(landLevelOf(20, 0)).toBe(20);
     expect(landTier(landLevelOf(1, 1))).toBe(1);
   });
   it('el descuento baja el precio', () => {
     expect(landPrice(1)).toBe(400);
     expect(landPrice(1, 0.25)).toBe(300);
+  });
+});
+
+describe('terreno sin techo', () => {
+  it('los radios crecen sin límite y el precio sube cada vez', () => {
+    expect(radiiOfIndex(4).rx).toBe(470);
+    expect(radiiOfIndex(14).rx).toBe(1470);
+    for (let i = 5; i < 40; i++) {
+      expect(radiiOfIndex(i).rx).toBeGreaterThan(radiiOfIndex(i - 1).rx);
+      expect(landPrice(i)).toBeGreaterThan(landPrice(i - 1));
+    }
+  });
+  it('lo colocado en tierra sigue siendo válido al ampliar y se puede poner lejos del centro', () => {
+    const level = landLevelOf(1, 12);
+    expect(isOnLand(1500, 500, 20, level)).toBe(true);
+    expect(isOnLand(-500, 500, 20, level)).toBe(true);
+    expect(validateObject(palmera, { x: 1500, y: 500, scale: 1, rotation: 0 }, level)).toBeNull();
+    expect(validateObject(palmera, { x: 1500, y: 500, scale: 1, rotation: 0 }, 1)).not.toBeNull();
+  });
+  it('más terreno permite más objetos', () => {
+    expect(maxObjectsFor(landLevelOf(1, 0))).toBe(150);
+    expect(maxObjectsFor(landLevelOf(1, 14))).toBeGreaterThan(150);
+    expect(maxObjectsFor(landLevelOf(1, 400))).toBe(1000);
   });
 });
