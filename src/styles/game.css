@@ -858,3 +858,27 @@
 .territory__zones li span { display: grid; }
 .territory__zones small { font-weight: 600; opacity: .75; }
 .territory__zones .vista-button { min-height: 34px; padding: 0 14px; }
+
+.bottle {
+  position: fixed;
+  left: -60px;
+  bottom: 24%;
+  z-index: 3;
+  width: 44px;
+  height: 70px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  filter: drop-shadow(0 6px 6px rgba(0, 60, 110, 0.35));
+  animation: bottle-drift 40s linear forwards, bottle-bob 2.4s ease-in-out infinite;
+}
+.bottle svg { width: 100%; height: 100%; }
+@keyframes bottle-drift { to { left: calc(100vw + 60px); } }
+@keyframes bottle-bob {
+  0%, 100% { transform: translateY(0) rotate(-8deg); }
+  50% { transform: translateY(-8px) rotate(8deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bottle { animation: bottle-drift 40s linear forwards; }
+}

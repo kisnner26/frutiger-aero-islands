@@ -36,6 +36,7 @@ import { createState, editorReducer, newObjectId, type Doc } from './commands';
 import { DecorationCatalog } from './DecorationCatalog';
 import { EditorToolbar } from './EditorToolbar';
 import { SkyVeil } from './SkyVeil';
+import { MessageBottle } from './MessageBottle';
 import { claimNew } from '../../persistence/milestones';
 import { visitToday } from '../../persistence/comeback';
 import { ObjectInspector } from './ObjectInspector';
@@ -350,6 +351,15 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
       <Backdrop withIsland={false} />
       <SceneView scene={sceneProps} callbacks={callbacks} controlRef={sceneRef} />
       {!cameraOn && <SkyVeil />}
+      {editable && !demo && !cameraOn && !exploring && (
+        <MessageBottle
+          onOpen={(note, reward) => {
+            dispatch({ type: 'reward', value: reward });
+            sfx.coin();
+            setToast({ id: Date.now() + 3, tone: 'info', text: `${tr('botella', 'bottle')}: "${note}" · +${reward} ${tr('brillos', 'sparkles')}` });
+          }}
+        />
+      )}
 
       <header className="hud">
         <div className="hud__bar glass-panel">
