@@ -36,6 +36,7 @@ import { createState, editorReducer, newObjectId, type Doc } from './commands';
 import { DecorationCatalog } from './DecorationCatalog';
 import { EditorToolbar } from './EditorToolbar';
 import { SkyVeil } from './SkyVeil';
+import { visitToday } from '../../persistence/comeback';
 import { ObjectInspector } from './ObjectInspector';
 import { AeroWorkshop } from '../community/AeroWorkshop';
 import { DailyTide } from '../community/DailyTide';
@@ -185,6 +186,12 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
       setToast({ id: Date.now(), tone: 'info', text: `+${n} ${tr('soles de tus juegos', 'suns from your games')}` });
     };
     collect();
+    const back = visitToday();
+    if (back.gift > 0) {
+      dispatch({ type: 'reward', value: back.gift });
+      sfx.coin();
+      setToast({ id: Date.now() + 1, tone: 'info', text: tr(`tu isla te esperó ${back.days} ${back.days === 1 ? 'día' : 'días'}: +${back.gift} brillos`, `your island waited ${back.days} ${back.days === 1 ? 'day' : 'days'}: +${back.gift} sparkles`) });
+    }
     return subscribeSoles(collect);
   }, [editable]);
 
