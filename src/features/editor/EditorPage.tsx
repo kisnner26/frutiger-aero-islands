@@ -36,6 +36,7 @@ import { createState, editorReducer, newObjectId, type Doc } from './commands';
 import { DecorationCatalog } from './DecorationCatalog';
 import { EditorToolbar } from './EditorToolbar';
 import { SkyVeil } from './SkyVeil';
+import { claimNew } from '../../persistence/milestones';
 import { visitToday } from '../../persistence/comeback';
 import { ObjectInspector } from './ObjectInspector';
 import { AeroWorkshop } from '../community/AeroWorkshop';
@@ -174,6 +175,17 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
     if (objectCount > prevCount.current) sfx.place();
     prevCount.current = objectCount;
   }, [objectCount]);
+
+  /* hitos: logros de la isla que regalan brillos una sola vez */
+  useEffect(() => {
+    if (!editable || demo) return;
+    const fresh = claimNew(doc);
+    if (!fresh.length) return;
+    const total = fresh.reduce((n, m) => n + m.reward, 0);
+    dispatch({ type: 'reward', value: total });
+    sfx.coin();
+    setToast({ id: Date.now() + 2, tone: 'info', text: `${tr('logro', 'achievement')}: ${fresh.map((m) => m.text).join(', ')} · +${total} ${tr('brillos', 'sparkles')}` });
+  }, [doc.stats.pops, doc.stats.bestCombo, doc.objects, doc.maxLevel, editable, demo]);
 
   /* soles ganados en los minijuegos, el arcade o los duelos: la isla los cobra al abrirse y cada vez que llegan */
   useEffect(() => {
