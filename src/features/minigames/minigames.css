@@ -26,3 +26,20 @@
 .appscreen > .mg, .appscreen > .mg__menu, .appscreen > .duel, .appscreen > .duel__form, .appscreen > .mg__hint { justify-self: stretch; width: 100%; box-sizing: border-box; }
 .appscreen.mg__result { justify-items: center; text-align: center; }
 .appscreen .mg__menu button, .appscreen .mg__menu a { width: 100%; box-sizing: border-box; }
+
+.mg__reflex { display: grid; place-items: center; gap: 8px; align-content: center; min-height: 190px; border-radius: 16px; border: 1px solid rgba(255,255,255,.8); background: linear-gradient(180deg, #ffd9d4, #f08c80); color: #5a1b14; font: inherit; font-weight: 800; cursor: pointer; padding: 12px; touch-action: manipulation; }
+.mg__reflex i { width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle at 32% 28%, #fff, rgba(255,200,190,.7) 45%, rgba(220,90,70,.6)); box-shadow: inset 0 -8px 12px rgba(120,20,10,.3); }
+.mg__reflex.is-idle, .mg__reflex.is-shown { background: linear-gradient(180deg, #e6f4ff, #a9d6f5); color: #0a4a78; }
+.mg__reflex.is-idle i, .mg__reflex.is-shown i { background: radial-gradient(circle at 32% 28%, #fff, rgba(190,235,255,.7) 45%, rgba(90,180,232,.6)); }
+.mg__reflex.is-go { background: linear-gradient(180deg, #e2ffd8, #7bdc6a); color: #124a0c; }
+.mg__reflex.is-go i { background: radial-gradient(circle at 32% 28%, #fff, rgba(200,255,190,.8) 45%, rgba(60,190,50,.7)); }
+.mg__orb { position: absolute; width: 84px; height: 84px; border-radius: 50%; transform: translate(-50%, -50%); border: 1px solid rgba(255,255,255,.95); background: radial-gradient(circle at 32% 28%, #fff, rgba(190,235,255,.65) 45%, rgba(40,150,230,.75)); box-shadow: inset 0 -8px 12px rgba(0,80,150,.3), 0 4px 10px rgba(0,60,120,.35); color: #0a4a78; font: inherit; font-weight: 800; cursor: pointer; padding: 0; touch-action: manipulation; }
+.mg__duel { display: grid; grid-template-rows: 1fr auto 1fr; gap: 8px; height: 300px; }
+.mg__side { border-radius: 14px; border: 1px solid rgba(255,255,255,.8); font: inherit; font-weight: 800; font-size: 15px; cursor: pointer; touch-action: manipulation; color: #0a3a5e; }
+.mg__side--1 { background: linear-gradient(180deg, #d8f1ff, #7cc4ee); }
+.mg__side--2 { background: linear-gradient(180deg, #ffe9c2, #f2b45c); }
+.mg__side.is-go { background: linear-gradient(180deg, #e2ffd8, #7bdc6a); }
+.mg__tug { position: relative; height: 18px; border-radius: 9px; background: rgba(0,60,110,.18); }
+.mg__tug i { position: absolute; top: -4px; width: 26px; height: 26px; margin-left: -13px; border-radius: 50%; background: radial-gradient(circle at 32% 28%, #fff, #8fe08a 55%, #3aa83a); border: 1px solid #fff; transition: left .08s; }
+.mg__tug--text { height: auto; padding: 8px 10px; text-align: center; font-size: 13px; font-weight: 800; color: #1d4a6e; background: rgba(255,255,255,.65); }
+.mg__tug--text.is-go { background: #c9f5bd; }
