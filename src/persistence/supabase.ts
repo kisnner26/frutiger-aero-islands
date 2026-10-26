@@ -3,6 +3,7 @@ import type { Doc } from '../features/editor/commands';
 import { invalidate } from './fastcache';
 import { normalizeAvatar, type AvatarSpec } from '../avatar/model';
 import { tr } from '../i18n';
+import { CATALOG_MAP } from '../catalog/catalog';
 import { resilientFetch } from '../net/resilientFetch';
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
@@ -56,7 +57,26 @@ function asDoc(layout: unknown): Doc | null {
 /** el servidor exige enteros >= 0; un decimal heredado de un combo bloqueaba todos los guardados. */
 export function sanitizeDoc(d: Doc): Doc {
   const int = (n: unknown) => Math.max(0, Math.floor(Number(n) || 0));
-  return { ...d, brillos: int(d.brillos), stats: { ...d.stats, pops: int(d.stats?.pops), bestCombo: int(d.stats?.bestCombo) } };
+  const seen = new Set<string>();
+  const objects = (Array.isArray(d.objects) ? d.objects : [])
+    .filter((o) => o && CATALOG_MAP.has(o.assetId))
+    .slice(0, 150)
+    .map((o) => {
+      const item = CATALOG_MAP.get(o.assetId)!;
+      let id = typeof o.id === 'string' && o.id.length >= 1 && o.id.length <= 80 && !seen.has(o.id) ? o.id : `o-${Math.random().toString(36).slice(2, 12)}`;
+      while (seen.has(id)) id += 'x';
+      seen.add(id);
+      const num = (v: unknown, fallback: number) => (Number.isFinite(Number(v)) ? Number(v) : fallback);
+      return {
+        ...o,
+        id,
+        x: Math.min(1000, Math.max(0, Math.round(num(o.x, 500)))),
+        y: Math.min(1000, Math.max(0, Math.round(num(o.y, 500)))),
+        scale: Math.round(Math.min(2, Math.max(0.7, num(o.scale, 1))) * 100) / 100,
+        rotation: item.orientations.includes(o.rotation) ? o.rotation : item.orientations[0],
+      };
+    });
+  return { ...d, objects, brillos: int(d.brillos), stats: { ...d.stats, pops: int(d.stats?.pops), bestCombo: int(d.stats?.bestCombo) } };
 }
 
 export async function currentSession(): Promise<Session | null> {

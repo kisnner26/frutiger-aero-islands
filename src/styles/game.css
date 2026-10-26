@@ -885,7 +885,7 @@
 
 .tide-together {
   position: fixed;
-  top: 92px;
+  top: 126px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 11;
