@@ -37,6 +37,7 @@ import { DecorationCatalog } from './DecorationCatalog';
 import { EditorToolbar } from './EditorToolbar';
 import { SkyVeil } from './SkyVeil';
 import { MessageBottle } from './MessageBottle';
+import { TideTogether, tideBus } from './TideTogether';
 import { claimNew } from '../../persistence/milestones';
 import { visitToday } from '../../persistence/comeback';
 import { ObjectInspector } from './ObjectInspector';
@@ -274,6 +275,7 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
         const multiplier = bonus ? 1 : Math.min(c.count, 5);
         const value = bonus ? (kind === 'pez' ? 15 : 10) * (3 + progress.level) : (3 + progress.level) * multiplier * (kind === 'dorada' ? 5 : 1);
         dispatch({ type: 'pop', value, combo: c.count });
+        tideBus.pop();
         if (kind === 'pez') sfx.splash();
         else sfx.pop();
         window.setTimeout(() => sfx.coin(), 70);
@@ -351,6 +353,16 @@ export function EditorPage({ initialDoc, editable = true, ownerLabel = tr('tu is
       <Backdrop withIsland={false} />
       <SceneView scene={sceneProps} callbacks={callbacks} controlRef={sceneRef} />
       {!cameraOn && <SkyVeil />}
+      {editable && !demo && !cameraOn && !exploring && (
+        <TideTogether
+          name={ownerLabel}
+          onFill={(reward) => {
+            dispatch({ type: 'reward', value: reward });
+            sfx.coin();
+            setToast({ id: Date.now() + 4, tone: 'info', text: tr(`la marea se llenó entre todos: +${reward} brillos`, `the shared tide filled up: +${reward} sparkles`) });
+          }}
+        />
+      )}
       {editable && !demo && !cameraOn && !exploring && (
         <MessageBottle
           onOpen={(note, reward) => {
