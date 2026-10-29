@@ -37,7 +37,5 @@ jobs:
       PGDATABASE: island_test
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          psql -v ON_ERROR_STOP=1 -f tests/sql/setup.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/202610290001_save_island_required_fields.sql
-          psql -v ON_ERROR_STOP=1 -f tests/sql/save_island.sql
+      - name: Replay migrations and verify authorization as real roles
+        run: bash tests/sql/check.sh
