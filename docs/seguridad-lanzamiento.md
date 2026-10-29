@@ -12,7 +12,7 @@
 
 ## antes de publicar
 
-1. ejecuta las migraciones pendientes en el sql editor de supabase, en orden: `0005`, `0006`, `0007`, `0008`, `0009` y `0010`.
+1. comprueba el historial aplicado de supabase contra todos los archivos de `supabase/migrations/`, en orden de nombre. prueba las migraciones pendientes en una copia aislada antes de aplicarlas al proyecto.
 2. en authentication > url configuration, conserva como site url la url de github pages y como redirect url esa misma url con `#/auth`.
 3. en authentication > sign in/providers, deja activada la confirmación de correo. antes de una campaña pública, configura smtp propio; el proveedor de prueba no sirve para volumen real.
 4. en authentication > rate limits, conserva límites bajos para registro, recuperación y envío de correo. habilita captcha/turnstile gratuito antes de abrir el registro a cualquiera.
@@ -22,3 +22,9 @@
 ## límite actual de la economía
 
 los brillos generados por burbujas siguen siendo lógica del cliente. no hay que usar esa moneda para ranking, premios escasos ni compras con dinero hasta que las recompensas de minijuegos pasen por un rpc con límites temporales y validación en servidor. recursos, crafteo y expediciones ya siguen ese modelo.
+
+## validación de save_island
+
+`202610290001_save_island_required_fields.sql` rechaza campos obligatorios ausentes o JSON null y revisiones null. Las comparaciones anteriores con `<>` producían SQL UNKNOWN ante una clave ausente, permitiendo diseños incompletos. CI ejecuta casos de validación, dueño ajeno, anónimo y revisión obsoleta en PostgreSQL con una tabla y `auth.uid()` de prueba. Esto no valida el despliegue, los grants ni RLS del proyecto Supabase real ni el resto de migraciones.
+
+El progreso almacenado en el layout y los puntajes de duelos siguen viniendo del cliente. Un rango válido no demuestra que una partida se haya jugado; no usarlos como prueba de habilidad o para premios de valor.
